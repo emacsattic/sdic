@@ -173,10 +173,9 @@ search-type の値によって次のように動作を変更する。
       ;; 各検索結果に ID を付与する
       (goto-char limit)
       (while (progn
-	       (if (looking-at "<")
-		   (setq ret (cons (sdic-sgml-get-entry add-keys) ret)))
+	       (setq ret (cons (sdic-sgml-get-entry add-keys) ret))
 	       (= 0 (forward-line 1))))
-      (reverse ret))))
+      (reverse (delq nil ret)))))
 
 
 (defun sdic-grep-get-content (dic point)

@@ -212,16 +212,17 @@ FROM には正規表現を含む文字列を指定できるが、TO は固定文字列しか指定で
 point が行頭にある状態で呼び出さなければならない。"
   (save-excursion
     (save-match-data
-      (let ((top (goto-char (+ 3 (point))))
-	    (end (progn (search-forward "<") (match-beginning 0)))
-	    (pos (progn (end-of-line) (search-backward ">") (match-end 0))))
-	(cons (if (and add-keys-to-headword (> (- pos end) 11))
-		  (format "%s [%s]"
-			  (buffer-substring top end)
-			  (sdic-sgml-replace-string (buffer-substring (+ end 7) (- pos 4))
-						    "</K><K>" "]["))
-		(buffer-substring top end))
-	      pos)))))
+      (if (looking-at "<")
+	  (let ((top (goto-char (+ 3 (point))))
+		(end (progn (search-forward "<") (match-beginning 0)))
+		(pos (progn (end-of-line) (search-backward ">") (match-end 0))))
+	    (cons (if (and add-keys-to-headword (> (- pos end) 11))
+		      (format "%s [%s]"
+			      (buffer-substring top end)
+			      (sdic-sgml-replace-string (buffer-substring (+ end 7) (- pos 4))
+							"</K><K>" "]["))
+		    (buffer-substring top end))
+		  pos))))))
 
 
 
@@ -261,6 +262,7 @@ point が行頭にある状態で呼び出さなければならない。"
 		     (condition-case err
 			 (sdic-insert-file-contents (get dic 'file-name) (get dic 'coding-system))
 		       (error nil)))
+	      (insert "\n")
 	      (setq buffer-read-only t)
 	      (set-buffer-modified-p nil))))
       dic))
@@ -289,10 +291,12 @@ search-type の値によって次のように動作を変更する。
     (let ((case-fold-search nil)
 	  (add-keys (get dic 'add-keys-to-headword))
 	  ret)
-      (while (search-forward string nil t)
-	(beginning-of-line)
-	(setq ret (cons (sdic-sgml-get-entry add-keys) ret)))
-      (reverse ret))))
+      (while (if (search-forward string nil t)
+		 (progn
+		   (beginning-of-line)
+		   (setq ret (cons (sdic-sgml-get-entry add-keys) ret))
+		   (= 0 (forward-line)))))
+      (reverse (delq nil ret)))))
 
 
 (defun sdic-sgml-get-content (dic point)
