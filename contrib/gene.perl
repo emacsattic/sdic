@@ -132,7 +132,7 @@ sub sdic_to_compat {
     while( <> ){
 	next unless /^</;
 	s/\s+$//;			# 行末の空白文字を削除
-	s!^<([KH])>(.*)</\1>!!;		# 見出し語を取り出す
+	s!^<([KH])>(.*?)</\1>!!;	# 見出し語を取り出す
 	$head = $2;
 	$head =~ s/&lt;/</g;		# 見出し語のメタキャラクタを置換する
 	$head =~ s/&gt;/>/g;
@@ -141,6 +141,7 @@ sub sdic_to_compat {
 	s/&lt;/</g;			# 説明文のメタキャラクタを置換する
 	s/&gt;/>/g;
 	s/&amp;/&/g;
+	s/\t/        /g;
 	$key = $head;
 	$key  =~ tr/A-Z/a-z/;
 	push( @line, "$key\x00$head\x00\t$head\t$_\n" );

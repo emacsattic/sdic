@@ -91,11 +91,20 @@
 
 (defvar make-sdic-version "@VERSION@")
 
-(defvar make-sdic-root-directory (expand-file-name default-directory))
+(defvar make-sdic-root-directory (expand-file-name default-directory)
+  "パッケージのトップディレクトリ")
 
-(defvar make-sdic-src-directory (expand-file-name "lisp" make-sdic-root-directory))
+(defvar make-sdic-src-directory (expand-file-name "lisp" make-sdic-root-directory)
+  "Lisp program が格納されているディレクトリ")
 
-(defvar make-sdic-texi-directory (expand-file-name "texi" make-sdic-root-directory))
+(defvar make-sdic-texi-directory (expand-file-name "texi" make-sdic-root-directory)
+  "Info のソースが格納されているディレクトリ")
+
+(defvar make-sdic-eiwa-candidates '("gene.sdic" "eedict.sdic" "ejdict.sdic" "gene.dic" "eedict.sdic" "ejdict.dic")
+  "インストール済の英和辞書を検索する場合に対象となるファイル名のリスト")
+
+(defvar make-sdic-waei-candidates '("edict.sdic" "jedict.sdic" "jgene.sdic" "jedict.dic" "jgene.dic")
+  "インストール済の和英辞書を検索する場合に対象となるファイル名のリスト")
 
 (defvar make-sdic-debug nil)
 
@@ -108,6 +117,8 @@
 	      make-sdic-src-directory))
 
 
+(setq sdic-eiwa-dictionary-list nil
+      sdic-waei-dictionary-list nil)
 (load "sdic.el.in")
 (require 'sdicf)
 (require 'texinfmt)
@@ -148,13 +159,13 @@
 		(mapcar (lambda (basename)
 			  (and (file-exists-p (expand-file-name basename make-sdic-dict-directory))
 			       (throw 'found-eiwa basename)))
-			(list "gene.sdic" "ejdict.sdic" "gene.dic" "ejdict.dic"))
+			make-sdic-eiwa-candidates)
 		(file-exists-p "gene.txt")))
 	(waei (catch 'found-waei
 		(mapcar (lambda (basename)
 			  (and (file-exists-p (expand-file-name basename make-sdic-dict-directory))
 			       (throw 'found-waei basename)))
-			(list "jedict.sdic" "jgene.sdic" "jedict.dic" "jgene.dic"))
+			make-sdic-waei-candidates)
 		(file-exists-p "edict"))))
     (make-sdic-sdic_el (if (eq eiwa t) "gene.sdic" eiwa) (if (eq waei t) "jedict.sdic" waei))
     (make-sdic-install-lisp)
@@ -223,15 +234,15 @@ Direcotry:
 	      (if (stringp eiwa)
 		  (progn
 		    (goto-char (point-min))
-		    (search-forward (concat "@" "EIWA_DICT_PATH" "@"))
+		    (search-forward (concat "@" "EIWA_DICT_LIST" "@"))
 		    (delete-region (goto-char (match-beginning 0)) (match-end 0))
-		    (insert (expand-file-name eiwa make-sdic-dict-directory))))
+		    (insert (format "\"%s\"" (expand-file-name eiwa make-sdic-dict-directory)))))
 	      (if (stringp waei)
 		  (progn
 		    (goto-char (point-min))
-		    (search-forward (concat "@" "WAEI_DICT_PATH" "@"))
+		    (search-forward (concat "@" "WAEI_DICT_LIST" "@"))
 		    (delete-region (goto-char (match-beginning 0)) (match-end 0))
-		    (insert (expand-file-name waei make-sdic-dict-directory))))
+		    (insert (format "\"%s\"" (expand-file-name waei make-sdic-dict-directory)))))
 	      (make-sdic-write-file out-file))
 	  (kill-buffer buf))))))
 
