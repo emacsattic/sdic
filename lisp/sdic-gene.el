@@ -8,11 +8,8 @@
 
 ;; This file is a part of xdic. Please see xdic.el for more detail.
 
-;; 1行のデータの形式が
-;;
-;;	見出し語 TAB 定義文 RET
-;;
-;; となっている辞書を外部プログラムに頼らずに検索するライブラリです。
+;; COMPAT 形式の辞書を外部プログラムに頼らずに検索するライブラリです。
+;; COMPAT 形式の詳細については dictionary-format.txt を参照して下さい。
 
 
 ;;; Install:
