@@ -289,7 +289,7 @@ search-type の値によって次のように動作を変更する。
 		   (progn
 		     (setq ret (cons (cons (sdic-match-string 1) (match-end 0)) ret))
 		     (= 0 (forward-line 1)))))
-	(reverse ret)))))
+	(nreverse ret)))))
 
 
 (defun sdic-compat-get-content (dic point)
