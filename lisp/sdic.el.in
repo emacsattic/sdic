@@ -11,7 +11,7 @@
 ;; て下さい。
 
 ;; 一次配布元
-;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/elisp/sdic.html
+;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/sdic/index.html
 
 
 ;;; ※※※ 注意 ※※※
@@ -115,7 +115,7 @@ nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があ
 (defvar sdic-face-style 'bold  "*Style of entry.
 見出し語を表示するために使う装飾形式")
 
-(defvar sdic-face-color "black" "*Color of entry.
+(defvar sdic-face-color nil "*Color of entry.
 見出し語を表示するために使う色")
 
 (defvar sdic-disable-vi-key nil "*Option to disable some key.
@@ -207,7 +207,7 @@ Regexp of Englist prepositions
 	   "\t 　")
   "空白文字のリスト")
 
-(defconst sdic-version "2.0")
+(defconst sdic-version "2.1beta1")
 (defconst sdic-buffer-name "*sdic*" "検索結果表示バッファの名前")
 (defconst sdic-mode-name "SDIC" "検索結果を表示するバッファの major mode")
 
@@ -249,9 +249,8 @@ Function to close dictionary.
 Function to search word in dictionary.
 指定された辞書を検索する関数
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列を返す。"
-  (mapcar (function
-	   (lambda (c)
-	     (list (car c) dic (cdr c))))
+  (mapcar (lambda (c)
+	    (list (car c) dic (cdr c)))
 	  (funcall (get (get dic 'search-method) 'search-entry) dic word search-type)))
 
 
@@ -260,15 +259,14 @@ Function to sort entry list in dictionary order.
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列 
 ENTRY-LIST を、見出し語の辞書順に並べ替える関数。"
   (mapcar 'cdr
-	  (sort (mapcar (function
-			 (lambda (entry)
-			   (if (string-match "\\Ca" (car entry))
-			       (cons (concat (car entry) "\^@") entry)
-			     (cons (concat (sdic-sgml-replace-string (downcase (car entry)) "[^A-z0-9]+" " ")
-					   "\^@" (car entry) "\^@")
-				   entry))))
+	  (sort (mapcar (lambda (entry)
+			  (if (string-match "\\Ca" (car entry))
+			      (cons (concat (car entry) "\^@") entry)
+			    (cons (concat (sdic-sgml-replace-string (downcase (car entry)) "[^A-z0-9]+" " ")
+					  "\^@" (car entry) "\^@")
+				  entry)))
 			entry-list)
-		(function (lambda (a b) (string< (car a) (car b)))))))
+		(lambda (a b) (string< (car a) (car b))))))
 
 
 (defun sdic-search-multi-dictionaries (dic-list word &optional search-type) "\
@@ -277,9 +275,8 @@ Function to search word in multi dictionaries.
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列を返す。"
   (sdic-sort-dictionary-order
    (apply 'append
-	  (mapcar (function
-		   (lambda (dic)
-		     (sdic-search-entry dic word search-type)))
+	  (mapcar (lambda (dic)
+		    (sdic-search-entry dic word search-type))
 		  dic-list))))
 
 
@@ -352,10 +349,9 @@ Function to get content.
 
 (defun sdic-insert-entry-list (entry-list)
   "見出し語と説明文を整形しながら挿入する"
-  (mapcar (function
-	   (lambda (entry)
-	     (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
-	     (car entry)))
+  (mapcar (lambda (entry)
+	    (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
+	    (car entry))
 	  entry-list))
 
 
@@ -395,13 +391,12 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
     (let (word-list stem-list orig pat point str)
       (setq word-list (sdic-split-string (downcase query)))
       (prog1 (mapcar
-	      (function
-	       (lambda (entry)
-		 (and (not point)
-		      (string-match pat (car entry))
-		      (setq point (point)))
-		 (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
-		 (car entry)))
+	      (lambda (entry)
+		(and (not point)
+		     (string-match pat (car entry))
+		     (setq point (point)))
+		(sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
+		(car entry))
 	      (prog1 (or
 		      ;; (1) 不規則変化動詞を検索する
 		      (and
@@ -409,23 +404,20 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 		       (sdic-sort-dictionary-order
 			(apply 'append
 			       (mapcar
-				(function
-				 (lambda (word)
-				   (setq pat (format "^\\(%s$\\|%s \\)"
-						     (regexp-quote word) (regexp-quote word)))
-				   (delq nil
-					 (mapcar
-					  (function
-					   (lambda (entry)
-					     (and (string-match pat (car entry))
-						  (or orig (setq orig word))
-						  entry)))
-					  (apply 'append
-						 (mapcar
-						  (function
-						   (lambda (dic)
-						     (sdic-search-entry dic word)))
-						  sdic-eiwa-symbol-list))))))
+				(lambda (word)
+				  (setq pat (format "^\\(%s$\\|%s \\)"
+						    (regexp-quote word) (regexp-quote word)))
+				  (delq nil
+					(mapcar
+					 (lambda (entry)
+					   (and (string-match pat (car entry))
+						(or orig (setq orig word))
+						entry))
+					 (apply 'append
+						(mapcar
+						 (lambda (dic)
+						   (sdic-search-entry dic word))
+						 sdic-eiwa-symbol-list)))))
 				stem-list))))
 		      ;; (2) 不規則変化動詞を無視した stemming を行なって検索する
 		      (progn
@@ -440,18 +432,16 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 				      (setq i (1- i)))
 				    (substring w1 0 i)))
 			(delq nil (mapcar
-				   (function
-				    (lambda (entry)
-				      (if (string-match pat (car entry)) entry)))
+				   (lambda (entry)
+				     (if (string-match pat (car entry)) entry))
 				   (prog1 (mapcar
-					   (function
-					    (lambda (entry)
-					      ;; 検索結果から原形と推定される見出し語を検索
-					      (setq str (downcase (car entry)))
-					      (and (member str stem-list)
-						   (not (member str orig))
-						   (setq orig (cons str orig)))
-					      entry))
+					   (lambda (entry)
+					     ;; 検索結果から原形と推定される見出し語を検索
+					     (setq str (downcase (car entry)))
+					     (and (member str stem-list)
+						  (not (member str orig))
+						  (setq orig (cons str orig)))
+					     entry)
 					   (or (and
 						(= (length stem-list) 1)
 						(string= pat (car word-list))
@@ -464,14 +454,12 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 					 (setq stem-list (copy-sequence orig)
 					       orig (if (member (car word-list) orig)
 							(car word-list)
-						      (car (sort orig (function
-								       (lambda (a b) (> (length a) (length b)))))))
+						      (car (sort orig (lambda (a b) (> (length a) (length b))))))
 					       pat (format "^\\(%s\\)"
-							   (mapconcat (function
-								       (lambda (w)
-									 (format "%s$\\|%s "
-										 (regexp-quote w)
-										 (regexp-quote w))))
+							   (mapconcat (lambda (w)
+									(format "%s$\\|%s "
+										(regexp-quote w)
+										(regexp-quote w)))
 								      stem-list "\\|")))
 				       (setq orig pat
 					     pat (concat "^" (regexp-quote pat)))
@@ -480,13 +468,12 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 				       ))))))
 		(setq pat (if (nth 1 word-list)
 			      (concat "^\\("
-				      (mapconcat (function
-						  (lambda (w)
-						    (format "%s +%s$\\|%s +%s "
-							    (regexp-quote w)
-							    (regexp-quote (nth 1 word-list))
-							    (regexp-quote w)
-							    (regexp-quote (nth 1 word-list)))))
+				      (mapconcat (lambda (w)
+						   (format "%s +%s$\\|%s +%s "
+							   (regexp-quote w)
+							   (regexp-quote (nth 1 word-list))
+							   (regexp-quote w)
+							   (regexp-quote (nth 1 word-list))))
 						 stem-list "\\|")
 				      (if (string= orig (car word-list))
 					  "\\)"
@@ -753,31 +740,26 @@ Q               SDIC を終了する
   (define-key sdic-mode-map "q" 'sdic-close-window)
   (define-key sdic-mode-map "Q" 'sdic-exit)
   (define-key sdic-mode-map "w" 'sdic-describe-word)
-  (define-key sdic-mode-map "W" (function
-				 (lambda ()
-				   (interactive)
-				   (let ((f (sdic-select-search-function)))
-				     (sdic-describe-word (sdic-read-from-minibuffer) f)))))
-  (define-key sdic-mode-map "/" (function
-				 (lambda ()
-				   (interactive)
-				   (sdic-describe-word (sdic-read-from-minibuffer
-							(concat "/" (sdic-word-at-point)))))))
-  (define-key sdic-mode-map "^" (function
-				 (lambda ()
-				   (interactive)
-				   (sdic-describe-word (sdic-read-from-minibuffer
-							(concat (sdic-word-at-point) "*"))))))
-  (define-key sdic-mode-map "$" (function
-				 (lambda ()
-				   (interactive)
-				   (sdic-describe-word (sdic-read-from-minibuffer
-							(concat "*" (sdic-word-at-point)))))))
-  (define-key sdic-mode-map "'" (function
-				 (lambda ()
-				   (interactive)
-				   (sdic-describe-word (sdic-read-from-minibuffer
-							(concat "'" (sdic-word-at-point) "'"))))))
+  (define-key sdic-mode-map "W" (lambda ()
+				  (interactive)
+				  (let ((f (sdic-select-search-function)))
+				    (sdic-describe-word (sdic-read-from-minibuffer) f))))
+  (define-key sdic-mode-map "/" (lambda ()
+				  (interactive)
+				  (sdic-describe-word (sdic-read-from-minibuffer
+						       (concat "/" (sdic-word-at-point))))))
+  (define-key sdic-mode-map "^" (lambda ()
+				  (interactive)
+				  (sdic-describe-word (sdic-read-from-minibuffer
+						       (concat (sdic-word-at-point) "*")))))
+  (define-key sdic-mode-map "$" (lambda ()
+				  (interactive)
+				  (sdic-describe-word (sdic-read-from-minibuffer
+						       (concat "*" (sdic-word-at-point))))))
+  (define-key sdic-mode-map "'" (lambda ()
+				  (interactive)
+				  (sdic-describe-word (sdic-read-from-minibuffer
+						       (concat "'" (sdic-word-at-point) "'")))))
   (define-key sdic-mode-map "<" 'sdic-goto-point-min)
   (define-key sdic-mode-map ">" 'sdic-goto-point-max)
   (define-key sdic-mode-map "?" 'describe-mode)
@@ -821,13 +803,13 @@ Q               SDIC を終了する
 Return the next position after POS where an extent starts or ends.
 If there are no more extent boundaries after POS, return (point-max)."
     (catch 'found-next-extent
-      (mapcar (function (lambda (ext)
-			  (cond
-			   ((> (extent-start-position ext) pos)
-			    (throw 'found-next-extent (extent-start-position ext)))
-			   ((> (extent-end-position ext) pos)
-			    (throw 'found-next-extent (extent-end-position ext)))
-			   )))
+      (mapcar (lambda (ext)
+		(cond
+		 ((> (extent-start-position ext) pos)
+		  (throw 'found-next-extent (extent-start-position ext)))
+		 ((> (extent-end-position ext) pos)
+		  (throw 'found-next-extent (extent-end-position ext)))
+		 ))
 	      (extent-list))
       (point-max))))
 
@@ -840,13 +822,13 @@ If there are no more extent boundaries after POS, return (point-max)."
 Return the previous position before POS where an extent starts or ends.
 If there are no more extent boundaries before POS, return (point-min)."
 	(catch 'found-previous-extent
-	  (mapcar (function (lambda (ext)
-			      (cond
-			       ((< (extent-end-position ext) pos)
-				(throw 'found-previous-extent (extent-end-position ext)))
-			       ((< (extent-start-position ext) pos)
-				(throw 'found-previous-extent (extent-start-position ext)))
-			       )))
+	  (mapcar (lambda (ext)
+		    (cond
+		     ((< (extent-end-position ext) pos)
+		      (throw 'found-previous-extent (extent-end-position ext)))
+		     ((< (extent-start-position ext) pos)
+		      (throw 'found-previous-extent (extent-start-position ext)))
+		     ))
 		  (reverse (extent-list)))
 	  (point-min)))
     ;; Emacs 19.34 以前の場合
@@ -866,10 +848,10 @@ If there are no more overlay boundaries before POS, return (point-min)."
     (defalias 'sdic-overlays-at 'overlays-at)
   (defun sdic-overlays-at (pos) "\
 Return a list of the extents that contain position POS."
-    (delq nil (mapcar (function (lambda (ext)
-				  (and (<= (extent-start-position ext) pos)
-				       (> (extent-end-position ext) pos)
-				       ext)))
+    (delq nil (mapcar (lambda (ext)
+			(and (<= (extent-start-position ext) pos)
+			     (> (extent-end-position ext) pos)
+			     ext))
 		      (extent-list)))))
 
 
