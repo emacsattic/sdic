@@ -120,9 +120,9 @@ FROM には正規表現を含む文字列を指定できるが、TO は固定文字列しか指定で
 きないので、注意して使うこと。"
   (let ((start 0) list)
     (while (string-match from string start)
-      (setq list (cons to (cons (substring string start (match-beginning 0)) list)))
-      (setq start (match-end 0)))
-    (apply 'concat (reverse (cons (substring string start) list)))))
+      (setq list (cons to (cons (substring string start (match-beginning 0)) list))
+	    start (match-end 0)))
+    (eval (cons 'concat (nreverse (cons (substring string start) list))))))
 
 
 (defsubst sdic-sgml-recover-string (str &optional recover-lf)
@@ -216,12 +216,13 @@ point が行頭にある状態で呼び出さなければならない。"
 	  (let ((top (goto-char (+ 3 (point))))
 		(end (progn (search-forward "<") (match-beginning 0)))
 		(pos (progn (end-of-line) (search-backward ">") (match-end 0))))
-	    (cons (if (and add-keys-to-headword (> (- pos end) 11))
-		      (format "%s [%s]"
-			      (buffer-substring top end)
-			      (sdic-sgml-replace-string (buffer-substring (+ end 7) (- pos 4))
-							"</K><K>" "]["))
-		    (buffer-substring top end))
+	    (cons (sdic-sgml-recover-string
+		   (if (and add-keys-to-headword (> (- pos end) 11))
+		       (format "%s [%s]"
+			       (buffer-substring top end)
+			       (sdic-sgml-replace-string (buffer-substring (+ end 7) (- pos 4))
+							 "</K><K>" "]["))
+		     (buffer-substring top end)))
 		  pos))))))
 
 
@@ -296,7 +297,7 @@ search-type の値によって次のように動作を変更する。
 		   (beginning-of-line)
 		   (setq ret (cons (sdic-sgml-get-entry add-keys) ret))
 		   (= 0 (forward-line)))))
-      (reverse (delq nil ret)))))
+      (nreverse (delq nil ret)))))
 
 
 (defun sdic-sgml-get-content (dic point)
