@@ -285,7 +285,23 @@ Function to get content.
 ;;;		内部関数
 ;;;----------------------------------------------------------------------
 
-(defun sdic-insert-content (word content)
+(defvar sdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
+fill-region 関数が left-margin の設定を無視する場合は nil 以外を設定する")
+(defsubst sdic-fill-region (start end) "\
+Standarized fill-region.
+fill-region の Emacs のバージョンによって異なる動作を標準化する関数"
+  (save-match-data
+    (if sdic-left-margin-ignored-by-fill-region
+	;; Emacs-19.28 附属の fill-region は、left-margin を無視するので強制的に indent する
+	(let ((fill-column (- fill-column sdic-left-margin)))
+	  (fill-region start end)
+	  (indent-region start (point) sdic-left-margin))
+      (fill-region start end))
+    ;; 余分な空行を削除する
+    (delete-region (point) (progn (skip-chars-backward " \t\n") (point)))))
+
+
+(defsubst sdic-insert-content (word content)
   "見出し語と定義文を整形しながら挿入する関数"
   (sdic-overlay-put (sdic-make-overlay (point) (progn (insert word) (point))) 'face 'sdic-face)
   (insert "\n")
@@ -845,22 +861,6 @@ at the end of STRING, we don't include a null substring for that."
 	  (setq list (cons (substring string start (match-beginning 0)) list)))
       (setq start (match-end 0)))
     (reverse (if (= start (length string)) list (cons (substring string start) list)))))
-
-
-(defvar sdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
-fill-region 関数が left-margin の設定を無視する場合は nil 以外を設定する")
-(defun sdic-fill-region (start end) "\
-Standarized fill-region.
-fill-region の Emacs のバージョンによって異なる動作を標準化する関数"
-  (save-match-data
-    (if sdic-left-margin-ignored-by-fill-region
-	;; Emacs-19.28 附属の fill-region は、left-margin を無視するので強制的に indent する
-	(let ((fill-column (- fill-column sdic-left-margin)))
-	  (fill-region start end)
-	  (indent-region start (point) sdic-left-margin))
-      (fill-region start end))
-    ;; 余分な空行を削除する
-    (delete-region (point) (progn (skip-chars-backward " \t\n") (point)))))
 
 
 (defun sdic-insert-file-contents (filename coding-system &optional visit beg end replace)
