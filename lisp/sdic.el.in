@@ -188,7 +188,7 @@ Regexp of Englist prepositions
 	   "\t 　")
   "空白文字のリスト")
 
-(defconst sdic-version "2.1beta1")
+(defconst sdic-version "@VERSION@")
 (defconst sdic-buffer-name "*sdic*" "検索結果表示バッファの名前")
 (defconst sdic-mode-name "SDIC" "検索結果を表示するバッファの major mode")
 

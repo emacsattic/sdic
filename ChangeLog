@@ -1,3 +1,7 @@
+Fri May 14 21:35:29 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* CVS による管理に移行した。
+
 1999-05-12  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* lisp/sdic.el.in: sdic-replace-string 関数を新設し、sdic-sgml.el への依
