@@ -33,16 +33,16 @@ config: lisp/sample.emacs
 
 ## 辞書を生成するためのルール
 gene.dic: contrib/gene.perl gene.txt
-	@NKF@ -S -e gene.txt | @PERL@ contrib/gene.perl --compat > gene.dic
+	@NKF@ -S -e gene.txt | @PERL@ contrib/gene.perl --compat > $@
 
 gene.sdic: contrib/gene.perl gene.txt
-	@NKF@ -S -e gene.txt | @PERL@ contrib/gene.perl > gene.sdic
+	@NKF@ -S -e gene.txt | @PERL@ contrib/gene.perl > $@
 
 jgene.dic: contrib/jgene.perl gene.dic
-	@PERL@ contrib/jgene.perl --compat < gene.dic > jgene.dic
+	@PERL@ contrib/jgene.perl --compat < gene.dic > $@
 
 jgene.sdic: gene.dic
-	@PERL@ contrib/jgene.perl < gene.dic > jgene.sdic
+	@PERL@ contrib/jgene.perl < gene.dic > $@
 
 gene.txt:
 	test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2
@@ -56,22 +56,22 @@ gene.txt:
 	test -s gene.txt
 
 eijirou.dic: contrib/eijirou.perl
-	@NKF@ -S -e @EIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --compat >eijirou.dic
+	@NKF@ -S -e @EIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --compat > $@
 
 eijirou.sdic: contrib/eijirou.perl
-	@NKF@ -S -e @EIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl >eijirou.sdic
+	@NKF@ -S -e @EIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl > $@
 
 waeijirou.dic: contrib/eijirou.perl
-	@NKF@ -S -e @WAEIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --waei --compat >waeijirou.dic
+	@NKF@ -S -e @WAEIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --waei --compat > $@
 
 waeijirou.sdic: contrib/eijirou.perl
-	@NKF@ -S -e @WAEIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --waei >waeijirou.sdic
+	@NKF@ -S -e @WAEIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --waei > $@
 
 ejdict.sdic: edict contrib/edict.perl
-	@PERL@ contrib/edict.perl --reverse edict >ejdict.sdic
+	@PERL@ contrib/edict.perl --reverse edict > $@
 
 jedict.sdic: edict contrib/edict.perl
-	@PERL@ contrib/edict.perl edict >jedict.sdic
+	@PERL@ contrib/edict.perl edict > $@
 
 jedict.dic: edict
 	@NKF@ -deZ2 edict | \
