@@ -1,4 +1,4 @@
-;;; sdic.el ---- major mode to view dictionary
+;;; sdic.el ---- -*- Emacs-Lisp -*- program to view dictionary
 ;;; $Id$
 
 ;;; Author: Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
@@ -12,15 +12,6 @@
 
 ;; 一次配布元
 ;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/sdic/index.html
-
-
-;;; ※※※ 注意 ※※※
-
-;; このプログラムは、まだ作成されたばかりですので、これから多数の変更
-;; が出ると思われます。注意して使ってください。
-;;
-;; また、こんな機能が欲しいとか、動作が希望と違うなど、要望があれば遠
-;; 慮なく連絡してください。出来るだけ対応したいと思います。
 
 
 ;;; Install:
@@ -86,11 +77,7 @@
 
 
 (provide 'sdic)
-(require 'sdic-sgml)
 (require 'stem)
-(eval-when-compile
-  (require 'sdic-grep)
-  (require 'sdic-compat))
 
 
 ;;;----------------------------------------------------------------------
@@ -125,10 +112,7 @@ nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があ
   (let ((file "~/usr/dict/gene.sdic"))
     (and (file-readable-p (expand-file-name file))
 	 (list (list (if (string-match "\\.sdic$" file)
-			 (if (and (require 'sdic-grep)
-				  (sdic-grep-available-p))
-			     'sdic-grep
-			   'sdic-gene)
+			 'sdicf-client
 		       (if (and (require 'sdic-compat)
 				(sdic-compat-available-p))
 			   'sdic-compat
@@ -141,10 +125,7 @@ nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があ
   (let ((file "~/usr/dict/edict.sdic"))
     (and (file-readable-p (expand-file-name file))
 	 (list (list (if (string-match "\\.sdic$" file)
-			 (if (and (require 'sdic-grep)
-				  (sdic-grep-available-p))
-			     'sdic-grep
-			   'sdic-gene)
+			 'sdicf-client
 		       (if (and (require 'sdic-compat)
 				(sdic-compat-available-p))
 			   'sdic-compat
@@ -254,6 +235,16 @@ Function to search word in dictionary.
 	  (funcall (get (get dic 'search-method) 'search-entry) dic word search-type)))
 
 
+(defsubst sdic-replace-string (string from to) "\
+文字列 STRING に含まれている文字列 FROM を全て文字列 TO に置換した文字列を返す
+FROM には正規表現を含む文字列を指定できるが、TO は固定文字列しか指定できない。"
+  (let ((start 0) list)
+    (while (string-match from string start)
+      (setq list (cons to (cons (substring string start (match-beginning 0)) list))
+	    start (match-end 0)))
+    (eval (cons 'concat (nreverse (cons (substring string start) list))))))
+
+
 (defun sdic-sort-dictionary-order (entry-list) "\
 Function to sort entry list in dictionary order.
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列 
@@ -262,7 +253,7 @@ ENTRY-LIST を、見出し語の辞書順に並べ替える関数。"
 	  (sort (mapcar (lambda (entry)
 			  (if (string-match "\\Ca" (car entry))
 			      (cons (concat (car entry) "\^@") entry)
-			    (cons (concat (sdic-sgml-replace-string (downcase (car entry)) "[^A-z0-9]+" " ")
+			    (cons (concat (sdic-replace-string (downcase (car entry)) "[^A-z0-9]+" " ")
 					  "\^@" (car entry) "\^@")
 				  entry)))
 			entry-list)
@@ -321,14 +312,14 @@ Function to get content.
 	    pos (match-end 1)))
     (eval (cons 'insert (nreverse (if (< pos (length content)) (cons (substring content pos) buf) buf))))
     (insert "\n")
-    (backward-char)
+    (forward-char -1)
     (while (if (>= (move-to-column fill-column) fill-column)
 	       (not (progn
 		      (if (memq (preceding-char) sdic-kinsoku-eol-list)
 			  (progn
-			    (backward-char)
+			    (forward-char -1)
 			    (while (memq (preceding-char) sdic-kinsoku-eol-list)
-			      (backward-char))
+			      (forward-char -1))
 			    (insert "\n" spc))
 			(while (memq (setq buf (following-char)) sdic-kinsoku-bol-list)
 			  (forward-char))
@@ -908,27 +899,3 @@ at the end of STRING, we don't include a null substring for that."
 	  (setq list (cons (substring string start (match-beginning 0)) list)))
       (setq start (match-end 0)))
     (nreverse (if (= start (length string)) list (cons (substring string start) list)))))
-
-
-(defun sdic-insert-file-contents (filename coding-system &optional visit beg end replace)
-  (let ((coding-system-for-read coding-system)
-	(file-coding-system-for-read coding-system))
-    (insert-file-contents filename visit beg end replace)))
-
-
-(defun sdic-call-process (program &optional infile buffer display coding-system &rest args)
-  (let ((coding-system-for-read coding-system)
-	(coding-system-for-write coding-system)
-	(process-input-coding-system coding-system)
-	(process-output-coding-system coding-system)
-	(default-process-coding-system (cons coding-system coding-system)))
-    (apply 'call-process program infile buffer display args)))
-
-
-(defun sdic-start-process (name buffer coding-system program &rest args)
-  (let ((proc (apply 'start-process name buffer program args)))
-    (if (fboundp 'set-process-coding-system)
-	(set-process-coding-system proc coding-system coding-system)
-      (set-process-input-coding-system proc coding-system)
-      (set-process-output-coding-system proc coding-system))
-    proc))
