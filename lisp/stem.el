@@ -17,20 +17,31 @@
 
 ;; -*- Emacs-Lisp -*-
 
+(provide 'stem)
+
+(defvar stem:minimum-word-length 4 "Porter のアルゴリズムが適用できる最小語長")
+
 
 ;;;============================================================
-;;;	stemming-rule の条件節を記述する関数群
+;;;	非公開関数
 ;;;============================================================
 
-;;; 変数 str を検査する関数 (語幹の部分を変数 stem に代入する)
-(defsubst stem:match (arg)
+;; 動作速度を向上させるために、関数内部で外部変数をいじっている
+;; 関数があり、予期しない副作用が発生する可能性が高い。従って、
+;; 非公開関数を直接呼び出すことは避けること。
+
+;;------------------------------------------------------------
+;;	stemming-rule の条件節を記述する関数群
+;;------------------------------------------------------------
+
+(defsubst stem:match (arg) "\
+変数 str を検査する非公開関数 (語幹の部分を変数 stem に代入する)"
   (and
    (string-match arg str)
    (setq stem (substring str 0 (match-beginning 0)))))
 
-
-;;; 変数 stem に含まれている VC の数を求める関数
-(defsubst stem:m ()
+(defsubst stem:m () "\
+変数 stem に含まれている VC の数を求める非公開関数"
   (save-match-data
     (let ((pos 0)(m 0))
       (while (string-match "\\(a\\|e\\|i\\|o\\|u\\|[^aeiou]y+\\)[aeiou]*" stem pos)
@@ -38,33 +49,31 @@
 	(setq pos (match-end 0)))
       (if (= pos (length stem)) (1- m) m))))
 
-(defsubst stem:m> (i)
+(defsubst stem:m> (i) "\
+変数 stem に含まれている VC の数の条件を記述する非公開関数"
   (< i (stem:m)))
 
-(defsubst stem:m= (i)
+(defsubst stem:m= (i) "\
+変数 stem に含まれている VC の数の条件を記述する非公開関数"
   (= i (stem:m)))
 
-
-;;; 変数 stem が母音を含んでいるか検査する関数
-(defsubst stem:*v* ()
+(defsubst stem:*v* () "\
+変数 stem が母音を含んでいるか検査する関数"
   (save-match-data
     (if (string-match "\\(a\\|e\\|i\\|o\\|u\\|[^aeiou]y\\)" stem) t)))
 
-
-;;; 変数 stem が cvc の形で終っているか検査する関数
-(defsubst stem:*o ()
+(defsubst stem:*o () "\
+変数 stem が cvc の形で終っているか検査する関数"
   (save-match-data
     (if (string-match "[^aeiou][aeiouy][^aeiouwxy]$" stem) t)))
 
 
 
+;;------------------------------------------------------------
+;;	stemming-rule を記述した関数群
+;;------------------------------------------------------------
 
-;;;============================================================
-;;;	stemming-rule を記述した関数群
-;;;============================================================
-
-;;; 第1a段階の stemming rule
-(defun stem:step1a (str)
+(defun stem:step1a (str) "第1a段階の stemming rule (非公開関数)"
   (let ((s)(stem))
     (if (setq s (cond
 		 ((stem:match "sses$") "ss")
@@ -75,8 +84,7 @@
       str)))
 
 
-;;; 第1b段階の stemming rule
-(defun stem:step1b (str)
+(defun stem:step1b (str) "第1b段階の stemming rule (非公開関数)"
   (let ((s)(stem))
     (cond
      ((and (stem:match "eed$") (stem:m> 0))
@@ -97,8 +105,7 @@
      (t str))))
 
 
-;;; 第1c段階の stemming rule
-(defun stem:step1c (str)
+(defun stem:step1c (str) "第1c段階の stemming rule (非公開関数)"
   (let ((stem))
     (if (and (stem:match "y$")
 	     (stem:*v*))
@@ -106,16 +113,13 @@
       str)))
 
 
-;;; 第1段階の stemming rule
-(defun stem:step1 (str)
+(defun stem:step1 (str) "第1段階の stemming rule (非公開関数)"
   (stem:step1c
    (stem:step1b
     (stem:step1a str))))
 
 
-
-;;; 第2段階の stemming rule
-(defun stem:step2 (str)
+(defun stem:step2 (str) "第2段階の stemming rule (非公開関数)"
   (let ((s)(stem))
     (if (and
 	 (setq s (cond
@@ -144,9 +148,7 @@
       str)))
 
 
-
-;;; 第3段階の stemming rule
-(defun stem:step3 (str)
+(defun stem:step3 (str) "第3段階の stemming rule (非公開関数)"
   (let ((s)(stem))
     (if (and
 	 (setq s (cond
@@ -162,9 +164,7 @@
       str)))
 
 
-
-;;; 第4段階の stemming rule
-(defun stem:step4 (str)
+(defun stem:step4 (str) "第4段階の stemming rule (非公開関数)"
   (let ((stem))
     (if (and (or
 	      (stem:match "al$")
@@ -191,9 +191,7 @@
 	stem str)))
 
 
-
-;;; 第5段階の stemming rule
-(defun stem:step5 (str)
+(defun stem:step5 (str) "第5段階の stemming rule (非公開関数)"
   (let ((stem))
     (if (or
 	 (and (stem:match "e$")
@@ -206,116 +204,103 @@
 	stem str)))
 
 
+(defun stem:extra (str) "\
+動詞/形容詞の規則的活用形と名詞の複数形の活用語尾を取り除く非公開関数
+与えられた語の原形として可能性のある語のリストを返す"
+  (let ((l)(stem))
+    (setq l (cond
+	     ;; 比較級/最上級
+	     ((stem:match "\\([^aeiou]\\)\\1e\\(r\\|st\\)$")
+	      (list (substring str (match-beginning 1) (match-end 1))
+		    (substring str (match-beginning 0) (match-beginning 2))))
+	     ((stem:match "\\([^aeiou]\\)ie\\(r\\|st\\)$")
+	      (setq c (substring str (match-beginning 1) (match-end 1)))
+	      (list c (concat c "y") (concat c "ie")))
+	     ((stem:match "e\\(r\\|st\\)$") '("" "e"))
+	     ;; 3単現/複数形
+	     ((stem:match "ches$") '("ch" "che"))
+	     ((stem:match "shes$") '("sh" "che"))
+	     ((stem:match "ses$") '("s" "se"))
+	     ((stem:match "xes$") '("x" "xe"))
+	     ((stem:match "zes$") '("z" "ze"))
+	     ((stem:match "ves$") '("f" "fe"))
+	     ((stem:match "\\([^aeiou]\\)oes$")
+	      (setq c (substring str -4 -3))
+	      (list c (concat c "o") (concat c "oe")))
+	     ((stem:match "\\([^aeiou]\\)ies$")
+	      (setq c (substring str -4 -3))
+	      (list c (concat c "y") (concat c "ie")))
+	     ((stem:match "es$") '("" "e"))
+	     ((stem:match "s$") '(""))
+	     ;; 過去形/過去分詞
+	     ((stem:match "\\([^aeiou]\\)ied$")
+	      (setq c (substring str -4 -3))
+	      (list c (concat c "y") (concat c "ie")))
+	     ((stem:match "\\([^aeiou]\\)\\1ed$")
+	      (list (substring str -4 -3)
+		    (substring str -4 -1)))
+	     ((stem:match "cked$") '("c" "cke"))
+	     ((stem:match "ed$") '("" "e"))
+	     ;; 現在分詞
+	     ((stem:match "\\([^aeiou]\\)\\1ing$")
+	      (list (substring str -5 -4)))
+	     ((stem:match "ing$") '("" "e"))
+	     ))
+    (append (mapcar '(lambda (s) (concat stem s)) l)
+	    (list str))
+    ))
 
 
-;;; ここまで非公開関数
+
 
 ;;;============================================================
 ;;;	公開関数
 ;;;============================================================
 
-;;; Porter のアルゴリズムに基づいて派生語を処理する関数
-(defun stem:stripping-inflection (str) "\
-Porter のアルゴリズムに基づいて派生語を処理する関数
--tion や -ize などの語尾を取り除く
+(defun stem:stripping-suffix (str) "\
+活用語尾を取り除く関数
 与えられた語の元の語として可能性のある語のリストを返す"
-  (let ((w str)(l (list str)))
-    (mapcar
-     '(lambda (func)
-	(setq str (funcall func str))
-	(or (string= str (car l))
-	    (setq l (cons str l))))
-     '(stem:step1 stem:step2 stem:step3 stem:step4 stem:step5))
-    (setq w (stem:string-and (car l) w))
-    (if (string= w (car l)) l (cons w l))))
+  (save-match-data
+    (let (l w)
+      (setq l (sort
+	       (append
+		;; 大文字を小文字に変換
+		(list (prog1 str (setq str (downcase str))))
+		;; 独自のヒューリスティックスを適用
+		(stem:extra str)
+		(if (> (length str) stem:minimum-word-length)
+		    ;; 単語長が条件を満たせば、Porter のアルゴリズムを適用
+		    (mapcar
+		     '(lambda (func)
+			(setq str (funcall func str)))
+		     '(stem:step1 stem:step2 stem:step3 stem:step4 stem:step5))))
+	       'string<))
+      ;; 最長共通部分列を求める
+      (let* ((w1 (car l))
+	     (w2 (car (reverse l)))
+	     (i (min (length w1) (length w2))))
+	(while (not (string= (substring w1 0 i)
+			     (substring w2 0 i)))
+	  (setq i (1- i)))
+	(setq l (cons (substring w1 0 i) l)))
+      ;; 重複している要素を取り除く
+      (mapcar '(lambda (c) (or (string= c (car w)) (setq w (cons c w)))) l)
+      ;; 文字列の長さ順に並べかえる
+      (sort (reverse w)
+	    '(lambda (a b) (< (length a) (length b))))
+      )))
 
+
+;;; 主関数の別名
+(defalias 'stemming 'stem:stripping-suffix)
 
 
 ;;; Porter のアルゴリズムを適用する関数
-(defun stem:stripping-suffix (word)
+(defun stem:stripping-inflection (word) "\
+Porter のアルゴリズムに基づいて派生語を処理する関数"
   (save-match-data
     (stem:step5
      (stem:step4
       (stem:step3
        (stem:step2
 	(stem:step1 word)))))))
-
-
-
-(defun stem:string-and (w1 w2) "\
-2つの文字列の一致している部分を返す関数"
-  (let ((i))
-    (if (> (length w1) (length w2))	; w1 の方が長い場合
-	(setq i  w1			; w1 と w2 を交換する
-	      w1 w2
-	      w2 i))
-    (setq i (length w1))
-    (while (not (string= w1 (substring w2 0 i)))
-      (setq i (1- i))
-      (setq w1 (substring w1 0 i)))
-    w1))
-
-
-
-(defun stem:word-at-point () "\
-カーソル位置の英単語を stemming して返す関数"
-  (let ((str))
-    (setq str (save-excursion
-		(if (not (looking-at "\\<"))
-		    (forward-word -1))
-		(if (looking-at "[A-Za-z]+")
-		    (downcase (match-string 0)))))
-    (stem:string-and (stem:stripping-suffix str) str)))
-
-
-
-
-;;; 独自のヒューリスティックスによって
-;;; 動詞/形容詞の規則的活用形と名詞の複数形を処理する関数
-(defun stem:stripping-conjugation (str) "\
-動詞/形容詞の規則的活用形と名詞の複数形の活用語尾を取り除く関数
-与えられた語の原形として可能性のある語のリストを返す
-マッチするヒューリスティックスがなかった場合、nil を返す"
-  (let ((l)(stem))
-    (save-match-data
-      (if (setq l (cond
-		   ;; 比較級/最上級
-		   ((stem:match "\\([^aeiou]\\)\\1e\\(r\\|st\\)$")
-		    (list (substring str (match-beginning 1) (match-end 1))
-			  (substring str (match-beginning 0) (match-beginning 2))))
-		   ((stem:match "\\([^aeiou]\\)ie\\(r\\|st\\)$")
-		    (setq c (substring str (match-beginning 1) (match-end 1)))
-		    (list c (concat c "y") (concat c "ie")))
-		   ((stem:match "e\\(r\\|st\\)$") '("" "e"))
-		   ;; 3単現/複数形
-		   ((stem:match "ches$") '("ch" "che"))
-		   ((stem:match "shes$") '("sh" "che"))
-		   ((stem:match "ses$") '("s" "se"))
-		   ((stem:match "xes$") '("x" "xe"))
-		   ((stem:match "zes$") '("z" "ze"))
-		   ((stem:match "ves$") '("f" "fe"))
-		   ((stem:match "\\([^aeiou]\\)oes$")
-		    (setq c (substring str -4 -3))
-		    (list c (concat c "o") (concat c "oe")))
-		   ((stem:match "\\([^aeiou]\\)ies$")
-		    (setq c (substring str -4 -3))
-		    (list c (concat c "y") (concat c "ie")))
-		   ((stem:match "es$") '("" "e"))
-		   ((stem:match "s$") '(""))
-		   ;; 過去形/過去分詞
-		   ((stem:match "\\([^aeiou]\\)ied$")
-		    (setq c (substring str -4 -3))
-		    (list c (concat c "y") (concat c "ie")))
-		   ((stem:match "\\([^aeiou]\\)\\1ed$")
-		    (list (substring str -4 -3)
-			  (substring str -4 -1)))
-		   ((stem:match "cked$") '("c" "cke"))
-		   ((stem:match "ed$") '("" "e"))
-		   ;; 現在分詞
-		   ((stem:match "\\([^aeiou]\\)\\1ing$")
-		    (list (substring str -5 -4)))
-		   ((stem:match "ing$") '("" "e"))
-		   ))
-	  (append (mapcar '(lambda (s) (concat stem s)) l)
-		  (list str)))
-      )))
