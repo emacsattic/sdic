@@ -408,7 +408,9 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 	      (prog1 (or
 		      ;; (1) 不規則変化動詞を検索する
 		      (and
-		       (setq stem-list (copy-sequence (assoc (car word-list) stem:irregular-verb-alist)))
+		       (setq stem-list (copy-sequence (assoc (car word-list) stem:irregular-verb-alist))
+			     pat nil)
+		       (setq stem-list (delq t (mapcar (lambda (w) (or (equal w pat) (setq pat w))) stem-list)))
 		       (sdic-sort-dictionary-order
 			(apply 'append
 			       (mapcar
@@ -431,6 +433,8 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 		      (progn
 			(setq stem-list (let ((stem:irregular-verb-alist nil))
 					  (stem:stripping-suffix (car word-list))))
+			(while (and (cdr stem-list) (= (length (car stem-list)) 1))
+			  (setq stem-list (cdr stem-list)))
 			;; 最長部分列を求める
 			(setq pat (let* ((w1 (car stem-list))
 					 (w2 (nth (1- (length stem-list)) stem-list))

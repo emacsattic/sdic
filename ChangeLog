@@ -1,3 +1,8 @@
+Wed Jul 21 12:49:19 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: Bug fix of output duplication and fix the too
+	  short stem problem.
+
 Tue Jul 20 22:23:57 1999  Tsuchiya Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* install.el: Add code to make `lisp/sample.emacs'.
