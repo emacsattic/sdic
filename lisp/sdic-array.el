@@ -208,24 +208,31 @@ search-type の値によって次のように動作を変更する。
     (let* ((buf (set-buffer (get dic 'sdic-sgml-buffer)))
 	   (proc (get-buffer-process buf))
 	   (add-keys (get dic 'add-keys-to-headword))
-	   limit ret)
+	   pos ret cons end lst)
       (if (get dic 'sdic-array-erase-buffer)
 	  (delete-region (point-min) (point-max))
 	(goto-char (point-max)))
       (put dic 'sdic-array-erase-buffer nil)
       (sdic-array-send-string proc "init") ; 検索条件を初期化
-      (setq limit (point))
+      (setq pos (point))
       (sdic-array-send-string proc (format "search %s" (sdic-sgml-make-query-string string search-type)))
-      (if (re-search-backward "^FOUND: [0-9]+$" limit t)
+      (if (re-search-backward "^FOUND: [0-9]+$" pos t)
 	  (progn
-	    (setq limit (+ 3 (match-end 0)))
+	    (setq pos (+ 3 (match-end 0)))
 	    (sdic-array-send-string proc "show")
 	    ;; 各検索結果に ID を付与する
-	    (goto-char limit)
+	    (goto-char pos)
 	    (while (progn
-		     (setq ret (cons (sdic-sgml-get-entry add-keys) ret))
-		     (= 0 (forward-line 1))))
-	    (reverse (delq nil ret)))))))
+		     (setq cons (sdic-sgml-get-entry add-keys)
+			   end (progn (end-of-line) (point)))
+		     (if cons
+			 (or (and (setq lst (assoc (car cons) ret))
+				  (= 0 (compare-buffer-substrings buf pos end
+								  buf (nth 2 lst) (nth 3 lst))))
+			     (setq ret (cons (list (car cons) (cdr cons) pos end) ret))))
+		     (if (eobp) nil (goto-char (1+ (point)))))
+	      (setq pos (point)))
+	    (mapcar (function (lambda (l) (cons (car l) (nth 1 l)))) (reverse ret)))))))
 
 
 (defun sdic-array-get-content (dic point)
