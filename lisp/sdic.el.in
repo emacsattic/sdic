@@ -25,33 +25,30 @@
 
 ;;; Install:
 
-;; (1) xdic.el, xdic-gene.el, xdic-unix.el, xdic-edict.el と stem.el 
+;; (1) xdic.el, xdic-sgml.el, xdic-grep.el, xdic-array.el と stem.el 
 ;;     を適当な場所に保存して、必要ならバイトコンパイルして下さい。
 ;;
+;;     xdic-1.x で使っていた辞書を使用する場合は、xdic-compat.el も必
+;;     要です。
 ;;
-;; (2) xdic-gene.el, xdic-unix.el, xdic-edict.el は辞書を検索するため
-;;     のライブラリです。これらのライブラリのどれかを使って辞書を検索
-;;     できるようにして下さい。詳細については、README とそれぞれのソー
-;;     スファイルを参照。
+;;
+;; (2) xdic-sgml.el, xdic-grep.el, xdic-array.el, xdic-compat.el は辞
+;;     書を検索するためのライブラリです。これらのライブラリのどれかを
+;;     使って辞書を検索できるようにして下さい。詳細については、README 
+;;     とそれぞれのソースファイルを参照。
 ;;
 ;;
 ;; (3) 使えるようにした辞書のリストを、xdic-eiwa-dictionary-list およ
 ;;     び xdic-waei-dictionary-list に設定します。例えば、英和辞書
-;;     /usr/dict/gene.dic を xdic-unix.el を使って検索する場合は次のよ
+;;     /usr/dict/gene.dic を xdic-grep.el を使って検索する場合は次のよ
 ;;     うになります。
 ;;
-;;         (setq xdic-eiwa-dictionary-list '((xdic-unix "/usr/dict/gene.dic")))
-;;
-;;     また、edict.gz を和英辞書として利用する場合は、次のようにして下
-;;     さい。
-;;
-;;         (setq xdic-waei-dictionary-list '((xdic-edict "~/data/edict.gz"
-;;                                                       (extract "gzip"))))
+;;         (setq xdic-eiwa-dictionary-list '((xdic-grep "/usr/dict/gene.dic")))
 ;;
 ;;     複数の辞書を同時に検索することも出来ます。
 ;;
-;;         (setq xdic-waei-dictionary-list '((xdic-edict "~/data/edict")
-;;                                           (xdic-gene "/usr/dict/jgene.dic")))
+;;         (setq xdic-waei-dictionary-list '((xdic-array "~/data/edict")
+;;                                           (xdic-comat "/usr/dict/jgene.dic")))
 ;;
 ;;     辞書を利用しない場合は nil を代入して下さい。また、これらの設定
 ;;     は ~/.emacs などの適切な場所に書き込んで下さい。
@@ -91,8 +88,8 @@
 
 
 (provide 'xdic)
+(require 'xdic-grep)
 (require 'stem)
-(eval-when-compile (require 'xdic-unix))
   
 
 ;;;----------------------------------------------------------------------
@@ -100,21 +97,11 @@
 ;;;----------------------------------------------------------------------
 
 (defvar xdic-eiwa-dictionary-list
-  (let ((file (expand-file-name "~/usr/lib/elisp/gene.dic")))
-    (if (file-readable-p file)
-	(list (list (if (and (require 'xdic-unix) (xdic-unix-available-p))
-			'xdic-unix
-		      (require 'xdic-gene))
-		    file))))
+  (list (list (if xdic-grep-command 'xdic-grep 'xdic-gene) "~/usr/dict/gene.dic"))
   "*Options of an English-Japanese dictionary.\n英和辞典の検索メソッドを指定する変数")
 
 (defvar xdic-waei-dictionary-list
-  (let ((file (expand-file-name "~/usr/lib/elisp/jgene.dic")))
-    (if (file-readable-p file)
-	(list (list (if (and (require 'xdic-unix) (xdic-unix-available-p))
-			'xdic-unix
-		      (require 'xdic-gene))
-		    file))))
+  (list (list (if xdic-grep-command 'xdic-grep 'xdic-gene) "~/usr/dict/edict.dic"))
   "*Options of an English-Japanese dictionary.\n和英辞典の検索メソッドを指定する変数")
 
 (defvar xdic-default-coding-system
