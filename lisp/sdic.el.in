@@ -452,13 +452,14 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 						   (not (member str orig))
 						   (setq orig (cons str orig)))
 					      entry))
-					   (if (and (= (length stem-list) 1)
-						    (string= pat (car word-list))
-						    (< (length pat) 4))
-					       (append
-						(sdic-search-multi-dictionaries sdic-eiwa-symbol-list pat 'lambda)
-						(sdic-search-multi-dictionaries sdic-eiwa-symbol-list (concat pat " ")))
-					     (sdic-search-multi-dictionaries sdic-eiwa-symbol-list pat)))
+					   (or (and
+						(= (length stem-list) 1)
+						(string= pat (car word-list))
+						(< (length pat) 4)
+						(append
+						 (sdic-search-multi-dictionaries sdic-eiwa-symbol-list pat 'lambda)
+						 (sdic-search-multi-dictionaries sdic-eiwa-symbol-list (concat pat " "))))
+					       (sdic-search-multi-dictionaries sdic-eiwa-symbol-list pat)))
 				     (if orig
 					 (setq stem-list (copy-sequence orig)
 					       orig (if (member (car word-list) orig)
