@@ -495,13 +495,17 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 			    (format "^%s$" (regexp-quote orig))))))
 	(setq sdic-buffer-start-point
 	      (if point
-		  (if (and (not (string= str (car (sdic-split-string query))))
-			   (let ((case-fold-search nil))
-			     (goto-char point)
-			     (setq pat (regexp-quote (car (sdic-split-string query))))
-			     (search-forward-regexp (format "^\\(%s \\|%s$\\)" pat pat) nil t)))
-		      (match-beginning 0)
-		    point)
+		  (progn
+		    (setq word-list (sdic-split-string query)
+			  orig (car word-list))
+		    (if (and (not (string= str orig))
+			     (string= orig (downcase orig))
+			     (let ((case-fold-search nil))
+			       (goto-char point)
+			       (setq pat (regexp-quote (car (sdic-split-string query))))
+			       (search-forward-regexp (format "^\\(%s \\|%s$\\)" pat pat) nil t)))
+			(match-beginning 0)
+		      point))
 		(point-min)))))))
 
 
