@@ -1,3 +1,13 @@
+1999-07-23  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
+
+	* lisp/sdic.el: Apply Tsuchiya's patch [sdic:00295] and Modify it 
+	little a bit.
+	* configure.in: Support multiple dictionaries.
+	* Makefile.am:  Add entries for edict's family.
+	  4jwords, compdic,enamdict
+	* lis/elisp-comp: Modify one line.
+	  (load "sdic.el.in")  -> (load "sdic.el")
+
 Fri Jul 23 17:04:18 1999  Hideyuki Shirai <shirai@rdmg.mgcs.mei.co.jp>
 
 	* contrib/{edict.perl,eijirou.perl,gene.perl,jgene.perl}:

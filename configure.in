@@ -1,3 +1,6 @@
+#
+# $Id$
+#
 AC_INIT(lisp/stem.el)
 AM_INIT_AUTOMAKE(sdic, 2.1-beta3)
 
@@ -63,80 +66,117 @@ AC_ARG_WITH(
         WAEIJIROU_DIR=$with_waeijirou,
 )
 
+MULTI_DICT="no"
+AC_ARG_WITH(
+        multidict,
+        [  --with-multidict=ARG      use multiple dictionaries (yes|no) [no]],
+        MULTI_DICT=$with_multidict,
+)
 
-EIWA_DICT=
+AC_SUBST(MULTI_DICT)
+
+EIWA_DICT=""
 AC_MSG_CHECKING(for EIWA Dictionary)
-for dict in gene.sdic ejdict.sdic eijirou.sdic \
-	    gene.dic  ejdict.dic  eijirou.dic ; do
+for dict in gene.sdic eedict.sdic eijirou.sdic \
+	    gene.dic  eedict.dic  eijirou.dic \
+	    e4jwords.sdic ecompdic.sdic eenamdict.sdic \
+	    e4jwords.dic  ecompdic.dic  eenamdict.dic ; do
 	if test -f "$DICTDIR/$dict"; then
-		EIWA_DICT="$dict"
-		EIWA_DICT_PATH="$DICTDIR/$dict"
-		AC_MSG_RESULT($EIWA_DICT_PATH (already installed))
-		break
+		EIWA_DICT="$EIWA_DICT	$dict"
+		EIWA_DICT_LIST="$EIWA_DICT_LIST	$DICTDIR/$dict"
+		test "$MULTI_DICT" = "no" && break
 	fi
 done
 
-if test -z "$EIWA_DICT"; then
+if test -n "$EIWA_DICT"; then
+	AC_MSG_RESULT($EIWA_DICT_LIST (already installed))
+else
 	if test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
-		EIWA_DICT="gene.$DICTTYPE"
-		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
-		AC_SUBST(EIWA_DICT)
-		AC_SUBST(EIWA_DICT_PATH)
-		AC_MSG_RESULT($EIWA_DICT)
-	elif test -f edict.gz -o -f edict.bz2; then
-		EIWA_DICT="ejdict.$DICTTYPE"
-		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
-		AC_SUBST(EIWA_DICT)
-		AC_SUBST(EIWA_DICT_PATH)
-		AC_MSG_RESULT($EIWA_DICT)
-	elif test -d "$EIJIROU_DIR"; then
-		EIWA_DICT="eijirou.$DICTTYPE"
-		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
-		AC_SUBST(EIWA_DICT)
-		AC_SUBST(EIWA_DICT_PATH)
-		AC_SUBST(EIJIROU_DIR)
-		AC_MSG_RESULT($EIWA_DICT)
-	else
-		AC_MSG_RESULT(no)
+		if test -z "$EIWA_DICT" -o "$MULTI_DICT" = "yes"; then
+			NAME="gene.$DICTTYPE"
+			EIWA_DICT="$EIWA_DICT	$NAME"
+			EIWA_DICT_LIST="$EIWA_DICT_LIST	$DICTDIR/$NAME"
+		fi
 	fi
+
+	if test -d "$EIJIROU_DIR"; then
+		if test -z "$EIWA_DICT" -o "$MULTI_DICT" = "yes"; then
+			NAME="eijirou.$DICTTYPE"
+			EIWA_DICT="$EIWA_DICT	$NAME"
+			EIWA_DICT_LIST="$EIWA_DICT_LIST	$DICTDIR/$NAME"
+		fi
+	fi
+
+	for dict in  edict 4jwords compdic enamdict; do
+		if test -f $dict.gz -o -f $dict.bz2; then
+			if test -z "$EIWA_DICT" -o "$MULTI_DICT" = "yes"; then
+				if test -z "$EIWA_DICT" -o "$MULTI_DICT" = "yes"; then
+					NAME="e$dict.$DICTTYPE"
+					EIWA_DICT="$EIWA_DICT	$NAME"
+					EIWA_DICT_LIST="$EIWA_DICT_LIST	$DICTDIR/$NAME"
+				fi
+			fi
+		fi
+	done
+
+
+	AC_MSG_RESULT($EIWA_DICT)
 fi
 
-WAEI_DICT=
+EIWA_DICT_LIST=`echo "$EIWA_DICT_LIST" | \
+		sed 's/^	/"/;s/$/"/;s/	/" "/g'`
+AC_SUBST(EIWA_DICT)
+AC_SUBST(EIWA_DICT_LIST)
+
 AC_MSG_CHECKING(for WAEI Dictionary)
-for dict in jedict.sdic jgene.sdic waeijirou.sdic \
-	    jedict.dic  jgene.dic  waeijirou.dic; do
+WAEI_DICT=""
+for dict in edict.sdic jgene.sdic waeijirou.sdic \
+	    edict.dic  jgene.dic  waeijirou.dic \
+	    4jwords.sdic compdic.sdic edict.sdic enamdict.sdic \
+	    4jwords.dic  compdic.dic  edict.dic  enamdict.dic ; do
 	if test -f "$DICTDIR/$dict"; then
-		WAEI_DICT="$dict"
-		WAEI_DICT_PATH="$DICTDIR/$dict"
-		AC_MSG_RESULT($WAEI_DICT_PATH (already installed))
-		break
+		WAEI_DICT="$WAEI_DICT	$dict"
+		WAEI_DICT_LIST="$WAEI_DICT_LIST	$DICTDIR/$dict"
+		test "$MULTI_DICT" = "no" && break
 	fi
 done
 
-if test -z "$WAEI_DICT"; then
-	if test -f edict.gz -o -f edict.bz2; then
-		WAEI_DICT="jedict.$DICTTYPE"
-		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
-		AC_SUBST(WAEI_DICT)
-		AC_SUBST(WAEI_DICT_PATH)
-		AC_MSG_RESULT($WAEI_DICT)
-	elif test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
-		WAEI_DICT="jgene.$DICTTYPE"
-		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
-		AC_SUBST(WAEI_DICT)
-		AC_SUBST(WAEI_DICT_PATH)
-		AC_MSG_RESULT($WAEI_DICT)
-	elif test -d "$WAEIJIROU_DIR"; then
-		WAEI_DICT="waeijirou.$DICTTYPE"
-		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
-		AC_SUBST(WAEI_DICT)
-		AC_SUBST(WAEI_DICT_PATH)
-		AC_SUBST(WAEIJIROU_DIR)
-		AC_MSG_RESULT($WAEI_DICT)
-	else
-		AC_MSG_RESULT(no)
+if test -n "$WAEI_DICT"; then
+	AC_MSG_RESULT($WAEI_DICT_LIST (already installed))
+else
+	for dict in  edict 4jwords compdic enamdict; do
+		if test -f $dict.gz -o -f $dict.bz2; then
+			if test -z "$WAEI_DICT" -o "$MULTI_DICT" = "yes"; then
+				if test -z "$WAEI_DICT" -o "$MULTI_DICT" = "yes"; then
+					NAME="$dict.$DICTTYPE"
+					WAEI_DICT="$WAEI_DICT	$NAME"
+					WAEI_DICT_LIST="$WAEI_DICT_LIST	$DICTDIR/$NAME"
+				fi
+			fi
+		fi
+	done
+
+	if test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
+		if test -z "$WAEI_DICT" -o "$MULTI_DICT" = "yes"; then
+			NAME="jgene.$DICTTYPE"
+			WAEI_DICT="$WAEI_DICT	$NAME"
+			WAEI_DICT_LIST="$WAEI_DICT_LIST	$DICTDIR/$NAME"
+		fi
 	fi
+	if test -d "$WAEIJIROU_DIR"; then
+		if test -z "$WAEI_DICT" -o "$MULTI_DICT" = "yes"; then
+			NAME="waeijirou.$DICTTYPE"
+			WAEI_DICT="$WAEI_DICT	$NAME"
+			WAEI_DICT_LIST="$WAEI_DICT_LIST	$DICTDIR/$NAME"
+		fi
+	fi
+	AC_MSG_RESULT($WAEI_DICT)
 fi
+
+WAEI_DICT_LIST=`echo "$WAEI_DICT_LIST" | \
+		sed 's/^	/"/;s/$/"/;s/	/" "/g'`
+AC_SUBST(WAEI_DICT)
+AC_SUBST(WAEI_DICT_LIST)
 
 AC_OUTPUT(Makefile lisp/Makefile lisp/sdic.el lisp/sample.emacs install.el)
 

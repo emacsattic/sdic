@@ -11,6 +11,9 @@
 # PARTICULAR PURPOSE.
 
 # -*- Makefile -*-
+#
+# $Id$
+#
 
 
 SHELL = @SHELL@
@@ -62,20 +65,19 @@ POST_UNINSTALL = :
 BZIP2 = @BZIP2@
 CP = @CP@
 DICTDIR = @DICTDIR@
-EIJIROU_DIR = @EIJIROU_DIR@
 EIWA_DICT = @EIWA_DICT@
-EIWA_DICT_PATH = @EIWA_DICT_PATH@
+EIWA_DICT_LIST = @EIWA_DICT_LIST@
 EMACS = @EMACS@
 GZIP = @GZIP@
 MAKEINFO = @MAKEINFO@
+MULTI_DICT = @MULTI_DICT@
 NKF = @NKF@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 SORT = @SORT@
 VERSION = @VERSION@
-WAEIJIROU_DIR = @WAEIJIROU_DIR@
 WAEI_DICT = @WAEI_DICT@
-WAEI_DICT_PATH = @WAEI_DICT_PATH@
+WAEI_DICT_LIST = @WAEI_DICT_LIST@
 emacsdir = @emacsdir@
 lispdir = @lispdir@
 
@@ -401,24 +403,81 @@ waeijirou.dic: contrib/eijirou.perl
 waeijirou.sdic: contrib/eijirou.perl
 	@NKF@ -S -e @WAEIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --waei > $@
 
-ejdict.sdic: edict contrib/edict.perl
+eedict.sdic: edict contrib/edict.perl
 	@PERL@ contrib/edict.perl --reverse edict > $@
 
-jedict.sdic: edict contrib/edict.perl
+edict.sdic: edict contrib/edict.perl
 	@PERL@ contrib/edict.perl edict > $@
 
-jedict.dic: edict
+e4jwords.sdic: 4jwords contrib/edict.perl
+	@PERL@ contrib/edict.perl --reverse 4jwords > $@
+
+4jwords.sdic: 4jwords contrib/edict.perl
+	@PERL@ contrib/edict.perl 4jwords > $@
+
+ecompdic.sdic: compdic contrib/edict.perl
+	@PERL@ contrib/edict.perl --reverse compdic > $@
+
+compdic.sdic: compdic contrib/edict.perl
+	@PERL@ contrib/edict.perl compdic > $@
+
+eenamdict.sdic: enamdict contrib/edict.perl
+	@PERL@ contrib/edict.perl --reverse enamdict > $@
+
+enamdict.sdic: enamdict contrib/edict.perl
+	@PERL@ contrib/edict.perl enamdict > $@
+
+edict.dic: edict
 	@NKF@ -deZ2 edict | \
 	@PERL@ -pe 's!\s+/!\t!;s!/!, !g;s!, $$!!' | @SORT@ -f > $@
 
+4jwords.dic: 4jword
+	@NKF@ -deZ2 4jwords | \
+	@PERL@ -pe 's!\s+/!\t!;s!/!, !g;s!, $$!!' | @SORT@ -f > $@
+
+compdic.dic: compdic
+	@NKF@ -deZ2 compdic | \
+	@PERL@ -pe 's!\s+/!\t!;s!/!, !g;s!, $$!!' | @SORT@ -f > $@
+
+enamdict.dic: enamdict
+	@NKF@ -deZ2 enamdict | \
+	@PERL@ -pe 's!\s+/!\t!;s!/!, !g;s!, $$!!' | @SORT@ -f > $@
+
 edict:
-	test -f edict.gz -o -f edict.bz2
-	if [ -f edict.gz ]; then \
-		@GZIP@ -dc edict.gz >edict ;\
+	test -f $@.gz -o -f $@.bz2
+	if [ -f $@.gz ]; then \
+		@GZIP@ -dc $@.gz >$@ ;\
 	else \
-		@BZIP2@ -dc edict.bz2 >edict ;\
+		@BZIP2@ -dc $@.bz2 >$@ ;\
 	fi
-	test -s edict
+	test -s $@
+
+4jwords:
+	test -f $@.gz -o -f $@.bz2
+	if [ -f $@.gz ]; then \
+		@GZIP@ -dc $@.gz >$@ ;\
+	else \
+		@BZIP2@ -dc $@.bz2 >$@ ;\
+	fi
+	test -s $@
+
+compdic:
+	test -f $@.gz -o -f $@.bz2
+	if [ -f $@.gz ]; then \
+		@GZIP@ -dc $@.gz >$@ ;\
+	else \
+		@BZIP2@ -dc $@.bz2 >$@ ;\
+	fi
+	test -s $@
+
+enamdict:
+	test -f $@.gz -o -f $@.bz2
+	if [ -f $@.gz ]; then \
+		@GZIP@ -dc $@.gz >$@ ;\
+	else \
+		@BZIP2@ -dc $@.bz2 >$@ ;\
+	fi
+	test -s $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

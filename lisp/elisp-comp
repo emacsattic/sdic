@@ -7,5 +7,5 @@
 
 (setq load-path (cons default-directory load-path))
 
-(load "sdic.el.in")
+(load "sdic.el")
 (require 'sdicf)
