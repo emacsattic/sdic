@@ -175,7 +175,7 @@ search-type の値によって次のように動作を変更する。
       (while (progn
 	       (setq ret (cons (sdic-sgml-get-entry add-keys) ret))
 	       (= 0 (forward-line 1))))
-      (reverse (delq nil ret)))))
+      (nreverse (delq nil ret)))))
 
 
 (defun sdic-grep-get-content (dic point)
