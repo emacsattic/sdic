@@ -24,7 +24,7 @@
       (kill-buffer (get dic 'search-buffer)))
   (save-excursion
     (set-buffer (put dic 'search-buffer (generate-new-buffer "*xdic-gene*")))
-    (insert-file-contents (get dic 'file-name))
+    (xdic-insert-file-contents (get dic 'file-name) nil nil nil nil (get dic 'coding-system))
     (setq buffer-read-only t)
     (set-buffer-modified-p nil)
     t))
@@ -63,7 +63,7 @@ search-type の値によって次のように動作を変更する。
 			    (prin1-to-string search-type)))))
     (let (ret)
       (while (re-search-forward string nil t)
-	(setq ret (cons (cons (match-string 1) (match-end 0)) ret)))
+	(setq ret (cons (cons (xdic-match-string 1) (match-end 0)) ret)))
       (reverse ret))))
 
 
