@@ -69,7 +69,7 @@ AC_ARG_WITH(
 MULTI_DICT="no"
 AC_ARG_WITH(
         multidict,
-        [  --with-multidict=ARG      use multiple dictionaries (yes|no) [no]],
+        [  --with-multidict(=ARG)  use multiple dictionaries (yes|no) [no]],
         MULTI_DICT=$with_multidict,
 )
 

@@ -6,6 +6,9 @@ Fri Jul 23 19:06:54 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 1999-07-23  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 
+	* lisp/Makefile.am, configure.in: eedict.dic support
+	by using `contrib/gene.perl --sdic-to-compat'
+
 	* lisp/sdic.el: Apply Tsuchiya's patch [sdic:00295] and Modify it 
 	little a bit.
 
