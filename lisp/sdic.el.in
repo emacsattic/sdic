@@ -57,7 +57,6 @@
 (defvar xdic:eiwa-dictionary
   (let ((s (make-symbol "eiwa")))
     (put s 'filename (expand-file-name "~/usr/lib/elisp/gene.dic"))
-    (put s 'coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*))
     (put s 'search-function 'xdic:look)
     s)
   "*英和辞書の属性リスト")
@@ -65,7 +64,6 @@
 (defvar xdic:waei-dictionary
   (let ((s (make-symbol "waei")))
     (put s 'filename (expand-file-name "~/usr/lib/elisp/jgene.dic"))
-    (put s 'coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*))
     (put s 'search-function 'xdic:grep)
     s)
   "*和英辞書の属性リスト")
@@ -115,17 +113,6 @@ If there are no more overlay boundaries before POS, return (point-min)."
 	  prev))))
 
 
-(or (fboundp 'set-buffer-process-coding-system)
-    (defun set-buffer-process-coding-system (decoding encoding) "\
-Set coding systems for the process associated with the current buffer.
-DECODING is the coding system to be used to decode input from the process,
-ENCODING is the coding system to be used to encode output to the process.
-
-For a list of possible values of CODING-SYSTEM, use M-x list-coding-systems.
-"
-      (define-program-coding-system (current-buffer) nil (cons encoding decoding))))
-
-
 
 
 ;;;----------------------------------------------------------------------
@@ -136,6 +123,9 @@ For a list of possible values of CODING-SYSTEM, use M-x list-coding-systems.
 
 (defvar xdic:look-option "-f" "*Command line option for look")
 
+(defvar xdic:look-coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*)
+  "*Coding system for look")
+
 (defun xdic:look (dictionary string &optional search-method) "\
 look を利用して辞書を検索した結果をカレントバッファに書き込む関数
 search-method の値によって次のように動作を変更する。
@@ -144,15 +134,20 @@ search-method の値によって次のように動作を変更する。
     lambda : 完全一致検索
 "
   (if (eq t search-method) (error "%s" "後方一致検索は使えません"))
+  (or (get 'xdic:look 'setup)
+      (if (>= emacs-major-version 20)
+	  (setq process-coding-system-alist (cons (cons (format ".*%s" xdic:look-command-name)
+							xdic:look-coding-system)
+						  (if (boundp 'process-coding-system-alist)
+						      process-coding-system-alist)))
+	(define-program-coding-system nil (format ".*%s" xdic:look-command-name) xdic:look-coding-system))
+      (put 'xdic:look 'setup t))
   (let ((buf (get dictionary 'search-buffer)))
     (save-excursion
-      (if (bufferp buf)
-	  (set-buffer buf)
-	(set-buffer (setq buf (put dictionary 'search-buffer (generate-new-buffer "*xdic-look*"))))
-	(set-buffer-process-coding-system (get dictionary 'coding-system) (get dictionary 'coding-system)))
+      (set-buffer (if (bufferp buf) buf
+		    (setq buf (put dictionary 'search-buffer (generate-new-buffer "*xdic-look*")))))
       (erase-buffer)
-      (or (= 0 (call-process xdic:look-command-name nil t nil xdic:look-option string (get dictionary 'filename)))
-	  (error "%s の実行が正常に終了しませんでした。" xdic:look-command-name))
+      (call-process xdic:look-command-name nil t nil xdic:look-option string (get dictionary 'filename))
       (if (eq search-method 'lambda)
 	  ;; 完全一致検索の場合は余分な検索結果を削除する
 	  (progn
@@ -173,6 +168,9 @@ search-method の値によって次のように動作を変更する。
 
 (defvar xdic:grep-option "-i" "*Command line option for grep")
 
+(defvar xdic:grep-coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*)
+  "*Coding system for grep")
+
 (defun xdic:grep (dictionary string &optional search-method) "\
 grep を利用して辞書を検索した結果をカレントバッファに書き込む関数
 search-method の値によって次のように動作を変更する。
@@ -180,23 +178,28 @@ search-method の値によって次のように動作を変更する。
     t      : 後方一致検索
     lambda : 完全一致検索
 "
+  (or (get 'xdic:grep 'setup)
+      (if (>= emacs-major-version 20)
+	  (setq process-coding-system-alist (cons (cons (format ".*%s" xdic:grep-command-name)
+							xdic:grep-coding-system)
+						  (if (boundp 'process-coding-system-alist)
+						      process-coding-system-alist)))
+	(define-program-coding-system nil (format ".*%s" xdic:grep-command-name) xdic:grep-coding-system))
+      (put 'xdic:grep 'setup t))
   (let ((buf (get dictionary 'search-buffer)))
     (save-excursion
-      (if (bufferp buf)
-	  (set-buffer buf)
-	(set-buffer (setq buf (put dictionary 'search-buffer (generate-new-buffer "*xdic-grep*"))))
-	(set-buffer-process-coding-system (get dictionary 'coding-system) (get dictionary 'coding-system)))
+      (set-buffer (if (bufferp buf) buf
+		    (setq buf (put dictionary 'search-buffer (generate-new-buffer "*xdic-grep*")))))
       (erase-buffer)
-      (or (= 0 (call-process xdic:grep-command-name nil t nil xdic:grep-option
-			     (cond
-			      ((eq search-method nil)
-			       (format "^%s" string))
-			      ((eq search-method t)
-			       (format "^[^\\t]*%s\\t" string))
-			      (t ;; (eq search-method 'lambda)
-			       (format "^%s\\t" string)))
-			     (get dictionary 'filename)))
-	  (error "%s の実行が正常に終了しませんでした。" xdic:grep-command-name)))
+      (call-process xdic:grep-command-name nil t nil xdic:grep-option
+		    (cond
+		     ((eq search-method nil)
+		      (format "^%s" string))
+		     ((eq search-method t)
+		      (format "^[^\\t]*%s\\t" string))
+		     (t ;; (eq search-method 'lambda)
+		      (format "^%s\\t" string)))
+		    (get dictionary 'filename)))
     (insert-buffer-substring buf)))
 
 
