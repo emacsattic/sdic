@@ -489,17 +489,17 @@ SDIC形式の辞書から WORD をキーとして検索を行う
       (signal 'wrong-type-argument (list 'sdicf-entry-p entry)))
   (sdicf-decode-string (substring entry (match-beginning 1) (match-end 1))))
 
-(defun sdicf-entry-keywords (entry &optional delete-headword) "\
-エントリ ENTRY の見出し語と検索キーのリストを返す
-DELETE-HEADWORD が Non-nil の場合は検索キーのみのリストを返す"
+(defun sdicf-entry-keywords (entry &optional add-headword) "\
+エントリ ENTRY の検索キーのリストを返す
+ADD-HEADWORD が Non-nil の場合は検索キーに見出し語を加えたリストを返す"
   (or (sdicf-entry-p entry)
       (signal 'wrong-type-argument (list 'sdicf-entry-p entry)))
   (let ((start (match-end 0))
 	(keywords (list (sdicf-decode-string (substring entry (match-beginning 1) (match-end 1))))))
-    (while (equal start (string-match "<.>\\([^<]+\\)</.>" entry start))
+    (while (eq start (string-match "<.>\\([^<]+\\)</.>" entry start))
       (setq start (match-end 0)
 	    keywords (cons (sdicf-decode-string (substring entry (match-beginning 1) (match-end 1))) keywords)))
-    (if (and delete-headword (string-match "^<H>" entry))
+    (if (and (not add-headword) (string-match "^<H>" entry))
 	(cdr (nreverse keywords))
       (nreverse keywords))))
 
