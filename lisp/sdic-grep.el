@@ -115,6 +115,10 @@
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
+(defun xdic-grep-available-p ()
+  (stringp xdic-grep-command))
+
+
 (defun xdic-grep-init-dictionary (file-name &rest option-list)
   "Function to initialize dictionary"
   (let ((dic (xdic-make-dictionary-symbol)))
@@ -146,7 +150,7 @@ search-type の値によって次のように動作を変更する。
     nil    : 前方一致検索
     t      : 後方一致検索
     lambda : 完全一致検索
-    0      : 任意検索
+    0      : 全文検索
 検索結果として見つかった見出し語をキーとし、その定義文の先頭の point を値とする
 連想配列を返す。
 "
