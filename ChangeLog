@@ -1,7 +1,3 @@
-Wed Jul 21 23:00:09 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
-
-	* lisp/sdic.el.in: Update code for queries in upper case.
-
 1999-07-21  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 
 	* configure.in, Makefile.am: Add a feature to detect `WAEIJIROU'
