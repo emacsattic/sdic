@@ -70,7 +70,7 @@
 
 
 
-(defconst xdic:version "1.3")
+(defconst xdic:version "1.4")
 
 (defconst xdic:buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic:mode-name "Xdic" "検索結果を表示するバッファの major mode")
@@ -85,13 +85,28 @@
 
 
 ;;; -tion, -ize などの語尾変化を処理するためのライブラリをロード
-(load "stem")
+(require 'stem)
 
 ;;; Emacs20 では、look が使う漢字コードの設定が必要
 (if (= emacs-major-version 20)
     (setq process-coding-system-alist (cons (cons ".*look" xdic:dictionary-kanji-code)
 					    (if (boundp 'process-coding-system-alist)
 						process-coding-system-alist))))
+
+;;; Emacs19.28 ベースの Mule2.3 では previous-overlay-change が未定義
+;;; なので代替関数を定義する
+(if (not (fboundp 'previous-overlay-change))
+    (defun previous-overlay-change (pos) "\
+Return the previous position before POS where an overlay starts or ends.
+If there are no more overlay boundaries before POS, return (point-min)."
+      (if (> pos (point-max))
+	  (error "Specified position is larger than point-max"))
+      (save-excursion
+	(let (next (prev (point-min)))
+	  (while (> pos (setq next (next-overlay-change prev)))
+	    (setq prev next))
+	  prev))))
+
 
 
 
@@ -174,15 +189,10 @@ xdic:read-from-minibuffer 関数のヒストリ")
       (setq word (xdic:read-from-minibuffer
 		  (format "\"%s\" is too short word. Input word again : " word)
 		  word)))
-  (let ((l)(case-fold-search t))	; 大文字/子文字を区別しない
+  (let ((l)(case-fold-search t))	; 大文字/小文字を区別しない
     (cond
-     ((or
-       ;; 動詞/形容詞の規則変化、名詞の複数形を処理
-       (and (setq l (stem:stripping-conjugation word))
-	    (xdic:lookup-dictionary (car l)))
-       ;; 派生語の処理
-       (and (setq l (stem:stripping-inflection word))
-	    (xdic:lookup-dictionary (car l))))
+     ((and (setq l (stem:stripping-suffix word))
+	   (xdic:lookup-dictionary (car l)))
       (catch 'loop
 	(mapcar
 	 '(lambda (s)			; 原形を探す
@@ -312,6 +322,9 @@ l		1文字進む
   (setq xdic-mode-map (make-keymap))
   (define-key xdic-mode-map " " 'scroll-up)
   (define-key xdic-mode-map "b" 'scroll-down)
+  (define-key xdic-mode-map [backspace] 'scroll-down)
+  (define-key xdic-mode-map [delete] 'scroll-down)
+  (define-key xdic-mode-map "\C-?" 'scroll-down)
   (define-key xdic-mode-map "n" 'xdic:forward-item)
   (define-key xdic-mode-map "\t" 'xdic:forward-item)
   (define-key xdic-mode-map "p" 'xdic:backward-item)
