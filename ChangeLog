@@ -1,6 +1,10 @@
+Mon Jul 26 16:52:34 1999  Hideyuki SHIRAI  <shirai@rdmg.mgcs.mei.co.jp>
+
+	* sdicf.el: Append file-name-coding-system in sdic-call-process for XEmacs.
+
 Mon Jul 26 14:04:24 1999  Hideyuki SHIRAI  <shirai@rdmg.mgcs.mei.co.jp>
 
-	* sdic.el.in,sdic.texi: Add exposition of key-bind
+	* sdic.el.in,sdic.texi: Add exposition of key-bind.
 
 Mon Jul 26 10:27:07 1999  Hideyuki Shirai <shirai@rdmg.mgcs.mei.co.jp>
 

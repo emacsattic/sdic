@@ -210,6 +210,7 @@ CODING-SYSTEM 以外の引数の意味は call-process と同じ"
 	(coding-system-for-write coding-system)
 	(process-input-coding-system coding-system)
 	(process-output-coding-system coding-system)
+	(file-name-coding-system coding-system)
 	(default-process-coding-system (cons coding-system coding-system)))
     (apply 'call-process program infile buffer display args)))
 
