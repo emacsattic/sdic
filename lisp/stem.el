@@ -895,40 +895,38 @@
 
 (defun stem:stripping-suffix (str) "\
 活用語尾を取り除く関数
-与えられた語の元の語として可能性のある語のリストを返す"
+与えられた語の元の語として可能性のある語の辞書順のリストを返す"
   (save-match-data
-    (let (l w)
-      (setq l (sort
-	       (append
-		;; 大文字を小文字に変換
-		(list (prog1 str (setq str (downcase str))))
-		;; 独自のヒューリスティックスを適用
-		(stem:extra str)
-		(if (> (length str) stem:minimum-word-length)
-		    ;; 単語長が条件を満たせば、Porter のアルゴリズムを適用
-		    (mapcar
-		     '(lambda (func)
-			(setq str (funcall func str)))
-		     '(stem:step1 stem:step2 stem:step3 stem:step4 stem:step5))))
-	       'string<))
-      ;; 最長共通部分列を求める
-      (let* ((w1 (car l))
-	     (w2 (car (reverse l)))
-	     (i (min (length w1) (length w2))))
-	(while (not (string= (substring w1 0 i)
-			     (substring w2 0 i)))
-	  (setq i (1- i)))
-	(setq l (cons (substring w1 0 i) l)))
-      ;; 重複している要素を取り除く
-      (mapcar '(lambda (c) (or (string= c (car w)) (setq w (cons c w)))) l)
-      ;; 文字列の長さ順に並べかえる
-      (sort (reverse w)
-	    '(lambda (a b) (< (length a) (length b))))
-      )))
+    (delq nil (let ((w ""))
+		(mapcar
+		 (function (lambda (x) (if (string= x w) nil (setq w x))))
+		 (sort (append
+			;; 大文字を小文字に変換
+			(list (prog1 str (setq str (downcase str))))
+			;; 独自のヒューリスティックスを適用
+			(stem:extra str)
+			(if (> (length str) stem:minimum-word-length)
+			    ;; 単語長が条件を満たせば、Porter のアルゴリズムを適用
+			    (mapcar
+			     '(lambda (func)
+				(setq str (funcall func str)))
+			     '(stem:step1 stem:step2 stem:step3 stem:step4 stem:step5))))
+		       'string<))))))
 
 
-;;; 主関数の別名
-(defalias 'stemming 'stem:stripping-suffix)
+(defun stem-english (str) "\
+活用語尾を取り除く関数
+与えられた語の元の語として可能性のある語の文字列長の昇順のリストを返す"
+  (sort (stem:stripping-suffix str)
+	(function (lambda (a b) (< (length a) (length b))))))
+
+;; この stem-english の動作は、
+;; 
+;;     Id: stem.el,v 1.4 1998/11/30 09:27:27 tsuchiya Exp tsuchiya
+;; 
+;; 以前のバージョンの stem.el で定義されていた stem:stripping-suffix 
+;; の動作と互換である。現在の stem:stripping-suffix は辞書順のリストを
+;; 返すため、異なる動作とするようになっているので注意すること。
 
 
 ;;; Porter のアルゴリズムを適用する関数
