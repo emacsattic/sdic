@@ -29,7 +29,7 @@
 ;;
 ;; (3) 以下のコマンドを実行して下さい。
 ;;
-;;         mule -batch -q -l ./lp.el -f make-sdic C:\Meadow\site-lisp C:\Meadow\info C:\Dict
+;;         meadow -batch -q -no-site-file -l lisp/lp.el -f make-sdic C:\Meadow\site-lisp C:\Meadow\info C:\Dict
 ;;
 ;;     適当に引数を変更することによって、インストール先を変えられます。
 ;;
@@ -64,7 +64,11 @@
 (defvar make-sdic-edict-coding-system (if (>= emacs-major-version 20) 'euc-japan-unix *autoconv*)
   "配布されているEDICT辞書の漢字コード")
 
-(defvar make-sdic-default-directory default-directory)
+(defvar make-sdic-package-root-directory (expand-file-name default-directory))
+
+(defvar make-sdic-src-directory (expand-file-name "lisp" make-sdic-package-root-directory))
+
+(defvar make-sdic-texi-directory (expand-file-name "texi" make-sdic-package-root-directory))
 
 
 
@@ -72,8 +76,10 @@
   (defvar command-line-args-left)	;Avoid 'free variable' warning
   (if (not noninteractive)
       (error "`make-sdic' is to be used only with -batch"))
+  (add-to-list 'load-path make-sdic-package-root-directory)
+  (add-to-list 'load-path make-sdic-src-directory)
   (load "sdic.el.in")
-  (require 'sdic-sgml)
+  (require 'sdicf)
   (or (= 3 (length command-line-args-left))
       (error "%s" "Illegal arguments"))
   (or (string= "NONE" (car command-line-args-left))
@@ -95,21 +101,22 @@
 
 
 (defun make-sdic-install-lisp ()
-  (mapcar '(lambda (basename)
-	     (let ((in-file (expand-file-name basename make-sdic-default-directory))
-		   (out-file (expand-file-name basename make-sdic-lisp-directory)))
-	       (message in-file)
-	       (byte-compile-file in-file)
-	       (copy-file in-file out-file t t)
-	       (copy-file (concat in-file "c") (concat out-file "c") t t)))
-	  (directory-files make-sdic-default-directory nil "^\\(sdic.*\\|stem\\)\\.el$")))
+  (mapcar (lambda (basename)
+	    (let ((in-file (expand-file-name basename make-sdic-src-directory))
+		  (out-file (expand-file-name basename make-sdic-lisp-directory)))
+	      (message "%s -> %s" in-file out-file)
+	      (byte-compile-file in-file)
+	      (copy-file in-file out-file t t)
+	      (copy-file (concat in-file "c") (concat out-file "c") t t)))
+	  (directory-files make-sdic-src-directory nil "^\\(sdic.*\\|stem\\)\\.el$")))
 
 
 (defun make-sdic-install-info ()
   (require 'texinfmt)
-  (let ((in-file (expand-file-name "sdic.texi" make-sdic-default-directory))
-	(out-file (expand-file-name "sdic.info" make-sdic-default-directory))
+  (let ((in-file (expand-file-name "sdic.texi" make-sdic-texi-directory))
+	(out-file (expand-file-name "sdic.info" make-sdic-texi-directory))
 	(copy-file (expand-file-name "sdic.info" make-sdic-info-directory)))
+    (message "%s -> %s -> %s" in-file out-file copy-file)
     (or (file-readable-p in-file) (error "Can't find file : %s" in-file))
     (let ((buf (generate-new-buffer "*sdic.texi*")))
       (unwind-protect
@@ -117,47 +124,47 @@
 	    (set-buffer buf)
 	    (insert-file-contents in-file)
 	    (texinfo-format-buffer)
-	    (save-buffer))
+	    (write-file out-file))
 	(kill-buffer buf)))
-    (copy-file in-file copy-file t t)))
+    (copy-file out-file copy-file t t)))
 
 
 (defun make-sdic-install-dictionary ()
-  (let* ((in-file (expand-file-name "gene.txt" make-sdic-default-directory))
-	 (out-file (expand-file-name "gene.sdic" make-sdic-default-directory))
+  (let* ((in-file (expand-file-name "gene.txt" make-sdic-package-root-directory))
+	 (out-file (expand-file-name "gene.sdic" make-sdic-package-root-directory))
 	 (copy-file (expand-file-name "gene.sdic" make-sdic-dict-directory)))
-    (message out-file)
+    (message "%s -> %s -> %s" in-file out-file copy-file)
     (or (file-readable-p in-file) (error "Can't find file : %s" in-file))
     (make-sdic-gene in-file out-file)
     (copy-file out-file copy-file t t))
-  (let* ((in-file (expand-file-name "edict" make-sdic-default-directory))
-	 (out-file (expand-file-name "jedict.sdic" make-sdic-default-directory))
+  (let* ((in-file (expand-file-name "edict" make-sdic-package-root-directory))
+	 (out-file (expand-file-name "jedict.sdic" make-sdic-package-root-directory))
 	 (copy-file (expand-file-name "jedict.sdic" make-sdic-dict-directory)))
     (message out-file)
     (or (file-readable-p in-file) (error "Can't find file : %s" in-file))
     (make-sdic-edict in-file out-file)
     (copy-file out-file copy-file t t)))
 
-	   
+
 (defun make-sdic-sdic_el ()
-  (let ((in-file (expand-file-name "sdic.el.in" make-sdic-default-directory))
-	(out-file (expand-file-name "sdic.el" make-sdic-default-directory)))
-    (message out-file)
+  (let ((in-file (expand-file-name "sdic.el.in" make-sdic-src-directory))
+	(out-file (expand-file-name "sdic.el" make-sdic-src-directory)))
+    (message "%s -> %s" in-file out-file)
     (or (file-readable-p in-file) (error "Can't find file : %s" in-file))
     (let ((buf (generate-new-buffer "*sdic.el*")))
       (unwind-protect
 	  (progn
 	    (set-buffer buf)
-	    (sdic-insert-file-contents in-file sdic-default-coding-system)
+	    (sdicf-insert-file-contents in-file sdic-default-coding-system)
 	    (goto-char (point-min))
-	    (search-forward "%%EIWA_DICTIONARY%%")
+	    (search-forward "@EIWA_DICTIONARY_PATH@")
 	    (delete-region (goto-char (match-beginning 0)) (match-end 0))
 	    (insert (expand-file-name "gene.sdic" make-sdic-dict-directory))
 	    (goto-char (point-min))
-	    (search-forward "%%WAEI_DICTIONARY%%")
+	    (search-forward "@WAEI_DICTIONARY_PATH@")
 	    (delete-region (goto-char (match-beginning 0)) (match-end 0))
 	    (insert (expand-file-name "jedict.sdic" make-sdic-dict-directory))
-	    (make-sdic-write-file "sdic.el"))
+	    (make-sdic-write-file out-file))
 	(kill-buffer buf)))))
 
 
@@ -181,7 +188,7 @@
 	(save-excursion
 	  (set-buffer buf)
 	  (message "Reading %s..." input-file)
-	  (sdic-insert-file-contents input-file make-sdic-gene-coding-system)
+	  (sdicf-insert-file-contents input-file make-sdic-gene-coding-system)
 	  (message "Converting %s..." input-file)
 	  ;; 最初の2行はコメントだから、行頭に # を挿入する
 	  (goto-char (point-min))
@@ -193,14 +200,14 @@
 	  (beginning-of-line)
 	  (save-restriction
 	    (narrow-to-region (point) (point-max))
-	    (sdic-sgml-escape-region (point-min) (point-max))
+	    (make-sdic-escape-region (point-min) (point-max))
 	    (let (head list key top)
 	      (while (progn
 		       (setq top (point))
 		       (end-of-line)
 		       (delete-region (point) (progn (skip-chars-backward "[ \t\f\r]") (point)))
 		       (setq head (buffer-substring top (point))
-			     key (sdic-sgml-replace-string (downcase head) "\\s-+" " "))
+			     key (make-sdic-replace-string (downcase head) "\\s-+" " "))
 		       (if (string-match " +\\+[0-9]+$" key)
 			   (setq key (substring key 0 (match-beginning 0))))
 		       (beginning-of-line)
@@ -235,7 +242,7 @@
 	(save-excursion
 	  (set-buffer buf)
 	  (message "Reading %s..." input-file)
-	  (sdic-insert-file-contents input-file make-sdic-edict-coding-system)
+	  (sdicf-insert-file-contents input-file make-sdic-edict-coding-system)
 	  (message "Converting %s..." input-file)
 	  ;; 最初の1行はコメントだから、行頭に # を挿入する
 	  (delete-region (goto-char (point-min)) (progn (forward-char 4) (point)))
@@ -244,7 +251,7 @@
 	  (beginning-of-line)
 	  (save-restriction
 	    (narrow-to-region (point) (point-max))
-	    (sdic-sgml-escape-region (point-min) (point-max))
+	    (make-sdic-escape-region (point-min) (point-max))
 	    (while (progn
 		     (insert "<K>")
 		     (looking-at "\\cj+")
@@ -265,3 +272,47 @@
 	    (sort-lines nil (point-min) (point-max)))
 	  (make-sdic-write-file output-file))
       (kill-buffer buf))))
+
+
+(defun make-sdic-replace-string (string from to) "\
+文字列 STRING に含まれている文字列 FROM を全て文字列 TO に置換した文字列を返す
+FROM には正規表現を含む文字列を指定できるが、TO は固定文字列しか指定で
+きないので、注意して使うこと。"
+  (let ((start 0) list)
+    (while (string-match from string start)
+      (setq list (cons to (cons (substring string start (match-beginning 0)) list))
+	    start (match-end 0)))
+    (eval (cons 'concat (nreverse (cons (substring string start) list))))))
+
+
+(defun make-sdic-escape-string (str &optional escape-lf)
+  "STR に含まれている特殊文字をエスケープする"
+  (save-match-data
+    (setq str (make-sdic-replace-string str "&" "&amp;"))
+    (if escape-lf
+	(setq str (make-sdic-replace-string str "\n" "&lf;")))
+    (setq str (make-sdic-replace-string str "<" "&lt;"))
+    (make-sdic-replace-string str ">" "&gt;")))
+
+
+(defun make-sdic-escape-region (start end &optional escape-lf)
+  "リージョンに含まれている特殊文字をエスケープする"
+  (save-excursion
+    (save-match-data
+      (save-restriction
+	(narrow-to-region start end)
+	(goto-char (point-min))
+	(while (search-forward "&" nil t)
+	  (replace-match "&amp;" t t))
+	(goto-char (point-min))
+	(while (search-forward "<" nil t)
+	  (replace-match "&lt;" t t))
+	(goto-char (point-min))
+	(while (search-forward ">" nil t)
+	  (replace-match "&gt;" t t))
+	(if escape-lf
+	    (progn
+	      (goto-char (point-min))
+	      (while (search-forward "\n" nil t)
+		(replace-match "&lf;" t t))))
+	))))

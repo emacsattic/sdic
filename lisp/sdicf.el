@@ -496,7 +496,7 @@ ADD-HEADWORD $B$,(B Non-nil $B$N>l9g$O8!:w%-!<$K8+=P$78l$r2C$($?%j%9%H$rJV$9
   (or (sdicf-entry-p entry)
       (signal 'wrong-type-argument (list 'sdicf-entry-p entry)))
   (let ((start (match-end 0))
-	(keywords (if (or add-headword (string-match "^<K>" entry))
+	(keywords (if (or add-headword (string= "<K>" (substring entry 0 3)))
 		      (list (sdicf-decode-string (substring entry (match-beginning 1) (match-end 1)))))))
     (while (eq start (string-match "<.>\\([^<]+\\)</.>" entry start))
       (setq start (match-end 0)

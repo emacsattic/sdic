@@ -1,3 +1,9 @@
+Fri Jul 16 19:00:39 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdicf.el: Bug fix of sdicf-entry-keywords.
+	* lisp/lp.el: Update install procedure for Windows.
+	* INSTALL: Update document about the install procedure using lp.el.
+
 1999-07-16  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 
 	* configure.in: Substitute lisp/sample.emacs at configure time
