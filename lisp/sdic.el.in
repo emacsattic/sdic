@@ -504,6 +504,12 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
+(defun sdic-version () "\
+SDIC のバージョンを返す関数"
+  (interactive)
+  (message "SDIC %s" sdic-version))
+
+
 (defun sdic-word-at-point () "\
 カーソル位置の単語を返す関数"
   (save-excursion
