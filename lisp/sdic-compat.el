@@ -144,7 +144,7 @@
 (defun xdic-unix-available-p () "\
 Function to check availability of library.
 ライブラリの利用可能性を検査する関数"
-  (and xdic-unix-look-command xdic-unix-grep-command t))
+  (and (stringp xdic-unix-look-command) (stringp xdic-unix-grep-command)))
 
 
 (defun xdic-unix-init-dictionary (file-name &rest option-list)
