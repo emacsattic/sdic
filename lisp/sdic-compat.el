@@ -27,7 +27,9 @@
 ;;
 ;;         gene.perl    - GENE95 辞書
 ;;         jgene.perl   - GENE95 辞書から和英辞書を生成する
-;;         eijirou.perl - 英辞郎
+;;
+;;     それぞれ、xdic-1.x 用の辞書を生成するようにオプションを指定する
+;;     必要があります。
 ;;
 ;; (3) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
 ;;     は xdic-waei-dictionary-list に追加して下さい。
