@@ -80,15 +80,15 @@ DISTCLEANFILES = sdic.el
 lisp_LISP = $(SOURCES) sdic.el  # sdic.el must be in this
 ELCFILES = $(lisp_LISP:.el=.elc)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
-CONFIG_CLEAN_FILES =  sdic.el
+CONFIG_CLEAN_FILES =  sdic.el sample.emacs
 LISP =  $(lisp_LISP)
 
-DIST_COMMON =  Makefile.am Makefile.in elisp-comp sdic.el.in
+DIST_COMMON =  Makefile.am Makefile.in sample.emacs.in sdic.el.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -101,6 +101,8 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 sdic.el: $(top_builddir)/config.status sdic.el.in
+	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+sample.emacs: $(top_builddir)/config.status sample.emacs.in
 	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 install-lispLISP: $(lisp_LISP) $(ELCFILES)
