@@ -13,15 +13,15 @@
 
 ;;; Install:
 
-;; (1) 外部コマンドとして grep が必要です。パスが通っているか確認して
-;;     下さい。
+;; (1) 辞書を検索するために grep を利用しています。パスが通っているか
+;;     確認して下さい。
 ;;
 ;; (2) 辞書を適切な形式に変換して、適当な場所( 例: /usr/dict/ )に保存
 ;;     して下さい。辞書変換用スクリプトとして以下の Perl スクリプトが
 ;;     利用できます。
 ;;
 ;;         gene.perl    - GENE95 辞書
-;;         jgene.perl   - GENE95 辞書から和英辞書を生成する
+;;         edict.perl   - EDICT 辞書
 ;;         eijirou.perl - 英辞郎
 ;;
 ;; (3) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
@@ -54,6 +54,30 @@
 ;; command
 ;;     外部コマンドの名前を指定します。省略した場合は 
 ;;     xdic-grep-command の値を使います。
+
+
+;;; Note;
+
+;; xdic-sgml.el , xdic-grep.el , xdic-array.el は XDIC 形式の辞書を検
+;; 索するためのライブラリです。それぞれの違いは次の通りです。
+;;
+;; ・xdic-sgml.el
+;;     辞書データを全てメモリに読み込んでから検索を行います。外部コマ
+;;     ンドを必要としませんが、大量のメモリが必要になります。
+;;
+;; ・xdic-grep.el
+;;     grep を利用して検索を行います。比較的低速です。
+;;
+;; ・xdic-array.el
+;;     array を利用して検索を行います。辞書の index file を事前に生成
+;;     しておいてから検索を行いますので、高速に検索が可能です。しかし、
+;;     index file は辞書の3倍程度の大きさになります。
+;;
+;; 比較的小規模の辞書を検索する場合は xdic-grep.el が最適でしょう。し
+;; かし、5MByte より大きい辞書の場合は xdic-array.el の利用を考慮すべ
+;; きだと思います。
+;;
+;; XDIC 形式の辞書の構造については、xdic-sgml.el を参照してください。
 
 
 ;;; ライブラリ定義情報
@@ -132,21 +156,9 @@ search-type の値によって次のように動作を変更する。
 	  (delete-region (point-min) (point-max)))
       (setq limit (goto-char (point-max)))
       (put dic 'xdic-grep-erase-buffer nil)
-      (setq string (cond
-		    ;; 前方一致検索の場合
-		    ((eq search-type nil) (concat "<K>" (regexp-quote (downcase string))))
-		    ;; 後方一致検索の場合
-		    ((eq search-type t) (concat (regexp-quote (downcase string)) "</K>"))
-		    ;; 完全一致検索の場合
-		    ((eq search-type 'lambda) (concat "<K>" (regexp-quote (downcase string)) "</K>"))
-		    ;; ユーザー指定のキーによる検索の場合
-		    ((eq search-type 0) string)
-		    ;; それ以外の検索形式を指定された場合
-		    (t (error "Not supported search type is specified. \(%s\)"
-			      (prin1-to-string search-type)))))
       (xdic-call-process (get dic 'command) nil t nil
 			 (get dic 'coding-system)
-			 string
+			 (xdic-sgml-make-query-string string search-type)
 			 (get dic 'file-name))
       ;; 各検索結果に ID を付与する
       (goto-char limit)
