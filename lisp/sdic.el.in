@@ -86,6 +86,7 @@
 
 
 (provide 'sdic)
+(require 'sdicf)
 (require 'stem)
 
 
