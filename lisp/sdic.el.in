@@ -87,7 +87,7 @@
 
 
 (defvar xdic-mode-map nil)
-(defconst xdic-version "1.7alpha3")
+(defconst xdic-version "1.7alpha4")
 (defconst xdic-buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic-mode-name "Xdic" "検索結果を表示するバッファの major mode")
 
@@ -140,7 +140,14 @@ Function to get content.
 (defun xdic-insert-content (word content)
   (overlay-put (xdic-make-overlay (point) (progn (insert word) (point))) 'face 'xdic-face)
   (insert "\n")
-  (xdic-fill-region (point) (progn (insert content) (point)))
+  (save-restriction
+    (narrow-to-region (point) (progn (insert content) (point)))
+    (goto-char (point-min))
+    (while (re-search-forward ",[^ ]" nil t)
+      (goto-char (1+ (match-beginning 0)))
+      (insert " ")
+      (goto-char (match-end 0)))
+    (xdic-fill-region (point-min) (goto-char (point-max))))
   (insert "\n"))
 
 
