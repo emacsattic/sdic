@@ -1,0 +1,391 @@
+;;; xdic.el ---- major mode to view dictionary
+;;; $Id$
+
+;;; Author: Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+;;; Keywords: dictionary
+
+;;; Commentary:
+
+;; 英和辞書を閲覧する目的で作成した major mode です。
+;; 利用及び再配布の際は、GNU 一般公用許諾書の適当なバージョンにしたがっ
+;; て下さい。
+
+;; 一次配布元
+;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/elisp/xdic.html
+
+
+;;; ※※※ 注意 ※※※
+
+;; このプログラムは、まだ作成されたばかりですので、これから多数の変更
+;; が出ると思われます。注意して使ってください。
+;;
+;; また、こんな機能が欲しいとか、動作が希望と違うなど、要望があれば遠
+;; 慮なく連絡してください。出来るだけ対応したいと思います。
+
+
+;;; How to Install
+
+;;	(1) このファイルを適当な場所に保存して下さい。
+;;	(2) 辞書を検索するために look を呼び出しています。パスが通って
+;;	    いるか確認して下さい。
+;;	(3) 辞書を変換して、適当な場所に保存して下さい。
+;;	    xdic.el は、辞書のそれぞれのレコードが1つの見出し語と1つの
+;;	    説明文からなり、かつ見出し語と説明文がタブで区切られている
+;;	    ことを要求します。
+;;	(4) .emacs に次のようなコードを挿入します。
+;;
+;;		(autoload 'xdic:describe-word "xdic" "英単語の意味を調べる" t nil)
+;;		(global-set-key "\C-cw" 'xdic:describe-word)
+;;
+;;	    好みに合わせて適当にキーバインドは変更して下さい。
+
+;; Emacs20 で使う場合は、
+;;
+;;		(set-language-environment "Japanese")
+;;		(set-terminal-coding-system 'euc-japan)
+;;
+;; と .emacs に設定されているか確認してください。
+
+
+;; -*- Emacs-Lisp -*-
+
+
+;;; カスタマイズ用変数
+
+(defvar xdic:dictionary (expand-file-name "~/usr/lib/elisp/gene.dic") "\
+検索に用いる辞書のファイル名")
+
+(if (string-match "^20\\." emacs-version)
+    (defvar xdic:dictionary-kanji-code 'euc-japan "辞書の漢字コード"))
+
+
+;;; 検索結果の表示を調整する変数
+(defvar xdic:left-margin 2 "説明文の left margin")
+(defvar xdic:fill-column default-fill-column "説明文の fill column")
+(defvar xdic:window-height 10 "検索結果表示ウインドウの高さ")
+(defvar xdic:disable-select-window nil
+  "検索結果表示ウインドウに常にカーソルを移動する場合に nil を設定する")
+
+;;; キーバインドを調節する関数
+(defvar xdic:disable-vi-key nil
+  "辞書閲覧に vi ライクのキーを使う場合に nil を設定する")
+
+
+
+(defconst xdic:version "1.1")
+
+(defconst xdic:buffer-name "*xdic*" "検索結果表示バッファの名前")
+(defconst xdic:mode-name "Xdic" "検索結果を表示するバッファの major mode")
+
+(defconst xdic:search-program "look" "検索に用いるプログラム")
+(defconst xdic:program-option "-f" "検索に用いるプログラムのオプション")
+
+
+
+
+
+;;; ここから本体
+
+;;; Emacs20 では、look が使う漢字コードの設定が必要
+(if (string-match "^20\\." emacs-version)
+    (setq process-coding-system-alist (cons (cons ".*look" xdic:dictionary-kanji-code)
+					    (if (boundp 'process-coding-system-alist)
+						process-coding-system-alist))))
+
+
+
+(defun xdic:stripping-suffix (str) "\
+規則変化を行なう語の活用語尾を取り除く関数
+与えられた語の原形として可能性のある語のリストを返す"
+  (let ((c)(l))
+    (save-match-data
+      (if (setq l (cond
+		   ;; 比較級/最上級
+		   ((string-match "\\([^aeiou]\\)\\1e\\(r\\|st\\)$" str)
+		    (list (substring str (match-beginning 1) (match-end 1))
+			  (substring str (match-beginning 0) (match-beginning 2))))
+		   ((string-match "\\([^aeiou]\\)ie\\(r\\|st\\)$" str)
+		    (setq c (substring str (match-beginning 1) (match-end 1)))
+		    (list c (concat c "y") (concat c "ie")))
+		   ((string-match "e\\(r\\|st\\)$" str) '("" "e"))
+		   ;; 3単現/複数形
+		   ((string-match "ches$" str) '("ch" "che"))
+		   ((string-match "shes$" str) '("sh" "che"))
+		   ((string-match "ses$" str) '("s" "se"))
+		   ((string-match "xes$" str) '("x" "xe"))
+		   ((string-match "zes$" str) '("z" "ze"))
+		   ((string-match "ves$" str) '("f" "fe"))
+		   ((string-match "\\([^aeiou]\\)oes$" str)
+		    (setq c (substring str -4 -3))
+		    (list c (concat c "o") (concat c "oe")))
+		   ((string-match "\\([^aeiou]\\)ies$" str)
+		    (setq c (substring str -4 -3))
+		    (list c (concat c "y") (concat c "ie")))
+		   ((string-match "es$" str) '("" "e"))
+		   ((string-match "s$" str) '(""))
+		   ;; 過去形/過去分詞
+		   ((string-match "\\([^aeiou]\\)ied$" str)
+		    (setq c (substring str -4 -3))
+		    (list c (concat c "y") (concat c "ie")))
+		   ((string-match "\\([^aeiou]\\)\\1ed$" str)
+		    (list (substring str -4 -3)
+			  (substring str -4 -1)))
+		   ((string-match "cked$" str) '("c" "cke"))
+		   ((string-match "ed$" str) '("" "e"))
+		   ;; 現在分詞
+		   ((string-match "\\([^aeiou]\\)\\1ing$" str)
+		    (list (substring str -5 -4)))
+		   ((string-match "ing$" str) '("" "e"))
+		   ))
+	  (progn
+	    (setq c (substring str 0 (match-beginning 0)))
+	    (setq l (mapcar '(lambda (s) (concat c s)) l))))
+      (append l (list str)))))
+
+
+
+(defun xdic:word-at-point () "\
+カーソル位置の英単語を返す関数"
+  (save-excursion
+    (if (not (looking-at "\\<"))
+        (forward-word -1))
+    (if (looking-at "[A-Za-z]+")
+	(downcase (buffer-substring (match-beginning 0) (match-end 0))))))
+
+
+
+(defvar xdic:read-minibuffer-history '() "\
+xdic:read-from-minibuffer 関数のヒストリ")
+(defun xdic:read-from-minibuffer (&optional prompt init) "\
+ミニバッファから英単語を読みとる関数"
+  (or init (setq init (or (xdic:word-at-point) "")))
+  (setq xdic:read-minibuffer-history
+	(cons init xdic:read-minibuffer-history))
+  (downcase
+   (read-from-minibuffer (or prompt "Input word : ") init
+			 nil nil '(xdic:read-minibuffer-history . 1))))
+
+
+
+(defun xdic:lookup-dictionary (string) "\
+辞書を検索した結果をバッファに書き込む関数
+検索前に
+  (setq buffer-read-only nil)
+  (erase-buffer)
+を行なう"
+  (set-buffer (get-buffer-create xdic:buffer-name))
+  (or (string= mode-name xdic:mode-name)
+      (xdic-mode))
+  (if (file-readable-p xdic:dictionary)
+      (progn
+	(setq buffer-read-only nil)
+	(erase-buffer)
+	(call-process xdic:search-program nil t nil xdic:program-option string xdic:dictionary)
+	(/= 0 (buffer-size)))
+   (not (message "Can't read file : %s" xdic:dictionary))))
+
+
+
+(defun xdic:format-buffer (s) "\
+検索結果を読みやすいように整形する関数
+整形後に
+  (setq buffer-read-only t)
+  (set-buffer-modified-p nil)
+を行なう"
+  (let ((p)(l))
+    (delete-region (point-min) (point))	; ポイントよりも前の部分を削除する
+    (message "Formatting dictionary...")
+    (save-match-data		; 指定された文字列で始まる項目のみを対象とする
+      (setq s (concat "\\(" (regexp-quote s) "[^\t]*\\)\t"))
+      (while (looking-at s)
+	(overlay-put (make-overlay (match-beginning 1) (match-end 1))
+		     'face 'bold)	; 単語を太文字にする
+	(goto-char (match-end 1))
+	(delete-char 1)			; 区切りのタブを取り除く
+	(insert "\n")
+	(setq p (point))		; 説明文を整形する
+	(end-of-line)
+	(fill-region p (point))
+	(delete-backward-char (1+ left-margin))
+	(forward-char 1)))
+    (delete-region (point) (point-max))	; 残りの部分も削除する
+    (setq buffer-read-only t)
+    (set-buffer-modified-p nil)
+    (goto-char (point-min))))
+
+
+
+;;; 単語を辞書で調べる関数
+(defun xdic:describe-word (word)
+  "Display the meaning of word in Japanese."
+  (interactive (list (xdic:read-from-minibuffer)))
+  (if (< (length word) 2)
+      (setq word (xdic:read-from-minibuffer
+		  (format "\"%s\" is too short word. Input word again : " word)
+		  word)))
+  (let ((case-fold-search t)		; 大文字/子文字を区別しない
+	(l (xdic:stripping-suffix word)))
+    (cond
+     ((xdic:lookup-dictionary (car l))
+      (catch 'loop
+	(mapcar
+	 '(lambda (s)			; 原形を探す
+	    (if (re-search-backward (concat "^" (regexp-quote s) "\t") nil t)
+		(throw 'loop (xdic:format-buffer s))))
+	 (reverse l))
+	(goto-char (point-min))		; 原形が見つからなかった場合
+	(xdic:format-buffer (car l))
+	(message "Can't find word : %s" word))
+      (xdic:display-buffer))
+     (t (message "Can't find word : %s / %s" (car l) word)))))
+
+
+
+(defun xdic:describe-word-at-point ()
+  "Display the meaning of word at point in Japanese."
+  (interactive)
+  (xdic:describe-word (or (xdic:word-at-point)
+			  (xdic:read-from-minibuffer))))
+
+
+
+
+;;; 次の項目に移動する関数
+(defun xdic:forward-item ()
+  "Move point to the next item."
+  (interactive)
+  (let ((o))
+    (goto-char (next-overlay-change
+		(if (setq o (car (overlays-at (point))))
+		    (overlay-end o)
+		  (point))))))
+
+
+
+;;; 前の項目に移動する関数
+(defun xdic:backward-item ()
+  "Move point to the previous item."
+  (interactive)
+  (let ((o))
+    (goto-char (previous-overlay-change
+		(previous-overlay-change
+		 (if (setq o (car (overlays-at (point))))
+		     (overlay-start o)
+		   (previous-overlay-change (previous-overlay-change (point)))))))))
+
+
+
+(defun xdic:display-buffer () "\
+検索結果表示バッファを表示する関数"
+  (interactive)
+  (let ((w (selected-window)))
+    (if (string= (buffer-name (window-buffer w))
+		 xdic:buffer-name)
+	(recenter 0)
+      (set-window-buffer
+       (select-window (if (one-window-p)
+			  (split-window w (- (window-height) xdic:window-height))
+			(next-window)))
+       xdic:buffer-name)
+      (recenter 0)
+      (if xdic:disable-select-window (select-window w)))))
+
+
+
+(defun xdic:other-window () "\
+検索表示バッファから元のバッファに戻る関数"
+  (interactive)
+  (let ((w (selected-window)))
+    (if (and (string= (buffer-name (window-buffer w))
+		      xdic:buffer-name)
+	     (one-window-p))
+	(progn
+	  (split-window w (- (window-height) xdic:window-height))
+	  (set-window-buffer w (other-buffer)))
+      (other-window -1))))
+
+
+
+(defun xdic:close-window () "\
+検索表示バッファを表示しているウインドウを消去する関数
+数値引数を前置した場合は、検索表示バッファを削除する"
+  (interactive)
+  (let ((w (get-buffer-window xdic:buffer-name)))
+    (if w
+	(cond
+	 ((= (window-height w) xdic:window-height)
+	  (delete-window w))
+	 (t (set-window-buffer w (other-buffer)))
+	 )))
+  (if current-prefix-arg (kill-buffer xdic:buffer-name)))
+
+
+
+;;; 辞書を閲覧する major-mode
+(defun xdic-mode () "\
+辞書を閲覧するメジャーモード
+
+key		binding
+---		-------
+
+w		別の単語を検索する
+SPC		スクロールアップ
+b		スクロールダウン
+n		次の項目
+p		前の項目
+TAB		次の項目
+M-TAB		前の項目
+o		辞書を閲覧しているウインドウから他のウインドウに移る
+q		辞書を閲覧しているウインドウを消す
+Q		辞書を閲覧しているウインドウを削除する
+<		バッファの先頭に移動
+>		バッファの終端に移動
+?		ヘルプ表示
+h		1文字戻る
+j		1行進む
+k		1行戻る
+l		1文字進む
+"
+  (kill-all-local-variables)
+  (setq major-mode 'xdic-mode
+	mode-name xdic:mode-name)
+  (make-local-variable 'fill-column)
+  (setq fill-column xdic:fill-column
+	left-margin xdic:left-margin)
+  (setq xdic-mode-map (make-keymap))
+  (define-key xdic-mode-map " " 'scroll-up)
+  (define-key xdic-mode-map "b" 'scroll-down)
+  (define-key xdic-mode-map "n" 'xdic:forward-item)
+  (define-key xdic-mode-map "\t" 'xdic:forward-item)
+  (define-key xdic-mode-map "p" 'xdic:backward-item)
+  (define-key xdic-mode-map "\M-\t" 'xdic:backward-item)
+  (define-key xdic-mode-map "o" 'xdic:other-window)
+  (define-key xdic-mode-map "q" 'xdic:close-window)
+  (define-key xdic-mode-map "Q" '(lambda ()
+				   "検索表示バッファを削除する"
+				   (interactive)
+				   (let ((current-prefix-arg t))
+				     (xdic:close-window))))
+  (define-key xdic-mode-map "w" 'xdic:describe-word)
+  (define-key xdic-mode-map "<" '(lambda ()
+				   "バッファの先頭に移動"
+				   (interactive)
+				   (goto-char (point-min))))
+  (define-key xdic-mode-map ">" '(lambda ()
+				   "バッファの終端に移動"
+				   (interactive)
+				   (goto-char (point-max))))
+  (define-key xdic-mode-map "?" '(lambda ()
+				   "ヘルプ表示"
+				   (interactive)
+				   (describe-function 'xdic-mode)))
+  (cond
+   ((not xdic:disable-vi-key)
+    (define-key xdic-mode-map "h" 'backward-char)
+    (define-key xdic-mode-map "j" 'next-line)
+    (define-key xdic-mode-map "k" 'previous-line)
+    (define-key xdic-mode-map "l" 'forward-char)))
+  (use-local-map xdic-mode-map)
+  (run-hooks 'xdic-mode-hook))
+
+
