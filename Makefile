@@ -129,7 +129,7 @@ WWW     = $(HOME)/usr/doc/homepage/sdic
 SCRIPTS = gene.perl eijirou.perl jgene.perl edict.perl
 FILES   = README INSTALL COPYING sdic.texi \
 		sdic.el.in sdic-sgml.el sdic-grep.el sdic-array.el sdic-compat.el sdic-gene.el \
-		stem.el lp.el gene.el sample.emacs.in $(SCRIPTS)
+		stem.el lp.el sample.emacs.in $(SCRIPTS)
 
 homepage: archive
 	@echo -n 'ホームページを更新しますか? '
