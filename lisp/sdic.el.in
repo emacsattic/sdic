@@ -47,16 +47,20 @@
 ;;
 ;; と .emacs に設定されているか確認してください。
 
+(provide 'xdic)
 
-;; -*- Emacs-Lisp -*-
 
-
-;;; カスタマイズ用変数
+;;;----------------------------------------------------------------------
+;;;		カスタマイズ用変数
+;;;----------------------------------------------------------------------
 
 ;;; 辞書に関する変数
 (defvar xdic:dictionary (expand-file-name "~/usr/lib/elisp/gene.dic")
   "検索に用いる辞書のファイル名")
-(defvar xdic:dictionary-kanji-code 'euc-japan "辞書の漢字コード")
+(defvar xdic:dictionary-coding-system
+  (and (featurep 'mule)
+       (if (>= emacs-major-version 20) 'euc-japan *euc-japan*))
+  "辞書の漢字コード")
 
 ;;; 検索結果の表示を調整する変数
 (defvar xdic:left-margin 2 "説明文の left margin")
@@ -65,15 +69,17 @@
 (defvar xdic:disable-select-window nil
   "検索結果表示ウインドウに常にカーソルを移動する場合に nil を設定する")
 (defvar xdic:left-margin-ignored-by-fill-region (string-match "19\\.28" emacs-version)
-  "fill-region 関数が left-margin の設定を無視する場合は Non nil を設定する")
+  "fill-region 関数が left-margin の設定を無視する場合は nil 以外を設定する")
+(defvar xdic:face-style 'bold  "見出し語の face の style")
+(defvar xdic:face-color "black" "見出し語の face の color")
 
 ;;; キーバインドを調節する変数
 (defvar xdic:disable-vi-key nil
-  "辞書閲覧に vi ライクのキーを使う場合に nil を設定する")
+  "辞書閲覧に vi ライクのキーを使わない場合は nil 以外を設定する")
 
 
 
-(defconst xdic:version "1.5p1")
+(defconst xdic:version "1.6")
 
 (defconst xdic:buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic:mode-name "Xdic" "検索結果を表示するバッファの major mode")
@@ -84,17 +90,26 @@
 
 
 
-;;; ここから本体
 
+;;;----------------------------------------------------------------------
+;;;		初期化
+;;;----------------------------------------------------------------------
 
 ;;; -tion, -ize などの語尾変化を処理するためのライブラリをロード
 (require 'stem)
 
-;;; Emacs20 では、look が使う漢字コードの設定が必要
-(if (= emacs-major-version 20)
-    (setq process-coding-system-alist (cons (cons ".*look" xdic:dictionary-kanji-code)
-					    (if (boundp 'process-coding-system-alist)
-						process-coding-system-alist))))
+
+;;; look が使う漢字コードの設定
+(and
+ xdic:dictionary-coding-system
+ (if (>= emacs-major-version 20)
+     (setq process-coding-system-alist (cons (cons ".*look" xdic:dictionary-coding-system)
+					     (if (boundp 'process-coding-system-alist)
+						 process-coding-system-alist)))
+   (define-program-coding-system nil ".*look"
+     (cons xdic:dictionary-coding-system xdic:dictionary-coding-system))
+   ))
+
 
 ;;; Emacs19.28 ベースの Mule2.3 では previous-overlay-change が未定義
 ;;; なので代替関数を定義する
@@ -112,6 +127,11 @@ If there are no more overlay boundaries before POS, return (point-min)."
 
 
 
+
+
+;;;----------------------------------------------------------------------
+;;;		本体
+;;;----------------------------------------------------------------------
 
 (defun xdic:word-at-point () "\
 カーソル位置の英単語を返す関数"
@@ -188,7 +208,7 @@ Emacs のバージョンによって異なっている fill-region の動作の違い
       (setq s (concat "\\(" (regexp-quote s) "[^\t]*\\)\t"))
       (while (looking-at s)
 	(overlay-put (make-overlay (match-beginning 1) (match-end 1))
-		     'face 'bold)	; 単語を太文字にする
+		     'face 'xdic:face)	; 見出し語を修飾する
 	(goto-char (match-end 1))
 	(delete-char 1)			; 区切りのタブを取り除く
 	(insert "\n")
@@ -262,6 +282,20 @@ Emacs のバージョンによって異なっている fill-region の動作の違い
 
 
 
+(defun xdic:goto-point-min () "\
+バッファの先頭に移動する関数"
+  (interactive)
+  (goto-char (point-min)))
+
+
+
+(defun xdic:goto-point-max () "\
+バッファの末尾に移動する関数"
+  (interactive)
+  (goto-char (point-max)))
+
+
+
 (defun xdic:display-buffer () "\
 検索結果表示バッファを表示する関数"
   (interactive)
@@ -292,8 +326,7 @@ Emacs のバージョンによって異なっている fill-region の動作の違い
 
 
 (defun xdic:close-window () "\
-検索表示バッファを表示しているウインドウを消去する関数
-数値引数を前置した場合は、検索表示バッファを削除する"
+検索表示バッファを表示しているウインドウを消去する関数"
   (interactive)
   (let ((w (get-buffer-window xdic:buffer-name)))
     (if w
@@ -303,8 +336,15 @@ Emacs のバージョンによって異なっている fill-region の動作の違い
 	 (t
 	  (set-window-buffer w (other-buffer))
 	  (select-window (next-window)))
-	 )))
-  (if current-prefix-arg (kill-buffer xdic:buffer-name)))
+	 ))))
+
+
+
+(defun xdic:kill-window () "\
+検索結果表示バッファを削除する関数"
+  (interactive)
+  (xdic:close-window)
+  (kill-buffer xdic:buffer-name))
 
 
 
@@ -312,26 +352,7 @@ Emacs のバージョンによって異なっている fill-region の動作の違い
 (defun xdic-mode () "\
 辞書を閲覧するメジャーモード
 
-key		binding
----		-------
-
-w		別の単語を検索する
-SPC		スクロールアップ
-b		スクロールダウン
-n		次の項目
-p		前の項目
-TAB		次の項目
-M-TAB		前の項目
-o		辞書を閲覧しているウインドウから他のウインドウに移る
-q		辞書を閲覧しているウインドウを消す
-Q		辞書を閲覧しているウインドウを削除する
-<		バッファの先頭に移動
->		バッファの終端に移動
-?		ヘルプ表示
-h		1文字戻る
-j		1行進む
-k		1行戻る
-l		1文字進む
+\\{xdic-mode-map}
 "
   (kill-all-local-variables)
   (make-local-variable 'fill-column)
@@ -340,6 +361,7 @@ l		1文字進む
 	fill-column xdic:fill-column
 	left-margin xdic:left-margin
 	xdic-mode-map (make-keymap))
+  ;; キーバインドの設定
   (define-key xdic-mode-map " " 'scroll-up)
   (define-key xdic-mode-map "b" 'scroll-down)
   (define-key xdic-mode-map [backspace] 'scroll-down)
@@ -351,24 +373,11 @@ l		1文字進む
   (define-key xdic-mode-map "\M-\t" 'xdic:backward-item)
   (define-key xdic-mode-map "o" 'xdic:other-window)
   (define-key xdic-mode-map "q" 'xdic:close-window)
-  (define-key xdic-mode-map "Q" '(lambda ()
-				   "検索表示バッファを削除する"
-				   (interactive)
-				   (let ((current-prefix-arg t))
-				     (xdic:close-window))))
+  (define-key xdic-mode-map "Q" 'xdic:kill-window)
   (define-key xdic-mode-map "w" 'xdic:describe-word)
-  (define-key xdic-mode-map "<" '(lambda ()
-				   "バッファの先頭に移動"
-				   (interactive)
-				   (goto-char (point-min))))
-  (define-key xdic-mode-map ">" '(lambda ()
-				   "バッファの終端に移動"
-				   (interactive)
-				   (goto-char (point-max))))
-  (define-key xdic-mode-map "?" '(lambda ()
-				   "ヘルプ表示"
-				   (interactive)
-				   (describe-function 'xdic-mode)))
+  (define-key xdic-mode-map "<" 'xdic:goto-point-min)
+  (define-key xdic-mode-map ">" 'xdic:goto-point-max)
+  (define-key xdic-mode-map "?" 'describe-mode)
   (cond
    ((not xdic:disable-vi-key)
     (define-key xdic-mode-map "h" 'backward-char)
@@ -376,6 +385,12 @@ l		1文字進む
     (define-key xdic-mode-map "k" 'previous-line)
     (define-key xdic-mode-map "l" 'forward-char)))
   (use-local-map xdic-mode-map)
+  ;; 見出し語の face の設定
+  (make-face 'xdic:face)
+  (and (or (not (fboundp 'facep))
+	   (facep xdic:face-style))
+       (copy-face xdic:face-style 'xdic:face))
+  (and window-system
+       xdic:face-color
+       (set-face-foreground 'xdic:face xdic:face-color))
   (run-hooks 'xdic-mode-hook))
-
-
