@@ -283,8 +283,10 @@ search-type の値によって次のように動作を変更する。
 	))))
 
 
-(defun xdic-sgml-replace-string (string from to)
-  "文字列 STRING に含まれている文字列 FROM を全て文字列 TO に置換した文字列を返す"
+(defun xdic-sgml-replace-string (string from to) "\
+文字列 STRING に含まれている文字列 FROM を全て文字列 TO に置換した文字列を返す
+FROM には正規表現を含む文字列を指定できるが、TO は固定文字列しか指定で
+きないので、注意して使うこと。"
   (let ((start 0) list)
     (while (string-match from string start)
       (setq list (cons to (cons (substring string start (match-beginning 0)) list)))
