@@ -73,6 +73,7 @@
 
 ;;; ライブラリ定義情報
 (require 'sdic)
+(require 'sdicf)
 (provide 'sdic-gene)
 (put 'sdic-gene 'version "2.0")
 (put 'sdic-gene 'init-dictionary 'sdic-gene-init-dictionary)
@@ -124,12 +125,11 @@
 	    (set-buffer (put dic 'sdic-gene-search-buffer (generate-new-buffer sdic-gene-search-buffer-name)))
 	    (insert "\n")
 	    (prog1 (if (get dic 'extract)
-		       (= 0 (sdic-call-process (get dic 'extract) nil t nil
-					       (get dic 'coding-system)
-					       (get dic 'extract-option)
-					       (get dic 'file-name)))
+		       (= 0 (sdicf-call-process (get dic 'extract) (get dic 'coding-system) nil t nil
+						(get dic 'extract-option)
+						(get dic 'file-name)))
 		     (condition-case err
-			 (sdic-insert-file-contents (get dic 'file-name) (get dic 'coding-system))
+			 (sdicf-insert-file-contents (get dic 'file-name) (get dic 'coding-system))
 		       (error nil)))
 	      (setq buffer-read-only t)
 	      (set-buffer-modified-p nil))))
