@@ -158,11 +158,9 @@ Windows 環境では、必要なコマンドが不足しているために、上記の UNIX 用の
 look コマンドを利用して充分に実用的な速度で検索できます。DIC形式を
 使うには configure 時に --with-dicttype=dic とオプションを指定します。
 
-
-
-◎ 「和英辞郎」を使う場合のインストール手順
-
-「英辞郎」と基本的に同じです。--with-waeijirou=DIR オプションでディレク
-トリを指定します (標準では configure は ./waeijirou を調べます)。 e.g.
+また、「和英辞郎」という和英辞書も配布されています。これを利用される場
+合も「英辞郎」と基本的に同じです。--with-waeijirou=DIR オプションでディ
+レクトリを指定します (標準では configure は ./waeijirou を調べます)。 
+e.g.
 
   % ./configure --with-waeijirou=/somewhere/waeijirou
