@@ -9,10 +9,92 @@
 ;; This file is a part of xdic. Please see xdic.el for more detail.
 
 ;; 1行のデータの形式が
+;;
 ;;	見出し語 TAB 定義文 RET
-;; となっている辞書を外部プログラム( look / grep )を利用して検索する
-;; ライブラリ
+;;
+;; となっている辞書を外部プログラム( look / grep )を利用して検索するラ
+;; イブラリです。
 
+
+;;; Install:
+
+;; (1) look と正規表現の使える grep ( GNU grep または egrep )が必要で
+;;     す。パスが通っているか確認して下さい。
+;;
+;; (2) 辞書を適切な形式に変換して、適当な場所( 例: /usr/dict/ )に保存
+;;     して下さい。辞書変換用スクリプトとして以下の Perl スクリプトが
+;;     利用できます。
+;;
+;;         gene.perl    - GENE95 辞書
+;;         jgene.perl   - GENE95 辞書から和英辞書を生成する
+;;         eijirou.perl - 英辞郎
+;;
+;; (3) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
+;;     は xdic-waei-dictionary-list に追加して下さい。
+;;
+;;         (setq xdic-eiwa-dictionary-list
+;;               (cons '(xdic-unix "/usr/dict/gene.dic") xdic-eiwa-dictionary-list))
+;;
+;;     辞書定義情報は次のような構成になっています。
+;;
+;;         (xdic-unix ファイル名 (オプションA 値A) (オプションB 値B) ...)
+;;
+;;     特別な指定が不要な場合には、オプションは省略できます。
+;;
+;;         (xdic-unix ファイル名)
+
+
+;;; Options:
+
+;; xdic-unix.el に対して指定できるオプションは次の通りです。
+;;
+;; coding-system
+;;     辞書の漢字コードを指定します。省略した場合は、
+;;     xdic-default-coding-system の値を使います。
+;;
+;; title
+;;     辞書のタイトルを指定します。省略した場合は、辞書ファイルの 
+;;     basename をタイトルとします。
+;;
+;; look
+;;     前方一致検索/完全一致検索の時に利用する外部コマンドの名前を指定
+;;     します。省略した場合は xdic-unix-look-command の値を使います。
+;;
+;; look-case-option
+;;     look オプションによって指定された外部コマンドに対して、英大文字
+;;     /小文字を区別しないで検索するように指示するためのコマンドライン
+;;     引数を指定します。省略した場合は xdic-unix-look-case-option の
+;;     値を使います。
+;;
+;; grep
+;;     後方一致検索/任意検索の時に利用する外部コマンドの名前を指定しま
+;;     す。省略した場合は xdic-unix-grep-command の値を使います。
+;;
+;; grep-case-option
+;;     grep オプションによって指定された外部コマンドに対して、英大文字
+;;     /小文字を区別しないで検索するように指示するためのコマンドライン
+;;     引数を指定します。省略した場合は xdic-unix-grep-case-option の
+;;     値を使います。
+
+
+;;; Note:
+
+;; xdic-unix-look-command と xdic-unix-grep-command の値は自動的に設定
+;; されます。例えば、xdic-unix-grep-command の場合、egrep / egrep.exe
+;; / grep / grep.exe と4種のコマンドを検索して、見つかったコマンドを使
+;; います。
+;;
+;; xdic-unix.el と xdic-gene.el は同じ機能を提供しているライブラリです。
+;; xdic-unix.el は外部コマンドを呼び出しているのに対して、xdic-gene.el 
+;; は Emacs の機能のみを利用しています。ただし、辞書をバッファに読み込
+;; んでから検索を行なうので、大量のメモリが必要になります。
+;;
+;; Default の設定では、必要な外部コマンドが見つかった場合は 
+;; xdic-unix.el を、見つからなかった場合には xdic-gene.el を使うように
+;; なっています。
+
+
+;;; ライブラリ定義情報
 (require 'xdic)
 (provide 'xdic-unix)
 (put 'xdic-unix 'version "1.2")
@@ -21,7 +103,6 @@
 (put 'xdic-unix 'close-dictionary 'xdic-unix-close-dictionary)
 (put 'xdic-unix 'search-entry 'xdic-unix-search-entry)
 (put 'xdic-unix 'get-content 'xdic-unix-get-content)
-
 
 
 ;;;----------------------------------------------------------------------
