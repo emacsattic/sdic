@@ -363,7 +363,6 @@ Function to get content.
 (put 'sdic-decide-query-type 'lisp-indent-function 2)
 (defmacro sdic-decide-query-type (dic-list query &rest sexp) "\
 QUERY から検索形式を判定して複数の辞書 DIC-LIST を検索するマクロ
-
 QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 して SEXP を評価する。通常の検索の場合は、検索された見出し語のリストを
 返す。"
@@ -712,9 +711,10 @@ word*           前方一致検索
 key             binding
 ---             -------
 
-w               単語を検索する
+w               単語を検索する ( / キーも使えます )
+W               辞書を指定して検索する
 SPC             スクロールアップ
-b               スクロールダウン( BS / Delete キーも使えます )
+b               スクロールダウン ( BS / Delete キーも使えます )
 n               次の項目
 TAB             次の項目
 p               前の項目
@@ -747,6 +747,22 @@ Q               SDIC を終了する
   (define-key sdic-mode-map "q" 'sdic-close-window)
   (define-key sdic-mode-map "Q" 'sdic-exit)
   (define-key sdic-mode-map "w" 'sdic-describe-word)
+  (define-key sdic-mode-map "W" (function
+				 (lambda ()
+				   (interactive)
+				   (let ((f (sdic-select-search-function)))
+				     (call-interactively
+				      (sdic-describe-word
+				       (sdic-read-from-minibuffer "Input word : "
+								  (sdic-word-at-point))
+				       f))))))
+  (define-key sdic-mode-map "/" (function
+				 (lambda ()
+				   (interactive)
+				   (call-interactively
+				    (sdic-describe-word
+				     (sdic-read-from-minibuffer "Input word : "
+								(concat "/" (sdic-word-at-point))))))))
   (define-key sdic-mode-map "<" 'sdic-goto-point-min)
   (define-key sdic-mode-map ">" 'sdic-goto-point-max)
   (define-key sdic-mode-map "?" 'describe-mode)
@@ -893,7 +909,7 @@ at the end of STRING, we don't include a null substring for that."
       (or (= start (match-beginning 0))
 	  (setq list (cons (substring string start (match-beginning 0)) list)))
       (setq start (match-end 0)))
-    (reverse (if (= start (length string)) list (cons (substring string start) list)))))
+    (nreverse (if (= start (length string)) list (cons (substring string start) list)))))
 
 
 (defun sdic-insert-file-contents (filename coding-system &optional visit beg end replace)
