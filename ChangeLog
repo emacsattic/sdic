@@ -1,3 +1,7 @@
+Mon Jul 26 14:04:24 1999  Hideyuki SHIRAI  <shirai@rdmg.mgcs.mei.co.jp>
+
+	* sdic.el.in,sdic.texi: Add exposition of key-bind
+
 Mon Jul 26 10:27:07 1999  Hideyuki Shirai <shirai@rdmg.mgcs.mei.co.jp>
 
 	* INSTALL,lisp/sdic.el.in: Modify document of setting for Emacs20
