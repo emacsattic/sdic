@@ -54,25 +54,24 @@
 ;;;		Customizable variables
 ;;;------------------------------------------------------------
 
-(defvar sdicf-egrep-command nil "*Executable file name of egrep")
-(defvar sdicf-fgrep-command nil "*Executable file name of fgrep")
-(defvar sdicf-array-command nil "*Executable file name of array")
+(defun sdicf-find-program (&rest programs)
+  (if programs
+      (catch 'which
+	(mapcar (lambda (file)
+		  (mapcar (lambda (path)
+			    (if (file-executable-p (expand-file-name file path))
+				(throw 'which (expand-file-name file path))))
+			  exec-path))
+		programs))))
 
-;; sdicf-*-command の初期値を設定
-(mapcar (lambda (list)
-	  (or (symbol-value (car list))
-	      (set (car list)
-		   (catch 'which
-		     (mapcar (lambda (file)
-			       (mapcar (lambda (path)
-					 (if (file-executable-p (expand-file-name file path))
-					     (throw 'which (expand-file-name file path))))
-				       exec-path))
-			     (cdr list))
-		     nil))))
-	'((sdicf-fgrep-command "fgrep" "fgrep.exe" "grep" "grep.exe")
-	  (sdicf-egrep-command "egrep" "egrep.exe" "grep" "grep.exe")
-	  (sdicf-array-command "array" "array.exe")))
+(defvar sdicf-egrep-command (sdicf-find-program "egrep" "egrep.exe" "grep" "grep.exe")
+  "*Executable file name of egrep")
+
+(defvar sdicf-fgrep-command (sdicf-find-program "fgrep" "fgrep.exe" "grep" "grep.exe")
+  "*Executable file name of fgrep")
+
+(defvar sdicf-array-command (sdicf-find-program "array" "array.exe")
+  "*Executable file name of array")
 
 (defvar sdicf-default-coding-system
   (if (>= emacs-major-version 20)
@@ -258,10 +257,10 @@ CODING-SYSTEM 以外の引数の意味は start-process と同じ"
       (goto-char (point-min))
       (if regexp
 	  (while (re-search-forward pattern nil t)
-	    (beginning-of-line)
+	    (forward-line 0)
 	    (sdicf-search-internal))
 	(while (search-forward pattern nil t)
-	  (beginning-of-line)
+	  (forward-line 0)
 	  (sdicf-search-internal)))
       (nreverse entries))))
 
@@ -366,7 +365,7 @@ sdicf-egrep-command で指定されたコマンドを使う。"
       (insert string)
       (set-marker (process-mark proc) (point))
       (skip-chars-backward " \t\n")
-      (beginning-of-line)
+      (forward-line 0)
       (if (looking-at "ok\n")
 	  (setq sdicf-array-wait-prompt-flag nil))
       )))
