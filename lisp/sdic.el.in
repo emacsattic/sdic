@@ -169,7 +169,7 @@ Regexp of Englist prepositions
 (defvar xdic-waei-symbol-list nil "和英辞典のシンボル")
 (defvar xdic-buffer-start-point nil "検索結果表示バッファの表示開始ポイント")
 (defvar xdic-mode-map nil "Keymap of xdic-mode")
-(defconst xdic-version "2.0beta3")
+(defconst xdic-version "2.0beta4")
 (defconst xdic-buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic-mode-name "Xdic" "検索結果を表示するバッファの major mode")
 
@@ -423,8 +423,8 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 							    (regexp-quote (nth 1 word-list)))))
 						 stem-list "\\|")
 				      (if (string= orig (car word-list))
-					  (format "\\|%s\\)" (regexp-quote orig))
-					"\\)"))
+					  "\\)"
+					(format "\\|%s\\)" (regexp-quote orig))))
 			    (format "^%s$" (regexp-quote orig))))))
 	(if point (setq xdic-buffer-start-point point))))))
 
