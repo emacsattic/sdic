@@ -289,21 +289,24 @@ Function to get content.
   "見出し語と定義文を整形しながら挿入する関数"
   (sdic-overlay-put (sdic-make-overlay (point) (progn (insert word) (point))) 'face 'sdic-face)
   (insert "\n")
-  (save-restriction
-    (narrow-to-region (point) (progn (insert content) (point)))
-    (goto-char (point-min))
-    (while (re-search-forward ",[^ ]" nil t)
-      (goto-char (1+ (match-beginning 0)))
-      (insert " ")
-      (goto-char (match-end 0)))
-    (goto-char (point-min))
-    (while (re-search-forward "[^ 0-9]\\(/\\)[^ 0-9]" nil t)
-      (goto-char (match-beginning 1))
-      (insert " ")
-      (goto-char (1+ (point)))
-      (insert " ")
-      (goto-char (1+ (point))))
-    (sdic-fill-region (point-min) (goto-char (point-max))))
+  (let ((str "")
+	(pos 0)
+	(start (point)))
+    (while (string-match ",\\([^ ]\\)" content pos)
+      (setq str (concat str (substring content pos (match-beginning 0)) ", ")
+	    pos (match-beginning 1)))
+    (setq content (concat str (substring content pos))
+	  str ""
+	  pos 0)
+    (while (string-match "[^ 0-9]\\(/\\)[^ 0-9]" content pos)
+      (setq str (concat str (substring content pos (match-beginning 1)) " / ")
+	    pos (match-end 1)))
+    (insert str (substring content pos))
+    (if (> (+ (current-column) left-margin) fill-column)
+	(sdic-fill-region start (point))
+      (beginning-of-line)
+      (insert (make-string left-margin ? ))
+      (end-of-line)))
   (insert "\n"))
 
 
@@ -527,6 +530,10 @@ sdic-read-from-minibuffer 関数のヒストリ")
       (message "Can't find word, \"%s\"." word))))
 
 
+;; 主関数の宣言
+(defalias 'sdic 'sdic-describe-word)
+
+
 (defun sdic-describe-region (start end &optional search-function)
   "Display the meaning of pattern."
   (interactive
@@ -719,11 +726,6 @@ Q               SDIC を終了する
 	    (delq nil (mapcar 'sdic-init-dictionary sdic-waei-dictionary-list))))
   (setq sdic-waei-symbol-list (delq nil (mapcar 'sdic-open-dictionary sdic-waei-symbol-list)))
   (run-hooks 'sdic-mode-hook))
-
-
-;;; 1.6 との互換性を維持するための宣言
-(defalias 'sdic:describe-word 'sdic-describe-word)
-(defalias 'sdic:describe-word-at-point 'sdic-describe-word-at-point)
 
 
 
