@@ -1,3 +1,10 @@
+Fri Feb  9 10:58:00 2001  Hideyuki SHIRAI  <shirai@rdmg.mgcs.mei.co.jp>
+
+	* lisp/sdicf.el (sdicf-default-directory): New variable.
+	(sdicf-call-process): Set 'default-directory' to
+	'sdicf-default-directory'. See sdic-ML 00420.
+	(sdicf-start-process): Ditto.
+	
 Wed Jan 05 19:07:41 2000  Hideyuki SHIRAI  <shirai@rdmg.mgcs.mei.co.jp>
 
 	* lisp/sdic.el.in (sdic-word-at-point): Use sdic-split-string,

@@ -64,6 +64,9 @@
 			  exec-path))
 		programs))))
 
+(defvar sdicf-default-directory (expand-file-name "~/")
+  "*Default directory for executing command.")
+
 (defvar sdicf-egrep-command (sdicf-find-program "egrep" "egrep.exe" "grep" "grep.exe")
   "*Executable file name of egrep")
 
@@ -213,7 +216,8 @@ CODING-SYSTEM 以外の引数の意味は insert-file-contents と同じ"
 (defun sdicf-call-process (program coding-system &optional infile buffer display &rest args) "\
 CODING-SYSTEM を明示的に指定して call-process を呼び出す
 CODING-SYSTEM 以外の引数の意味は call-process と同じ"
-  (let ((coding-system-for-read coding-system)
+  (let ((default-directory sdicf-default-directory)
+	(coding-system-for-read coding-system)
 	(coding-system-for-write coding-system)
 	(process-input-coding-system coding-system)
 	(process-output-coding-system coding-system)
@@ -224,7 +228,8 @@ CODING-SYSTEM 以外の引数の意味は call-process と同じ"
 (defun sdicf-start-process (name buffer program coding-system &rest args) "\
 start-process を実行した後、生成されたプロセスに CODING-SYSTEM を設定する
 CODING-SYSTEM 以外の引数の意味は start-process と同じ"  
-  (let ((proc (apply 'start-process name buffer program args)))
+  (let* ((default-directory sdicf-default-directory)
+	 (proc (apply 'start-process name buffer program args)))
     (if (fboundp 'set-process-coding-system)
 	(set-process-coding-system proc coding-system coding-system)
       (set-process-input-coding-system proc coding-system)
