@@ -272,6 +272,13 @@ Function to get content.
       (goto-char (1+ (match-beginning 0)))
       (insert " ")
       (goto-char (match-end 0)))
+    (goto-char (point-min))
+    (while (re-search-forward "[^ 0-9]\\(/\\)[^ 0-9]" nil t)
+      (goto-char (match-beginning 1))
+      (insert " ")
+      (goto-char (1+ (point)))
+      (insert " ")
+      (goto-char (match-end 0)))
     (xdic-fill-region (point-min) (goto-char (point-max))))
   (insert "\n"))
 
