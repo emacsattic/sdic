@@ -160,7 +160,8 @@ search-type の値によって次のように動作を変更する。
 "
   (save-excursion
     (set-buffer (get dic 'sdic-sgml-buffer))
-    (let (limit ret)
+    (let ((add-keys (get dic 'add-keys-to-headword))
+	  limit ret)
       (if (get dic 'sdic-grep-erase-buffer)
 	  (delete-region (point-min) (point-max)))
       (setq limit (goto-char (point-max)))
@@ -173,7 +174,7 @@ search-type の値によって次のように動作を変更する。
       (goto-char limit)
       (while (progn
 	       (if (looking-at "<K>")
-		   (setq ret (cons (sdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
+		   (setq ret (cons (sdic-sgml-get-entry add-keys) ret)))
 	       (= 0 (forward-line 1))))
       (reverse ret))))
 
