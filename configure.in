@@ -2,7 +2,7 @@
 # $Id$
 #
 AC_INIT(lisp/stem.el)
-AM_INIT_AUTOMAKE(sdic, 2.1-pre1)
+AM_INIT_AUTOMAKE(sdic, 2.1-pre2)
 
 AM_PATH_LISPDIR
 
