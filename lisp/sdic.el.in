@@ -95,98 +95,6 @@
 
 
 ;;;----------------------------------------------------------------------
-;;;		各種 Emacsen の違いを吸収する関数
-;;;----------------------------------------------------------------------
-
-;;; previous-overlay-change
-(or (fboundp 'previous-overlay-change)
-    ;; Introduced in Emacs 19.29.
-    (defun previous-overlay-change (pos) "\
-Return the previous position before POS where an overlay starts or ends.
-If there are no more overlay boundaries before POS, return (point-min)."
-      (if (> pos (point-max))
-	  (error "Specified position is larger than point-max"))
-      (save-excursion
-	(let (next (prev (point-min)))
-	  (while (> pos (setq next (next-overlay-change prev)))
-	    (setq prev next))
-	  prev))))
-
-
-;;; match-string
-(or (fboundp 'match-string)
-    ;; Introduced in Emacs 19.29.
-    (defun match-string (num &optional string) "\
-Return string of text matched by last search.
-NUM specifies which parenthesized expression in the last regexp.
- Value is nil if NUMth pair didn't match, or there were less than NUM pairs.
-Zero means the entire text matched by the whole regexp or whole string.
-STRING should be given if the last search was by `string-match' on STRING."
-  (if (match-beginning num)
-      (if string
-	  (substring string (match-beginning num) (match-end num))
-	(buffer-substring (match-beginning num) (match-end num))))))
-
-
-;;; split-string
-(or (fboundp 'split-string)
-    (defun split-string (string &optional separators) "\
-Splits STRING into substrings where there are matches for SEPARATORS.
-Each match for SEPARATORS is a splitting point.
-The substrings between the splitting points are made into a list
-which is returned.
-If SEPARATORS is absent, it defaults to \"[ \\f\\t\\n\\r\\v]+\".
-
-If there is match for SEPARATORS at the beginning of STRING, we do not
-include a null substring for that.  Likewise, if there is a match
-at the end of STRING, we don't include a null substring for that."
-      (let ((rexp (or separators "[ \f\t\n\r\v]+"))
-	    (start 0)
-	    notfirst
-	    (list nil))
-	(while (and (string-match rexp string
-				  (if (and notfirst
-					   (= start (match-beginning 0))
-					   (< start (length string)))
-				      (1+ start) start))
-		    (< (match-beginning 0) (length string)))
-	  (setq notfirst t)
-	  (or (eq (match-beginning 0) 0)
-	      (and (eq (match-beginning 0) (match-end 0))
-		   (eq (match-beginning 0) start))
-	      (setq list
-		    (cons (substring string start (match-beginning 0))
-			  list)))
-	  (setq start (match-end 0)))
-	(or (eq start (length string))
-	    (setq list
-		  (cons (substring string start)
-			list)))
-	(nreverse list))))
-
-
-(defvar xdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
-fill-region 関数が left-margin の設定を無視する場合は nil 以外を設定する")
-(defun xdic-fill-region (start end) "\
-Standarized fill-region.
-fill-region の Emacs のバージョンによって異なる動作を標準化する関数"
-  (save-match-data
-    (if xdic-left-margin-ignored-by-fill-region
-	;; Emacs-19.28 附属の fill-region は、left-margin を無視するので強制的に indent する
-	(let ((fill-column (- fill-column xdic-left-margin)))
-	  (fill-region start end)
-	  (indent-region start (point) xdic-left-margin))
-      (fill-region start end))
-    (save-excursion			; 余分な空行を削除する
-      (beginning-of-line)
-      (if (looking-at "^[ \t]*$")
-	  (delete-region (1- (point)) (match-end 0)))
-      )))
-
-
-
-
-;;;----------------------------------------------------------------------
 ;;;		検索メソッドを呼び出す関数
 ;;;----------------------------------------------------------------------
 
@@ -230,7 +138,7 @@ Function to get content.
 
 ;;; 見出し語と定義文を整形しながら挿入する
 (defun xdic-insert-content (word content)
-  (overlay-put (make-overlay (point) (progn (insert word) (point))) 'face 'xdic-face)
+  (overlay-put (xdic-make-overlay (point) (progn (insert word) (point))) 'face 'xdic-face)
   (insert "\n")
   (xdic-fill-region (point) (progn (insert content) (point)))
   (insert "\n"))
@@ -266,7 +174,7 @@ Function to get content.
 	  ;; 検索 query が前置詞を含んでいるか調べる
 	  (setq word (if (string-match xdic-english-prep-regexp query)
 			 (progn
-			   (setq prep (format "\\b%s\\b" (regexp-quote (match-string 1 query))))
+			   (setq prep (format "\\b%s\\b" (regexp-quote (xdic-match-string 1 query))))
 			   (substring query 0 (match-beginning 0)))
 		       query))
 	  (setq stem-list (stem:stripping-suffix word))
@@ -389,9 +297,9 @@ xdic-read-from-minibuffer 関数のヒストリ")
   "Move point to the next item."
   (interactive)
   (let ((o))
-    (goto-char (next-overlay-change
-		(if (setq o (car (overlays-at (point))))
-		    (overlay-end o)
+    (goto-char (xdic-next-overlay-change
+		(if (setq o (car (xdic-overlays-at (point))))
+		    (xdic-overlay-end o)
 		  (point))))))
 
 
@@ -400,11 +308,11 @@ xdic-read-from-minibuffer 関数のヒストリ")
   "Move point to the previous item."
   (interactive)
   (let ((o))
-    (goto-char (previous-overlay-change
-		(previous-overlay-change
-		 (if (setq o (car (overlays-at (point))))
-		     (overlay-start o)
-		   (previous-overlay-change (previous-overlay-change (point)))))))))
+    (goto-char (xdic-previous-overlay-change
+		(xdic-previous-overlay-change
+		 (if (setq o (car (xdic-overlays-at (point))))
+		     (xdic-overlay-start o)
+		   (xdic-previous-overlay-change (xdic-previous-overlay-change (point)))))))))
 
 
 (defun xdic-goto-point-min () "\
@@ -524,6 +432,7 @@ xdic-read-from-minibuffer 関数のヒストリ")
 (defvar xdic-eiwa-dictionary
   (let ((s (make-symbol "eiwa")))
     (put s 'file-name xdic-eiwa-dictionary-file-name)
+    (put s 'coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*))
     (put s 'search-method 'xdic-unix)
     s)
   "英和辞書の属性リスト")
@@ -532,6 +441,7 @@ xdic-read-from-minibuffer 関数のヒストリ")
 (defvar xdic-waei-dictionary
   (let ((s (make-symbol "waei")))
     (put s 'file-name xdic-waei-dictionary-file-name)
+    (put s 'coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*))
     (put s 'search-method 'xdic-unix)
     s)
   "和英辞書の属性リスト")
@@ -542,3 +452,174 @@ xdic-read-from-minibuffer 関数のヒストリ")
 ;;; 1.6 との互換性を維持するための宣言
 (defalias 'xdic:describe-word 'xdic-describe-word)
 (defalias 'xdic:describe-word-at-point 'xdic-describe-word-at-point)
+
+
+
+
+;;;----------------------------------------------------------------------
+;;;		各種 Emacsen の違いを吸収する
+;;;----------------------------------------------------------------------
+
+(if (fboundp 'next-overlay-change)
+    (defalias 'xdic-next-overlay-change 'next-overlay-change)
+  ;; XEmacs の場合
+  (defun xdic-next-overlay-change (pos) "\
+Return the next position after POS where an extent starts or ends.
+If there are no more extent boundaries after POS, return (point-max)."
+    (catch 'found-next-extent
+      (mapcar (function (lambda (ext)
+			  (cond
+			   ((> (extent-start-position ext) pos)
+			    (throw 'found-next-extent (extent-start-position ext)))
+			   ((> (extent-end-position ext) pos)
+			    (throw 'found-next-extent (extent-end-position ext)))
+			   )))
+	      (extent-list))
+      (point-max))))
+
+
+(if (fboundp 'previous-overlay-change)
+    (defalias 'xdic-previous-overlay-change 'previous-overlay-change)
+  (if (fboundp 'extent-list)
+      ;; XEmacs の場合
+      (defun xdic-previous-overlay-change (pos) "\
+Return the previous position before POS where an extent starts or ends.
+If there are no more extent boundaries before POS, return (point-min)."
+	(catch 'found-previous-extent
+	  (mapcar (function (lambda (ext)
+			      (cond
+			       ((< (extent-end-position ext) pos)
+				(throw 'found-previous-extent (extent-end-position ext)))
+			       ((< (extent-start-position ext) pos)
+				(throw 'found-previous-extent (extent-start-position ext)))
+			       )))
+		  (reverse (extent-list)))
+	  (point-min)))
+    ;; Emacs 19.34 以前の場合
+    (defun xdic-previous-overlay-change (pos) "\
+Return the previous position before POS where an overlay starts or ends.
+If there are no more overlay boundaries before POS, return (point-min)."
+      (if (> pos (point-max))
+	  (error "Specified position is larger than point-max"))
+      (save-excursion
+	(let (next (prev (point-min)))
+	  (while (> pos (setq next (xdic-next-overlay-change prev)))
+	    (setq prev next))
+	  prev)))))
+
+
+(if (fboundp 'overlays-at)
+    (defalias 'xdic-overlays-at 'overlays-at)
+  (defun xdic-overlays-at (pos) "\
+Return a list of the extents that contain position POS."
+    (delq nil (mapcar (function (lambda (ext)
+				  (and (<= (extent-start-position ext) pos)
+				       (> (extent-end-position ext) pos)
+				       ext)))
+		      (extent-list)))))
+
+
+(if (fboundp 'overlay-put)
+    (defalias 'xdic-overlay-put 'overlay-put)
+  (defalias 'overlay-put 'set-extent-property))
+
+
+(if (fboundp 'make-overlay)
+    (defalias 'xdic-make-overlay 'make-overlay)
+  (defalias 'xdic-make-overlay 'make-extent))
+
+
+(if (fboundp 'overlay-start)
+    (defalias 'xdic-overlay-start 'overlay-start)
+  (defalias 'xdic-overlay-start 'extent-start-position))
+
+
+(if (fboundp 'overlay-end)
+    (defalias 'xdic-overlay-end 'overlay-end)
+  (defalias 'xdic-overlay-end 'extent-end-position))
+
+
+(if (fboundp 'match-string)
+    (defalias 'xdic-match-string 'match-string)
+  ;; Introduced in Emacs 19.29.
+  (defun xdic-match-string (num &optional string) "\
+Return string of text matched by last search.
+NUM specifies which parenthesized expression in the last regexp.
+Value is nil if NUMth pair didn't match, or there were less than NUM pairs.
+Zero means the entire text matched by the whole regexp or whole string.
+STRING should be given if the last search was by `string-match' on STRING."
+    (if (match-beginning num)
+	(if string
+	    (substring string (match-beginning num) (match-end num))
+	  (buffer-substring (match-beginning num) (match-end num))))))
+
+
+(if (fboundp 'split-string)
+    (defalias 'xdic-split-string 'split-string)
+  (defun split-string (string &optional separators) "\
+Splits STRING into substrings where there are matches for SEPARATORS.
+Each match for SEPARATORS is a splitting point.
+The substrings between the splitting points are made into a list
+which is returned.
+If SEPARATORS is absent, it defaults to \"[ \\f\\t\\n\\r\\v]+\".
+
+If there is match for SEPARATORS at the beginning of STRING, we do not
+include a null substring for that.  Likewise, if there is a match
+at the end of STRING, we don't include a null substring for that."
+      (let ((rexp (or separators "[ \f\t\n\r\v]+"))
+	    (start 0)
+	    notfirst
+	    (list nil))
+	(while (and (string-match rexp string
+				  (if (and notfirst
+					   (= start (match-beginning 0))
+					   (< start (length string)))
+				      (1+ start) start))
+		    (< (match-beginning 0) (length string)))
+	  (setq notfirst t)
+	  (or (eq (match-beginning 0) 0)
+	      (and (eq (match-beginning 0) (match-end 0))
+		   (eq (match-beginning 0) start))
+	      (setq list
+		    (cons (substring string start (match-beginning 0))
+			  list)))
+	  (setq start (match-end 0)))
+	(or (eq start (length string))
+	    (setq list
+		  (cons (substring string start)
+			list)))
+	(nreverse list))))
+
+
+(defvar xdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
+fill-region 関数が left-margin の設定を無視する場合は nil 以外を設定する")
+(defun xdic-fill-region (start end) "\
+Standarized fill-region.
+fill-region の Emacs のバージョンによって異なる動作を標準化する関数"
+  (save-match-data
+    (if xdic-left-margin-ignored-by-fill-region
+	;; Emacs-19.28 附属の fill-region は、left-margin を無視するので強制的に indent する
+	(let ((fill-column (- fill-column xdic-left-margin)))
+	  (fill-region start end)
+	  (indent-region start (point) xdic-left-margin))
+      (fill-region start end))
+    (save-excursion			; 余分な空行を削除する
+      (beginning-of-line)
+      (if (looking-at "^[ \t]*$")
+	  (delete-region (1- (point)) (match-end 0)))
+      )))
+
+
+(defun xdic-insert-file-contents (filename &optional visit beg end replace coding-system)
+  (let ((coding-system-for-read coding-system)
+	(file-coding-system-for-read coding-system))
+    (insert-file-contents filename visit beg end replace)))
+
+
+(defun xdic-call-process (program &optional infile buffer display coding-system &rest args)
+  (let ((coding-system-for-read coding-system)
+	(coding-system-for-write coding-system)
+	(process-input-coding-system coding-system)
+	(process-output-coding-system coding-system)
+	(default-process-coding-system (cons coding-system coding-system)))
+    (apply 'call-process program infile buffer display args)))
