@@ -1,0 +1,7 @@
+Makefile
+Makefile.in
+config.cache
+config.log
+config.status
+install.el
+sdic-*.tar.gz
