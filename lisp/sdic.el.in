@@ -86,7 +86,8 @@
 辞書閲覧に vi ライクのキーを使わない場合は nil 以外を設定する")
 
 
-(defconst xdic-version "1.7")
+(defvar xdic-mode-map nil)
+(defconst xdic-version "1.7alpha3")
 (defconst xdic-buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic-mode-name "Xdic" "検索結果を表示するバッファの major mode")
 
@@ -129,15 +130,39 @@ STRING should be given if the last search was by `string-match' on STRING."
 
 ;;; split-string
 (or (fboundp 'split-string)
-    ;; Intoroduces in Emacs 20.
-    (defun split-string (string &optional separators)
-      (or separators (setq separators "[ \f\t\n\r\v]+"))
-      (let (list (start 0))
-	(while (string-match separators string start)
-	  (or (= start (match-beginning 0))
-	      (setq list (cons (substring string start (match-beginning 0)) list)))
+    (defun split-string (string &optional separators) "\
+Splits STRING into substrings where there are matches for SEPARATORS.
+Each match for SEPARATORS is a splitting point.
+The substrings between the splitting points are made into a list
+which is returned.
+If SEPARATORS is absent, it defaults to \"[ \\f\\t\\n\\r\\v]+\".
+
+If there is match for SEPARATORS at the beginning of STRING, we do not
+include a null substring for that.  Likewise, if there is a match
+at the end of STRING, we don't include a null substring for that."
+      (let ((rexp (or separators "[ \f\t\n\r\v]+"))
+	    (start 0)
+	    notfirst
+	    (list nil))
+	(while (and (string-match rexp string
+				  (if (and notfirst
+					   (= start (match-beginning 0))
+					   (< start (length string)))
+				      (1+ start) start))
+		    (< (match-beginning 0) (length string)))
+	  (setq notfirst t)
+	  (or (eq (match-beginning 0) 0)
+	      (and (eq (match-beginning 0) (match-end 0))
+		   (eq (match-beginning 0) start))
+	      (setq list
+		    (cons (substring string start (match-beginning 0))
+			  list)))
 	  (setq start (match-end 0)))
-	(reverse (if (= start (length string)) list (cons (substring string start) list))))))
+	(or (eq start (length string))
+	    (setq list
+		  (cons (substring string start)
+			list)))
+	(nreverse list))))
 
 
 (defvar xdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
@@ -286,7 +311,7 @@ Function to get content.
 		    (xdic-search-entry xdic-waei-dictionary (substring query 0 -1)))
 	    (goto-char (point-min))))
        ;; 検索語の先頭に * がある場合 -> 後方一致検索
-       ((string= "*" (substring word 0 1))
+       ((string= "*" (substring query 0 1))
 	(if (mapcar '(lambda (entry)
 		       (xdic-insert-content (car entry)
 					    (xdic-get-content xdic-waei-dictionary (cdr entry))))
@@ -499,7 +524,7 @@ xdic-read-from-minibuffer 関数のヒストリ")
 (defvar xdic-eiwa-dictionary
   (let ((s (make-symbol "eiwa")))
     (put s 'file-name xdic-eiwa-dictionary-file-name)
-    (put s 'search-method 'xdic-gene)
+    (put s 'search-method 'xdic-unix)
     s)
   "英和辞書の属性リスト")
 (xdic-open-dictionary xdic-eiwa-dictionary)
@@ -507,7 +532,13 @@ xdic-read-from-minibuffer 関数のヒストリ")
 (defvar xdic-waei-dictionary
   (let ((s (make-symbol "waei")))
     (put s 'file-name xdic-waei-dictionary-file-name)
-    (put s 'search-method 'xdic-gene)
+    (put s 'search-method 'xdic-unix)
     s)
   "和英辞書の属性リスト")
 (xdic-open-dictionary xdic-waei-dictionary)
+
+
+
+;;; 1.6 との互換性を維持するための宣言
+(defalias 'xdic:describe-word 'xdic-describe-word)
+(defalias 'xdic:describe-word-at-point 'xdic-describe-word-at-point)
