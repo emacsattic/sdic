@@ -1,3 +1,7 @@
+Tue Sep  7 12:42:34 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release SDIC-2.1.2.
+
 Fri Sep  3 14:20:35 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* sdicf.el(sdicf-buffer-live-p): Define the alternative function
