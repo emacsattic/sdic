@@ -3,5 +3,6 @@ Makefile.in
 config.cache
 config.log
 config.status
+configure
 install.el
 sdic-*.tar.gz
