@@ -25,7 +25,8 @@
 
 ;;; How to Install
 
-;;	(1) このファイルを適当な場所に保存して下さい。
+;;	(1) xdic.el と stem.el を適当な場所に保存して下さい。必要なら
+;;	    バイトコンパイルして下さい。
 ;;	(2) 辞書を検索するために look を呼び出しています。パスが通って
 ;;	    いるか確認して下さい。
 ;;	(3) 辞書を変換して、適当な場所に保存して下さい。
@@ -53,8 +54,8 @@
 ;;; カスタマイズ用変数
 
 ;;; 辞書に関する変数
-(defvar xdic:dictionary (expand-file-name "~/usr/lib/elisp/gene.dic") "\
-検索に用いる辞書のファイル名")
+(defvar xdic:dictionary (expand-file-name "~/usr/lib/elisp/gene.dic")
+  "検索に用いる辞書のファイル名")
 (defvar xdic:dictionary-kanji-code 'euc-japan "辞書の漢字コード")
 
 ;;; 検索結果の表示を調整する変数
@@ -63,14 +64,16 @@
 (defvar xdic:window-height 10 "検索結果表示ウインドウの高さ")
 (defvar xdic:disable-select-window nil
   "検索結果表示ウインドウに常にカーソルを移動する場合に nil を設定する")
+(defvar xdic:left-margin-ignored-by-fill-region (string-match "19\\.28" emacs-version)
+  "fill-region 関数が left-margin の設定を無視する場合は Non nil を設定する")
 
-;;; キーバインドを調節する関数
+;;; キーバインドを調節する変数
 (defvar xdic:disable-vi-key nil
   "辞書閲覧に vi ライクのキーを使う場合に nil を設定する")
 
 
 
-(defconst xdic:version "1.4")
+(defconst xdic:version "1.5")
 
 (defconst xdic:buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic:mode-name "Xdic" "検索結果を表示するバッファの major mode")
@@ -95,7 +98,7 @@
 
 ;;; Emacs19.28 ベースの Mule2.3 では previous-overlay-change が未定義
 ;;; なので代替関数を定義する
-(if (not (fboundp 'previous-overlay-change))
+(or (fboundp 'previous-overlay-change)
     (defun previous-overlay-change (pos) "\
 Return the previous position before POS where an overlay starts or ends.
 If there are no more overlay boundaries before POS, return (point-min)."
@@ -152,13 +155,32 @@ xdic:read-from-minibuffer 関数のヒストリ")
 
 
 
+(defun xdic:fill-region (start end) "\
+fill-region の wrapper
+Emacs のバージョンによって異なっている fill-region の動作の違い
+を吸収するための wrapper"
+  (save-match-data
+    (if xdic:left-margin-ignored-by-fill-region
+	;; Emacs-19.28 附属の fill-region は、left-margin を無視するので強制的に indent する
+	(let ((fill-column (- fill-column xdic:left-margin)))
+	  (fill-region start end)
+	  (indent-region start (point) xdic:left-margin))
+      (fill-region start end))
+    (save-excursion			; 余分な空行を削除する
+      (beginning-of-line)
+      (if (looking-at "^[ \t]*$")
+	  (delete-region (1- (point)) (match-end 0)))
+      )))
+
+
+
 (defun xdic:format-buffer (s) "\
 検索結果を読みやすいように整形する関数
 整形後に
   (setq buffer-read-only t)
   (set-buffer-modified-p nil)
 を行なう"
-  (let ((p)(l))
+  (let ((l))
     (delete-region (point-min) (point))	; ポイントよりも前の部分を削除する
     (message "Formatting dictionary...")
     (save-match-data		; 指定された文字列で始まる項目のみを対象とする
@@ -169,10 +191,7 @@ xdic:read-from-minibuffer 関数のヒストリ")
 	(goto-char (match-end 1))
 	(delete-char 1)			; 区切りのタブを取り除く
 	(insert "\n")
-	(setq p (point))		; 説明文を整形する
-	(end-of-line)
-	(fill-region p (point))
-	(delete-backward-char (1+ left-margin))
+	(xdic:fill-region (point) (progn (end-of-line) (point)))
 	(forward-char 1)))
     (delete-region (point) (point-max))	; 残りの部分も削除する
     (setq buffer-read-only t)
@@ -314,12 +333,12 @@ k		1行戻る
 l		1文字進む
 "
   (kill-all-local-variables)
-  (setq major-mode 'xdic-mode
-	mode-name xdic:mode-name)
   (make-local-variable 'fill-column)
-  (setq fill-column xdic:fill-column
-	left-margin xdic:left-margin)
-  (setq xdic-mode-map (make-keymap))
+  (setq major-mode 'xdic-mode
+	mode-name   xdic:mode-name
+	fill-column xdic:fill-column
+	left-margin xdic:left-margin
+	xdic-mode-map (make-keymap))
   (define-key xdic-mode-map " " 'scroll-up)
   (define-key xdic-mode-map "b" 'scroll-down)
   (define-key xdic-mode-map [backspace] 'scroll-down)
