@@ -10,8 +10,69 @@
 
 ;; 1行のデータの形式が
 ;;	見出し語 TAB 定義文 RET
-;; となっている辞書を外部プログラムに頼らずに検索するライブラリ
+;; となっている辞書を外部プログラムに頼らずに検索するライブラリです。
 
+
+;;; Install:
+
+;; (1) 辞書を適切な形式に変換して、適当な場所( 例: /usr/dict/ )に保存
+;;     して下さい。辞書変換用スクリプトとして以下の Perl スクリプトが
+;;     利用できます。
+;;
+;;         gene.perl    - GENE95 辞書
+;;         jgene.perl   - GENE95 辞書から和英辞書を生成する
+;;         eijirou.perl - 英辞郎
+;;
+;; (2) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
+;;     は xdic-waei-dictionary-list に追加して下さい。
+;;
+;;         (setq xdic-eiwa-dictionary-list
+;;               (cons '(xdic-gene "/usr/dict/gene.dic") xdic-eiwa-dictionary-list))
+;;
+;;     辞書定義情報は次のような構成になっています。
+;;
+;;         (xdic-gene ファイル名 (オプションA 値A) (オプションB 値B) ...)
+;;
+;;     特別な指定が不要な場合には、オプションは省略できます。
+;;
+;;         (xdic-gene ファイル名)
+
+
+;;; Options:
+
+;; xdic-gene.el に対して指定できるオプションは次の通りです。
+;;
+;; coding-system
+;;     辞書の漢字コードを指定します。省略した場合は、
+;;     xdic-default-coding-system の値を使います。
+;;
+;; title
+;;     辞書のタイトルを指定します。省略した場合は、辞書ファイルの 
+;;     basename をタイトルとします。
+;;
+;; extract
+;;     圧縮辞書を展開するための外部コマンドを指定します。省略した場合
+;;     は、辞書が圧縮されていないと見なします。
+;;
+;; extract-option
+;;     extract オプションによって指定された外部コマンドに対して、辞書
+;;     を展開して標準出力に出力させるためのコマンドライン引数を指定し
+;;     ます。省略した場合は xdic-gene-extract-option の値を使います。
+
+
+;;; Note:
+
+;; xdic-unix.el と xdic-gene.el は同じ機能を提供しているライブラリです。
+;; xdic-unix.el は外部コマンドを呼び出しているのに対して、xdic-gene.el 
+;; は Emacs の機能のみを利用しています。ただし、辞書をバッファに読み込
+;; んでから検索を行なうので、大量のメモリが必要になります。
+;;
+;; Default の設定では、必要な外部コマンドが見つかった場合は 
+;; xdic-unix.el を、見つからなかった場合には xdic-gene.el を使うように
+;; なっています。
+
+
+;;; ライブラリ定義情報
 (require 'xdic)
 (provide 'xdic-gene)
 (put 'xdic-gene 'version "1.2")
@@ -20,7 +81,6 @@
 (put 'xdic-gene 'close-dictionary 'xdic-gene-close-dictionary)
 (put 'xdic-gene 'search-entry 'xdic-gene-search-entry)
 (put 'xdic-gene 'get-content 'xdic-gene-get-content)
-
 
 
 ;;;----------------------------------------------------------------------
