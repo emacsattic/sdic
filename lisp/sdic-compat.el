@@ -8,18 +8,16 @@
 
 ;; This file is a part of xdic. Please see xdic.el for more detail.
 
-;; 1行のデータの形式が
-;;
-;;	見出し語 TAB 定義文 RET
-;;
-;; となっている辞書を外部プログラム( look / grep )を利用して検索するラ
-;; イブラリです。
+;; COMPAT 形式の辞書を外部プログラム( look / grep )を利用して検索する
+;; ライブラリです。COMPAT 形式の詳細については dictionary-format.txt 
+;; を参照して下さい。
 
 
 ;;; Install:
 
-;; (1) look と正規表現の使える grep ( GNU grep または egrep )が必要で
-;;     す。パスが通っているか確認して下さい。
+;; (1) look と大文字/小文字の違いを無視した検索が出来る grep ( fgrep 
+;;     または GNU grep )が必要です。また、正規表現検索を利用する場合は 
+;;     egrep も必要です。パスが通っているか確認して下さい。
 ;;
 ;; (2) 辞書を適切な形式に変換して、適当な場所( 例: /usr/dict/ )に保存
 ;;     して下さい。辞書変換用スクリプトとして以下の Perl スクリプトが
@@ -69,7 +67,7 @@
 ;;     値を使います。
 ;;
 ;; grep
-;;     後方一致検索/任意検索の時に利用する外部コマンドの名前を指定しま
+;;     後方一致検索/全文検索の時に利用する外部コマンドの名前を指定しま
 ;;     す。省略した場合は xdic-compat-grep-command の値を使います。
 ;;
 ;; grep-case-option
@@ -77,14 +75,24 @@
 ;;     /小文字を区別しないで検索するように指示するためのコマンドライン
 ;;     引数を指定します。省略した場合は xdic-compat-grep-case-option の
 ;;     値を使います。
+;;
+;; egrep
+;;     正規表現検索の時に利用する外部コマンドの名前を指定します。省略
+;;     した場合は xdic-compat-egrep-command の値を使います。
+;;
+;; egrep-case-option
+;;     egrep オプションによって指定された外部コマンドに対して、英大文
+;;     字/小文字を区別しないで検索するように指示するためのコマンドライ
+;;     ン引数を指定します。省略した場合は 
+;;     xdic-compat-egrep-case-option の値を使います。
 
 
 ;;; Note:
 
-;; xdic-compat-look-command と xdic-compat-grep-command の値は自動的に設定
-;; されます。例えば、xdic-compat-grep-command の場合、egrep / egrep.exe
-;; / grep / grep.exe と4種のコマンドを検索して、見つかったコマンドを使
-;; います。
+;; xdic-compat-look-command / xdic-compat-grep-command /
+;; xdic-compat-egrep-command の値は自動的に設定されます。例えば、
+;; xdic-compat-grep-command の場合、fgrep / fgrep.exe / grep /
+;; grep.exe と4種のコマンドを検索して、見つかったコマンドを使います。
 ;;
 ;; xdic-compat.el と xdic-gene.el は同じ機能を提供しているライブラリで
 ;; す。xdic-compat.el は外部コマンドを呼び出しているのに対して、
@@ -119,6 +127,10 @@
 
 (defvar xdic-compat-grep-case-option "-i" "*Command line option for grep to ignore case")
 
+(defvar xdic-compat-egrep-command nil "*Executable file name of egrep")
+
+(defvar xdic-compat-egrep-case-option "-i" "*Command line option for egrep to ignore case")
+
 (defconst xdic-compat-search-buffer-name " *xdic-compat*")
 
 
@@ -140,7 +152,8 @@
 			      (cdr list))
 		      nil))))
 	'((xdic-compat-look-command "look" "look.exe")
-	  (xdic-compat-grep-command "egrep" "egrep.exe" "grep" "grep.exe")))
+	  (xdic-compat-grep-command "fgrep" "fgrep.exe" "grep" "grep.exe")
+	  (xdic-compat-egrep-command "egrep" "egrep.exe" "grep" "grep.exe")))
 
 
 (defun xdic-compat-available-p () "\
@@ -167,6 +180,10 @@ Function to check availability of library.
 	      (put dic 'grep xdic-compat-grep-command))
 	  (or (get dic 'grep-case-option)
 	      (put dic 'grep-case-option xdic-compat-grep-case-option))
+	  (or (get dic 'egrep)
+	      (put dic 'egrep xdic-compat-egrep-command))
+	  (or (get dic 'egrep-case-option)
+	      (put dic 'egrep-case-option xdic-compat-egrep-case-option))
 	  (or (get dic 'coding-system)
 	      (put dic 'coding-system xdic-default-coding-system))
 	  (and (stringp (get dic 'look))
@@ -197,8 +214,7 @@ search-type の値によって次のように動作を変更する。
     0      : 全文検索
     regexp : 正規表現検索
 検索結果として見つかった見出し語をキーとし、その定義文の先頭の point を値とする
-連想配列を返す。
-"
+連想配列を返す。"
   (save-excursion
     (set-buffer (get dic 'xdic-compat-search-buffer))
     (save-restriction
@@ -222,11 +238,11 @@ search-type の値によって次のように動作を変更する。
 	(if (string-match "\\Ca" string)
 	    (xdic-call-process (get dic 'grep) nil t nil
 			       (get dic 'coding-system)
-			       (format "^[^\t]*%s\t" string) (get dic 'file-name))
+			       (concat string "\t") (get dic 'file-name))
 	  (xdic-call-process (get dic 'grep) nil t nil
 			     (get dic 'coding-system)
 			     (get dic 'grep-case-option)
-			     (format "^[^\t]*%s\t" string) (get dic 'file-name))))
+			     (concat string "\t") (get dic 'file-name))))
        ;; 完全一致検索の場合 -> look を使って検索 / 余分なデータを消去
        ((eq search-type 'lambda)
 	(if (string-match "\\Ca" string)
@@ -241,12 +257,28 @@ search-type の値によって次のように動作を変更する。
 	(while (if (looking-at (format "%s\t" (regexp-quote string)))
 		   (= 0 (forward-line 1))
 		 (delete-region (point) (point-max)))))
-       ;; ユーザー指定のキーによる検索の場合 -> grep を使って検索
-       ((or (eq search-type 0)
-	    (eq search-type 'regexp))
-	(xdic-call-process (get dic 'grep) nil t nil
-			   (get dic 'coding-system)
-			   string (get dic 'file-name)))
+       ;; 全文検索の場合 -> grep を使って検索
+       ((eq search-type 0)
+	(if (string-match "\\Ca" string)
+	    (xdic-call-process (get dic 'grep) nil t nil
+			       (get dic 'coding-system)
+			       string (get dic 'file-name))
+	  (xdic-call-process (get dic 'grep) nil t nil
+			     (get dic 'coding-system)
+			     (get dic 'grep-case-option)
+			     string (get dic 'file-name))))
+       ;; 正規表現検索の場合 -> egrep を使って検索
+       ((eq search-type 'regexp)
+	(or (stringp (get dic 'egrep))
+	    (error "%s" "Command to search regular expression pattern is not specified"))
+	(if (string-match "\\Ca" string)
+	    (xdic-call-process (get dic 'egrep) nil t nil
+			       (get dic 'coding-system)
+			       string (get dic 'file-name))
+	  (xdic-call-process (get dic 'egrep) nil t nil
+			     (get dic 'coding-system)
+			     (get dic 'egrep-case-option)
+			     string (get dic 'file-name))))
        ;; それ以外の検索形式を指定された場合
        (t (error "Not supported search type is specified. \(%s\)"
 		 (prin1-to-string search-type))))
