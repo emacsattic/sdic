@@ -59,17 +59,17 @@
 (defvar sdicf-array-command nil "*Executable file name of array")
 
 ;; sdicf-*-command の初期値を設定
-(mapcar '(lambda (list)
-	   (or (symbol-value (car list))
-	       (set (car list)
-		    (catch 'which
-		      (mapcar '(lambda (file)
-				 (mapcar '(lambda (path)
-					    (if (file-executable-p (expand-file-name file path))
-						(throw 'which (expand-file-name file path))))
-					 exec-path))
-			      (cdr list))
-		      nil))))
+(mapcar (lambda (list)
+	  (or (symbol-value (car list))
+	      (set (car list)
+		   (catch 'which
+		     (mapcar (lambda (file)
+			       (mapcar (lambda (path)
+					 (if (file-executable-p (expand-file-name file path))
+					     (throw 'which (expand-file-name file path))))
+				       exec-path))
+			     (cdr list))
+		     nil))))
 	'((sdicf-fgrep-command "fgrep" "fgrep.exe" "grep" "grep.exe")
 	  (sdicf-egrep-command "egrep" "egrep.exe" "grep" "grep.exe")
 	  (sdicf-array-command "array" "array.exe")))
@@ -372,14 +372,15 @@ array を使って検索を行う
 	    (progn
 	      (delete-region (point-min) (point-max))
 	      (sdicf-array-send-string proc "show")
-	      (let (entries (prev ""))
+	      (let (entries prev (i 1))
 		(while (not (eobp)) (sdicf-search-internal))
-		(delq nil (mapcar (function
-				   (lambda (s)
-				     (if (string= prev s) nil (setq prev s))))
-				  (sort entries 'string<))))))))))
-
-
+		(setq entries (sort entries 'string<)
+		      prev (car entries))
+		(while (< i (length entries))
+		  (if (string= prev (setq prev (nth i entries)))
+		      (setcdr (nthcdr (1- i) entries) (nthcdr (1+ i) entries))
+		    (setq i (1+ i))))
+		entries)))))))
 
 
 ;;;------------------------------------------------------------
@@ -420,10 +421,9 @@ SDIC 辞書オブジェクトは CAR が `SDIC' のベクタである。以下の4
 			   (error "Specified strategy is not available: %S" strategy))
 		       (error "Invalid search strategy: %S" strategy))
 		   (catch 'found-strategy
-		     (mapcar (function
-			      (lambda (e)
-				(if (funcall (nth 1 e) sdic)
-				    (throw 'found-strategy (car e)))))
+		     (mapcar (lambda (e)
+			       (if (funcall (nth 1 e) sdic)
+				   (throw 'found-strategy (car e))))
 			     sdicf-strategy-alist)
 		     (error "%s" "Can't decide strategy automatically"))))
     sdic))
