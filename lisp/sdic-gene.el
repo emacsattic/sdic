@@ -9,7 +9,9 @@
 ;; This file is a part of xdic. Please see xdic.el for more detail.
 
 ;; 1行のデータの形式が
+;;
 ;;	見出し語 TAB 定義文 RET
+;;
 ;; となっている辞書を外部プログラムに頼らずに検索するライブラリです。
 
 
@@ -91,7 +93,7 @@
 *Option for archiver.
 圧縮辞書を展開するために使うオプション")
 
-(defconst xdic-gene-search-buffer-name "*xdic-gene*")
+(defconst xdic-gene-search-buffer-name " *xdic-gene*")
 
 
 
