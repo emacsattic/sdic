@@ -54,13 +54,21 @@
 ;;;		カスタマイズ用変数
 ;;;----------------------------------------------------------------------
 
-;;; 辞書に関する変数
-(defvar xdic:dictionary (expand-file-name "~/usr/lib/elisp/gene.dic")
-  "検索に用いる辞書のファイル名")
-(defvar xdic:dictionary-coding-system
-  (and (featurep 'mule)
-       (if (>= emacs-major-version 20) 'euc-japan *euc-japan*))
-  "辞書の漢字コード")
+(defvar xdic:eiwa-dictionary
+  (let ((s (make-symbol "eiwa")))
+    (put s 'filename (expand-file-name "~/usr/lib/elisp/gene.dic"))
+    (put s 'coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*))
+    (put s 'search-function 'xdic:look)
+    s)
+  "*英和辞書の属性リスト")
+
+(defvar xdic:waei-dictionary
+  (let ((s (make-symbol "waei")))
+    (put s 'filename (expand-file-name "~/usr/lib/elisp/jgene.dic"))
+    (put s 'coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*))
+    (put s 'search-function 'xdic:grep)
+    s)
+  "*和英辞書の属性リスト")
 
 ;;; 検索結果の表示を調整する変数
 (defvar xdic:left-margin 2 "説明文の left margin")
@@ -77,17 +85,10 @@
 (defvar xdic:disable-vi-key nil
   "辞書閲覧に vi ライクのキーを使わない場合は nil 以外を設定する")
 
-
-
-(defconst xdic:version "1.6")
+(defconst xdic:version "1.7")
 
 (defconst xdic:buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic:mode-name "Xdic" "検索結果を表示するバッファの major mode")
-
-(defconst xdic:search-program "look" "検索に用いるプログラム")
-(defconst xdic:program-option "-f" "検索に用いるプログラムのオプション")
-
-
 
 
 
@@ -97,18 +98,6 @@
 
 ;;; -tion, -ize などの語尾変化を処理するためのライブラリをロード
 (require 'stem)
-
-
-;;; look が使う漢字コードの設定
-(and
- xdic:dictionary-coding-system
- (if (>= emacs-major-version 20)
-     (setq process-coding-system-alist (cons (cons ".*look" xdic:dictionary-coding-system)
-					     (if (boundp 'process-coding-system-alist)
-						 process-coding-system-alist)))
-   (define-program-coding-system nil ".*look"
-     (cons xdic:dictionary-coding-system xdic:dictionary-coding-system))
-   ))
 
 
 ;;; Emacs19.28 ベースの Mule2.3 では previous-overlay-change が未定義
@@ -125,6 +114,145 @@ If there are no more overlay boundaries before POS, return (point-min)."
 	    (setq prev next))
 	  prev))))
 
+
+(or (fboundp 'set-buffer-process-coding-system)
+    (defun set-buffer-process-coding-system (decoding encoding) "\
+Set coding systems for the process associated with the current buffer.
+DECODING is the coding system to be used to decode input from the process,
+ENCODING is the coding system to be used to encode output to the process.
+
+For a list of possible values of CODING-SYSTEM, use M-x list-coding-systems.
+"
+      (define-program-coding-system (current-buffer) nil (cons encoding decoding))))
+
+
+
+
+;;;----------------------------------------------------------------------
+;;;		look を実行する関数
+;;;----------------------------------------------------------------------
+
+(defvar xdic:look-command-name "look" "*Executable file name of look")
+
+(defvar xdic:look-option "-f" "*Command line option for look")
+
+(defun xdic:look (dictionary string &optional search-method) "\
+look を利用して辞書を検索した結果をカレントバッファに書き込む関数
+search-method の値によって次のように動作を変更する。
+    nil    : 前方一致検索
+    t      : 後方一致検索
+    lambda : 完全一致検索
+"
+  (if (eq t search-method) (error "%s" "後方一致検索は使えません"))
+  (let ((buf (get dictionary 'search-buffer)))
+    (save-excursion
+      (if (bufferp buf)
+	  (set-buffer buf)
+	(set-buffer (setq buf (put dictionary 'search-buffer (generate-new-buffer "*xdic-look*"))))
+	(set-buffer-process-coding-system (get dictionary 'coding-system) (get dictionary 'coding-system)))
+      (erase-buffer)
+      (or (= 0 (call-process xdic:look-command-name nil t nil xdic:look-option string (get dictionary 'filename)))
+	  (error "%s の実行が正常に終了しませんでした。" xdic:look-command-name))
+      (if (eq search-method 'lambda)
+	  ;; 完全一致検索の場合は余分な検索結果を削除する
+	  (progn
+	    (goto-char (point-min))
+	    (while (if (looking-at (format "%s\t" (regexp-quote string)))
+		       (= 0 (forward-line 1))
+		     (delete-region (point) (point-max)))))))
+    (insert-buffer-substring buf)))
+
+
+
+
+;;;----------------------------------------------------------------------
+;;;		grep を実行する関数
+;;;----------------------------------------------------------------------
+
+(defvar xdic:grep-command-name "egrep" "*Executable file name of grep")
+
+(defvar xdic:grep-option "-i" "*Command line option for grep")
+
+(defun xdic:grep (dictionary string &optional search-method) "\
+grep を利用して辞書を検索した結果をカレントバッファに書き込む関数
+search-method の値によって次のように動作を変更する。
+    nil    : 前方一致検索
+    t      : 後方一致検索
+    lambda : 完全一致検索
+"
+  (let ((buf (get dictionary 'search-buffer)))
+    (save-excursion
+      (if (bufferp buf)
+	  (set-buffer buf)
+	(set-buffer (setq buf (put dictionary 'search-buffer (generate-new-buffer "*xdic-grep*"))))
+	(set-buffer-process-coding-system (get dictionary 'coding-system) (get dictionary 'coding-system)))
+      (erase-buffer)
+      (or (= 0 (call-process xdic:grep-command-name nil t nil xdic:grep-option
+			     (cond
+			      ((eq search-method nil)
+			       (format "^%s" string))
+			      ((eq search-method t)
+			       (format "^[^\\t]*%s\\t" string))
+			      (t ;; (eq search-method 'lambda)
+			       (format "^%s\\t" string)))
+			     (get dictionary 'filename)))
+	  (error "%s の実行が正常に終了しませんでした。" xdic:grep-command-name)))
+    (insert-buffer-substring buf)))
+
+
+
+
+;;;----------------------------------------------------------------------
+;;;		英和辞書を検索する関数
+;;;----------------------------------------------------------------------
+
+(defun xdic:search-english-word (word)
+  (cond
+   ;; 検索語の末尾に * がある場合 -> 前方一致検索
+   ((string= "*" (substring word -1))
+    (funcall (get xdic:eiwa-dictionary 'search-function) xdic:eiwa-dictionary (substring word 0 -1)))
+   ;; 検索語の先頭に * がある場合 -> 後方一致検索
+   ((string= "*" (substring word 0 1))
+    (funcall (get xdic:eiwa-dictionary 'search-function) xdic:eiwa-dictionary (substring word 1) t))
+   ;; それ以外 -> stemming して検索
+   (t
+    (let ((wlist (stem:stripping-suffix word))
+	  (case-fold-search t))		; 大文字/小文字を区別しない
+      (funcall (get xdic:eiwa-dictionary 'search-function) xdic:eiwa-dictionary (car wlist))
+      (catch 'loop
+	(mapcar '(lambda (s)
+		   (setq s (regexp-quote s))
+		   (if (re-search-backward (format "^%s\t" s) nil t)
+		       ;; 原形を見つけた場合
+		       (progn
+			 (while (re-search-backward (format "^%s\t" s) nil t))
+			 (delete-region (point-min) (point))
+			 (while (if (looking-at (format "%s[^\t]*\t" s))
+				    (= 0 (forward-line 1))
+				  (delete-region (point) (point-max))))
+			 (throw 'loop t))))
+		(reverse wlist))
+	(setq word (format "%s / %s" (car wlist) word)))
+      ))))
+
+
+
+
+;;;----------------------------------------------------------------------
+;;;		和英辞書を検索する関数
+;;;----------------------------------------------------------------------
+
+(defun xdic:search-japanese-word (word)
+  (cond
+   ;; 検索語の末尾に * がある場合 -> 前方一致検索
+   ((string= "*" (substring word -1))
+    (funcall (get xdic:waei-dictionary 'search-function) xdic:waei-dictionary (substring word 0 -1)))
+   ;; 検索語の先頭に * がある場合 -> 後方一致検索
+   ((string= "*" (substring word 0 1))
+    (funcall (get xdic:waei-dictionary 'search-function) xdic:waei-dictionary (substring word 1) t))
+   ;; それ以外 -> 前方一致検索
+   (t
+    (funcall (get xdic:waei-dictionary 'search-function) xdic:waei-dictionary word))))
 
 
 
@@ -156,25 +284,6 @@ xdic:read-from-minibuffer 関数のヒストリ")
 
 
 
-(defun xdic:lookup-dictionary (string) "\
-辞書を検索した結果をバッファに書き込む関数
-検索前に
-  (setq buffer-read-only nil)
-  (erase-buffer)
-を行なう"
-  (set-buffer (get-buffer-create xdic:buffer-name))
-  (or (string= mode-name xdic:mode-name)
-      (xdic-mode))
-  (if (file-readable-p xdic:dictionary)
-      (progn
-	(setq buffer-read-only nil)
-	(erase-buffer)
-	(call-process xdic:search-program nil t nil xdic:program-option string xdic:dictionary)
-	(/= 0 (buffer-size)))
-   (not (message "Can't read file : %s" xdic:dictionary))))
-
-
-
 (defun xdic:fill-region (start end) "\
 fill-region の wrapper
 Emacs のバージョンによって異なっている fill-region の動作の違い
@@ -194,57 +303,37 @@ Emacs のバージョンによって異なっている fill-region の動作の違い
 
 
 
-(defun xdic:format-buffer (s) "\
-検索結果を読みやすいように整形する関数
-整形後に
-  (setq buffer-read-only t)
-  (set-buffer-modified-p nil)
-を行なう"
-  (let ((l))
-    (while (re-search-backward (concat "^" (regexp-quote s) "\t") nil t))
-    (delete-region (point-min) (point))	; ポイントよりも前の部分を削除する
-    (message "Formatting dictionary...")
-    (save-match-data		; 指定された文字列で始まる項目のみを対象とする
-      (setq s (concat "\\(" (regexp-quote s) "[^\t]*\\)\t"))
-      (while (looking-at s)
-	(overlay-put (make-overlay (match-beginning 1) (match-end 1))
-		     'face 'xdic:face)	; 見出し語を修飾する
-	(goto-char (match-end 1))
-	(delete-char 1)			; 区切りのタブを取り除く
-	(insert "\n")
-	(xdic:fill-region (point) (progn (end-of-line) (point)))
-	(forward-char 1)))
-    (delete-region (point) (point-max))	; 残りの部分も削除する
-    (setq buffer-read-only t)
-    (set-buffer-modified-p nil)
-    (goto-char (point-min))))
-
-
-
 ;;; 単語を辞書で調べる関数
 (defun xdic:describe-word (word)
-  "Display the meaning of word in Japanese."
+  "Display the meaning of word."
   (interactive (list (xdic:read-from-minibuffer)))
   (if (< (length word) 2)
       (setq word (xdic:read-from-minibuffer
 		  (format "\"%s\" is too short word. Input word again : " word)
 		  word)))
-  (let ((l)(case-fold-search t))	; 大文字/小文字を区別しない
-    (cond
-     ((and (setq l (stem:stripping-suffix word))
-	   (xdic:lookup-dictionary (car l)))
-      (catch 'loop
-	(mapcar
-	 '(lambda (s)			; 原形を探す
-	    (if (re-search-backward (concat "^" (regexp-quote s) "\t") nil t)
-		(throw 'loop (xdic:format-buffer s))))
-	 (reverse l))
-	(goto-char (point-min))		; 原形が見つからなかった場合
-	(xdic:format-buffer (car l))
-	(message "Can't find word : %s" word))
-      (xdic:display-buffer))
-     ;; 単語が見つからなかった場合
-     (t (message "Can't find word : %s / %s" (car l) word)))))
+  (set-buffer (get-buffer-create xdic:buffer-name))
+  (or (string= mode-name xdic:mode-name) (xdic-mode))
+  (setq buffer-read-only nil)
+  (erase-buffer)
+  (if (string-match "\\cj" word)
+      (xdic:search-japanese-word word)
+    (xdic:search-english-word word))
+  (if (= 0 (buffer-size))
+      (message "Can't find word : %s" word)
+    (goto-char (point-min))
+    (while (progn
+	     (overlay-put (make-overlay (point)
+					(progn (skip-chars-forward "^\t") (point)))
+			  'face 'xdic:face) ; 見出し語を修飾する
+	     (delete-char 1)		; 区切りのタブを取り除く
+	     (insert "\n")
+	     (xdic:fill-region (point) (progn (end-of-line) (point)))
+	     (goto-char (1+ (point)))
+	     (not (eobp))))
+    (setq buffer-read-only t)
+    (set-buffer-modified-p nil)
+    (goto-char (point-min))
+    (xdic:display-buffer)))
 
 
 
@@ -253,7 +342,6 @@ Emacs のバージョンによって異なっている fill-region の動作の違い
   (interactive)
   (xdic:describe-word (or (xdic:word-at-point)
 			  (xdic:read-from-minibuffer))))
-
 
 
 
