@@ -427,7 +427,7 @@ SDIC 辞書オブジェクトは CAR が `SDIC' のベクタである。以下の4
     $B!&strategy
     ・作業用バッファ
 "
-  (let ((sdic (vector 'SDIC filename nil nil)))
+  (let ((sdic (vector 'SDIC filename nil nil nil)))
     (aset sdic 3 (if strategy
 		     (if (assq strategy sdicf-strategy-alist)
 			 (if (funcall (nth 1 (assq strategy sdicf-strategy-alist)) sdic)
@@ -491,14 +491,12 @@ SDIC形式の辞書から WORD をキーとして検索を行う
 
 (defun sdicf-entry-keywords (entry)
   "エントリ ENTRY の検索キーのリスト(見出し語を含む)を返す。"
-  (or (sdicf-entry-p entry)
-      (signal 'wrong-type-argument (list 'sdicf-entry-p entry)))
-  (let ((list (cons (substring entry (match-beginning 1) (match-end 1)) nil))
-	(start (match-end 0)))     
+  (let ((keywords (list (sdicf-entry-headword entry)))
+	(start (match-end 0)))
     (while (equal start (string-match "<.>\\([^<]+\\)</.>" entry start))
-      (setq list (cons (sdicf-decode-substring (substring entry (match-beginning 1) (match-end 1)) list))
+      (setq keywords (cons (sdicf-decode-substring (substring entry (match-beginning 1) (match-end 1))) keywords)
 	    start (match-end 0)))
-    (nreverse list)))
+    (nreverse keywords)))
 
 (defun sdicf-entry-text (entry)
   "エントリ ENTRY の本文を返す。"
