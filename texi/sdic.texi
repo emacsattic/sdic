@@ -487,7 +487,7 @@ SDIC$B7A<0$N<-=q$r(B array $B$rMxMQ$7$F8!:w$9$k$?$a$K$O!"0J2<$N<j=g$G=`Hw$,I,
 @enumerate
 @item
 array $B$O!"(BSUFARY $B$KImB0$7$F$$$kBPOC7?A4J88!:w%W%m%0%i%`$G$9!#(BSUFARY $B$K$D(B
-$B$$$F$O!"(B@file{http://cactus.aist-nara.ac.jp/lab/nlt/ss/} $B$r;2>H$7$F2<$5(B
+$B$$$F$O!"(B@file{http://nais.to/~yto/tools/sufary/} $B$r;2>H$7$F2<$5(B
 $B$$!#8!:wBP>]$N%F%-%9%H$N:w0z$r;vA0$K:n@.$7$F$*$/%?%$%W$N8!:w%W%m%0%i%`$J(B
 $B$N$G!"(Bgrep $B$J$I$h$j$b9bB.$J8!:w$,2DG=$G$9!#(B
 
