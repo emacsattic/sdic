@@ -58,6 +58,7 @@ AC_ARG_WITH(
         [  --with-eijirou=DIR      eijirou files are in DIR [./eijirou]],
         EIJIROU_DIR=$with_eijirou,
 )
+AC_SUBST(EIJIROU_DIR)
 
 WAEIJIROU_DIR="./waeijirou"
 AC_ARG_WITH(
@@ -65,6 +66,7 @@ AC_ARG_WITH(
         [  --with-waeijirou=DIR    waeijirou files are in DIR [./waeijirou]],
         WAEIJIROU_DIR=$with_waeijirou,
 )
+AC_SUBST(WAEIJIROU_DIR)
 
 MULTI_DICT="no"
 AC_ARG_WITH(

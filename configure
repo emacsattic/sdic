@@ -705,7 +705,7 @@ fi
 
 PACKAGE=sdic
 
-VERSION=2.1-beta3
+VERSION=2.1-pre1
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -1183,12 +1183,14 @@ if test "${with_eijirou+set}" = set; then
 fi
 
 
+
 WAEIJIROU_DIR="./waeijirou"
 # Check whether --with-waeijirou or --without-waeijirou was given.
 if test "${with_waeijirou+set}" = set; then
   withval="$with_waeijirou"
   WAEIJIROU_DIR=$with_waeijirou
 fi
+
 
 
 MULTI_DICT="no"
@@ -1203,7 +1205,7 @@ fi
 
 EIWA_DICT=""
 echo $ac_n "checking for EIWA Dictionary""... $ac_c" 1>&6
-echo "configure:1207: checking for EIWA Dictionary" >&5
+echo "configure:1209: checking for EIWA Dictionary" >&5
 for dict in gene.sdic eedict.sdic eijirou.sdic \
 	    gene.dic  eedict.dic  eijirou.dic \
 	    e4jwords.sdic ecompdic.sdic eenamdict.sdic \
@@ -1256,7 +1258,7 @@ EIWA_DICT_LIST=`echo "$EIWA_DICT_LIST" | \
 
 
 echo $ac_n "checking for WAEI Dictionary""... $ac_c" 1>&6
-echo "configure:1260: checking for WAEI Dictionary" >&5
+echo "configure:1262: checking for WAEI Dictionary" >&5
 WAEI_DICT=""
 for dict in jedict.sdic jgene.sdic waeijirou.sdic \
 	    jedict.dic  jgene.dic  waeijirou.dic \
@@ -1472,6 +1474,8 @@ s%@BZIP2@%$BZIP2%g
 s%@CP@%$CP%g
 s%@SORT@%$SORT%g
 s%@DICTDIR@%$DICTDIR%g
+s%@EIJIROU_DIR@%$EIJIROU_DIR%g
+s%@WAEIJIROU_DIR@%$WAEIJIROU_DIR%g
 s%@MULTI_DICT@%$MULTI_DICT%g
 s%@EIWA_DICT@%$EIWA_DICT%g
 s%@EIWA_DICT_LIST@%$EIWA_DICT_LIST%g

@@ -1,3 +1,8 @@
+Mon Jul 26 00:41:42 1999  Satoru Takabayashi  <satoru-t@is.aist-nara.ac.jp>
+
+	* configure.in: Bug fix: substitution for EIJIROU_DIR and
+ 	WAEIJIROU_DIR
+
 Sun Jul 25 13:00:15 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* Release SDIC-2.1-pre1.
