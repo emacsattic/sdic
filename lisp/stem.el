@@ -405,7 +405,7 @@
     ("given" "give")
     ("gnawed" "gnaw")
     ("gnawn" "gnaw")
-    ("went" "wend" "go")
+    ("went" "go" "wend")
     ("gone" "go")
     ("graved" "grave")
     ("graven" "grave")
