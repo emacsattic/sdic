@@ -130,10 +130,10 @@ AC_SUBST(EIWA_DICT_LIST)
 
 AC_MSG_CHECKING(for WAEI Dictionary)
 WAEI_DICT=""
-for dict in edict.sdic jgene.sdic waeijirou.sdic \
-	    edict.dic  jgene.dic  waeijirou.dic \
-	    4jwords.sdic compdic.sdic edict.sdic enamdict.sdic \
-	    4jwords.dic  compdic.dic  edict.dic  enamdict.dic ; do
+for dict in jedict.sdic jgene.sdic waeijirou.sdic \
+	    jedict.dic  jgene.dic  waeijirou.dic \
+	    j4jwords.sdic jcompdic.sdic jenamdict.sdic \
+	    j4jwords.dic  jcompdic.dic  jenamdict.dic ; do
 	if test -f "$DICTDIR/$dict"; then
 		WAEI_DICT="$WAEI_DICT	$dict"
 		WAEI_DICT_LIST="$WAEI_DICT_LIST	$DICTDIR/$dict"
@@ -148,7 +148,7 @@ else
 		if test -f $dict.gz -o -f $dict.bz2; then
 			if test -z "$WAEI_DICT" -o "$MULTI_DICT" = "yes"; then
 				if test -z "$WAEI_DICT" -o "$MULTI_DICT" = "yes"; then
-					NAME="$dict.$DICTTYPE"
+					NAME="j$dict.$DICTTYPE"
 					WAEI_DICT="$WAEI_DICT	$NAME"
 					WAEI_DICT_LIST="$WAEI_DICT_LIST	$DICTDIR/$NAME"
 				fi

@@ -73,25 +73,25 @@ waeijirou.sdic: contrib/eijirou.perl
 eedict.sdic: edict contrib/edict.perl
 	@PERL@ contrib/edict.perl --reverse edict > $@
 
-edict.sdic: edict contrib/edict.perl
+jedict.sdic: edict contrib/edict.perl
 	@PERL@ contrib/edict.perl edict > $@
 
 e4jwords.sdic: 4jwords contrib/edict.perl
 	@PERL@ contrib/edict.perl --reverse 4jwords > $@
 
-4jwords.sdic: 4jwords contrib/edict.perl
+j4jwords.sdic: 4jwords contrib/edict.perl
 	@PERL@ contrib/edict.perl 4jwords > $@
 
 ecompdic.sdic: compdic contrib/edict.perl
 	@PERL@ contrib/edict.perl --reverse compdic > $@
 
-compdic.sdic: compdic contrib/edict.perl
+jcompdic.sdic: compdic contrib/edict.perl
 	@PERL@ contrib/edict.perl compdic > $@
 
 eenamdict.sdic: enamdict contrib/edict.perl
 	@PERL@ contrib/edict.perl --reverse enamdict > $@
 
-enamdict.sdic: enamdict contrib/edict.perl
+jenamdict.sdic: enamdict contrib/edict.perl
 	@PERL@ contrib/edict.perl enamdict > $@
 
 
