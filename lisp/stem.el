@@ -471,7 +471,7 @@
     ("met" "meet")
     ("melted" "melt")
     ("methougt" "methinks")
-    ("-" "methinks")
+    ;; ("-" "methinks")
     ("misbecame" "misbecome")
     ("misbecome" "misbecome")
     ("miscast" "miscast")
