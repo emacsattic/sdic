@@ -604,10 +604,11 @@ sdic-read-from-minibuffer 関数のヒストリ")
 (defun sdic-describe-word-at-point (&optional search-function)
   "Display the meaning of word at point in Japanese."
   (interactive (list (if current-prefix-arg (sdic-select-search-function))))
-  (let ((orig-table (copy-syntax-table))
+  (let ((orig-table (syntax-table))
 	word)
     (unwind-protect
 	(progn
+	  (set-syntax-table (copy-syntax-table))
 	  (modify-syntax-entry ?* "w")
 	  (modify-syntax-entry ?' "w")
 	  (modify-syntax-entry ?/ "w")
