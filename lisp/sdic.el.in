@@ -289,10 +289,6 @@ Function to get content.
   (funcall (get (get dic 'search-method) 'get-content) dic id))
 
 
-(defun sdic-buffer-live-p (buffer)
-  (and (bufferp buffer) (buffer-name buffer) buffer))
-
-
 (defun sdic-make-dictionary-symbol ()
   (make-symbol "sdic-dictionary"))
 
@@ -705,7 +701,7 @@ sdic-read-from-minibuffer 関数のヒストリ")
 (defun sdic-exit () "\
 検索結果表示バッファを削除する関数"
   (interactive)
-  (if (sdic-buffer-live-p (get-buffer sdic-buffer-name))
+  (if (sdicf-buffer-live-p (get-buffer sdic-buffer-name))
       (progn
 	(sdic-close-window)
 	(kill-buffer sdic-buffer-name)))

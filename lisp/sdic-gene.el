@@ -139,7 +139,7 @@
 
 (defun sdic-gene-open-dictionary (dic)
   "Function to open dictionary"
-  (if (or (sdic-buffer-live-p (get dic 'sdic-gene-search-buffer))
+  (if (or (sdicf-buffer-live-p (get dic 'sdic-gene-search-buffer))
 	  (save-excursion
 	    (set-buffer (put dic 'sdic-gene-search-buffer (generate-new-buffer sdic-gene-search-buffer-name)))
 	    (buffer-disable-undo)

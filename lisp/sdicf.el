@@ -124,6 +124,13 @@
 ;;;		Internal functions
 ;;;------------------------------------------------------------
 
+(if (fboundp 'buffer-live-p)
+    (defalias 'sdicf-buffer-live-p 'buffer-live-p)
+  (defun sdicf-buffer-live-p (object) "\
+Return non-nil if OBJECT is a buffer which has not been killed.
+Value is nil if OBJECT is not a buffer or if it has been killed."
+    (and object (bufferp object) (buffer-name object))))
+
 (defsubst sdicf-object-p (sdic)
   "辞書オブジェクトかどうか検査する"
   (and (vectorp sdic) (eq 'SDIC (aref sdic 0))))
@@ -151,7 +158,7 @@
 共通の辞書初期化関数
 作業用バッファが存在することを確認し、なければ新しく生成する。作業用バッ
 ファを返す。"
-  (or (and (buffer-live-p (sdicf-get-buffer sdic))
+  (or (and (sdicf-buffer-live-p (sdicf-get-buffer sdic))
 	   (sdicf-get-buffer sdic))
       (let ((buf (generate-new-buffer (format " *sdic %s*" (sdicf-get-filename sdic)))))
 	(buffer-disable-undo buf)
@@ -159,7 +166,7 @@
 
 (defun sdicf-common-quit (sdic) "\
 共通の辞書終了関数"
-  (if (buffer-live-p (sdicf-get-buffer sdic)) (kill-buffer (sdicf-get-buffer sdic))))
+  (if (sdicf-buffer-live-p (sdicf-get-buffer sdic)) (kill-buffer (sdicf-get-buffer sdic))))
 
 (defsubst sdicf-search-internal () "\
 現在行をチェックし、エントリならば現在行の内容を entries に加える。
@@ -233,7 +240,7 @@ CODING-SYSTEM 以外の引数の意味は start-process と同じ"
       (signal 'sdicf-missing-file (list (sdicf-get-filename sdic)))))
 
 (defun sdicf-direct-init (sdic)
-  (or (buffer-live-p (sdicf-get-buffer sdic))
+  (or (sdicf-buffer-live-p (sdicf-get-buffer sdic))
       (save-excursion
 	(sdicf-common-init sdic)
 	(set-buffer (sdicf-get-buffer sdic))
@@ -342,7 +349,7 @@ sdicf-egrep-command で指定されたコマンドを使う。"
 	  t))))
 
 (defun sdicf-array-quit (sdic)
-  (if (buffer-live-p (sdicf-get-buffer sdic))
+  (if (sdicf-buffer-live-p (sdicf-get-buffer sdic))
       (let ((proc (get-buffer-process (sdicf-get-buffer sdic))))
 	(and proc
 	     (eq (process-status proc) 'run)

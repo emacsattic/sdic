@@ -199,7 +199,7 @@ Function to check availability of library.
 
 (defun sdic-compat-open-dictionary (dic)
   "Function to open dictionary"
-  (and (or (sdic-buffer-live-p (get dic 'sdic-compat-search-buffer))
+  (and (or (sdicf-buffer-live-p (get dic 'sdic-compat-search-buffer))
 	   (put dic 'sdic-compat-search-buffer (generate-new-buffer sdic-compat-search-buffer-name)))
        dic))
 

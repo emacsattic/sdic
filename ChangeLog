@@ -1,3 +1,11 @@
+Fri Sep  3 14:20:35 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* sdicf.el(sdicf-buffer-live-p): Define the alternative function
+	  of `buffer-live-p'.
+
+	* sdic.el.in, sdic-compat.el, sdic-gene.el: Replace function from
+	  `sdic-buffer-live-p' to `sdicf-buffer-live-p'.
+
 Mon Aug 16 18:37:16 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* Release SDIC-2.1.1.
