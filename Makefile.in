@@ -10,6 +10,8 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+# -*- Makefile -*-
+
 
 SHELL = @SHELL@
 
@@ -74,7 +76,8 @@ WAEI_DICTIONARY_PATH = @WAEI_DICTIONARY_PATH@
 emacsdir = @emacsdir@
 lispdir = @lispdir@
 
-EXTRA_DIST = texi contrib
+EXTRA_DIST = texi/sdic.texi contrib/edict.perl contrib/eijirou.perl contrib/gene.perl contrib/jgene.perl
+DISTCLEANFILES = texi/sdic.info
 SUBDIRS = lisp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -86,7 +89,7 @@ configure.in install-sh missing mkinstalldirs
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -237,6 +240,7 @@ distdir: $(DISTFILES)
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
 	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu Makefile
+	$(mkinstalldirs) $(distdir)/contrib $(distdir)/texi
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -291,6 +295,7 @@ clean-generic:
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-tags mostlyclean-generic
@@ -336,10 +341,15 @@ install-dict:
 	$(INSTALL_DATA) @EIWA_DICTIONARY@ @DICTDIR@
 	$(INSTALL_DATA) @WAEI_DICTIONARY@ @DICTDIR@
 
-info: texi/sdic.texi
-	$(EMACS) -batch -q -l texinfmt -f batch-texinfo-format $?
+install-info: texi/sdic.info
+	$(INSTALL_DATA) texi/sdic.info @infodir@
 
-config: 
+info: texi/sdic.info
+
+texi/sdic.info: texi/sdic.texi
+	$(EMACS) -batch -q -l install.el -f batch-texinfo-format $?
+
+config: lisp/sample.emacs
 	@echo -n "本当に $$HOME/.emacs を書き換えますか[yes/no] " ;\
 	read YN ;\
 	test "$$YN" = yes

@@ -73,7 +73,7 @@ into another language, under the above conditions for modified versions.
 SDIC $B$O!"(BEmacs $B>e$G1QOB(B/$BOB1Q<-=q$r1\Mw$9$k$?$a$N4J7i(B( simple )$B$G!">.$5$/(B
 ( small )$B$F!"7Z$/(B( speedy )$B$F!">.?h(B( smart )$B$J%W%m%0%i%`$G$9!#(B
 
-$B$3$N@bL@=q$O!"(BSDIC-2.0 $B$KBP1~$7$^$9!#(B
+$B$3$N@bL@=q$O!"(BSDIC-2.1 $B$KBP1~$7$^$9!#(B
 @end ifinfo
 
 @menu
@@ -276,8 +276,8 @@ SDIC $B$+$iMxMQ$9$k$3$H$N=PMh$k<-=q$K$D$$$F$O!"(B@xref{Dictionaries}.
 @menu
 * Variables::                   $BF0:n$rD4@a$9$kJQ?t(B
 * Setting Dictionary List::     $BMxMQ$9$k<-=q$N%j%9%H$r@_Dj$9$k(B
+* Library for SDIC::            SDIC$B7A<0$N<-=q$r8!:w$9$k(B
 * Libraries for COMPAT::        COMPAT$B7A<0$N<-=q$r8!:w$9$k(B
-* Libraries for SDIC::          SDIC$B7A<0$N<-=q$r8!:w$9$k(B
 * Samples::                     $B@_DjNc(B
 * Trouble Shooting::            $B%H%i%V%k$N2r7h(B
 @end menu
@@ -344,7 +344,7 @@ SDIC $B$+$iMxMQ2DG=$JOB1Q<-=q$N%j%9%H$r@_Dj$7$F$*$/JQ?t!#IaDL$K%$%s%9%H!<(B
 
 
 
-@node Setting Dictionary List, Libraries for COMPAT, Variables, Customizations
+@node Setting Dictionary List, Library for SDIC, Variables, Customizations
 @comment  node-name,  next,  previous,  up
 @section $B8!:w$9$k<-=q$r@_Dj$9$k(B
 
@@ -367,30 +367,32 @@ SDIC $B$r;H$C$F<-=q$r8!:w$9$k$?$a$K$O!"<-=q%U%!%$%k$H8!:wJ}K!$N;XDj$r(B2$B$D$
 @end enumerate
 
 $BNc$($P!"(BSDIC$B7A<0$N1QOB<-=q(B @file{/usr/dict/gene.sdic} $B$r(B 
-@file{sdic-sgml.el} $B$r;H$C$F8!:w=PMh$k$h$&$K$9$k$K$O!"<!$N$h$&$K$7$F2<$5$$!#(B
+@file{sdicf-client.el} $B$r;H$C$F8!:w=PMh$k$h$&$K$9$k$K$O!"<!$N$h$&$K$7$F(B
+$B2<$5$$!#(B
 
 @lisp
 (setq sdic-eiwa-dictionary-list
-      '((sdic-sgml "/usr/dict/gene.sdic")))
+      '((sdicf-client "/usr/dict/gene.sdic")))
 @end lisp
 
 EDICT$B<-=q(B @file{/usr/dict/edict.sdic} $B$rOB1Q<-=q$H$7$F(B 
-@file{sdic-grep.el} $B$r;H$C$F8!:w$9$k$K$O!"<!$N$h$&$K;XDj$7$^$9!#(B
+@file{sdicf-client.el} $B$r;H$C$F8!:w$9$k$K$O!"<!$N$h$&$K;XDj$7$^$9!#(B
 
 @lisp
 (setq sdic-waei-dictionary-list
-      '((sdic-grep "/usr/dict/edict.sdic")))
+      '((sdicf-client "/usr/dict/edict.sdic")))
 @end lisp
 
 EDICT$B<-=q$+$i@8@.$5$l$?OB1Q<-=q$K$O!"8+=P$78l$H8+=P$78l$N?6$j2>L>$,8!:w(B
-$B%-!<$H$7$F4^$^$l$F$$$^$9!#<!$N$h$&$K(B @file{sdic-grep.el} $B$KBP$7$F%*%W%7%g(B
-$B%s$rM?$($k$H!"4A;z$r4^$s$@8+=P$78l$H$=$N?6$j2>L>$,F1;~$KI=<($5$l$k$h$&$K(B
-$B$J$j$^$9!#$3$l$O!"%i%$%V%i%j$N>JN,2DG=$J0z?t$r@_Dj$9$kNc$H$J$C$F$$$^$9!#(B
+$B%-!<$H$7$F4^$^$l$F$$$^$9!#<!$N$h$&$K(B @file{sdicf-client.el} $B$KBP$7$F%*%W(B
+$B%7%g%s$rM?$($k$H!"4A;z$r4^$s$@8+=P$78l$H$=$N?6$j2>L>$,F1;~$KI=<($5$l$k$h(B
+$B$&$K$J$j$^$9!#$3$l$O!"%i%$%V%i%j$N>JN,2DG=$J0z?t$r@_Dj$9$kNc$H$J$C$F$$$^(B
+$B$9!#(B
 
 @lisp
 (setq sdic-waei-dictionary-list
-      '((sdic-grep "/usr/dict/edict.sdic"
-                   (add-keys-to-headword t))))
+      '((sdicf-client "/usr/dict/edict.sdic"
+                      (add-keys-to-headword t))))
 @end lisp
 
 $B<!$N$h$&$K$9$k$H!"J#?t$N>JN,2DG=$J%*%W%7%g%s$r@_Dj$9$k$3$H$,=PMh$^$9!#(B
@@ -407,7 +409,87 @@ EDICT$B<-=q$+$i@8@.$5$l$?OB1Q<-=q$K$O!"8+=P$78l$H8+=P$78l$N?6$j2>L>$,8!:w(B
 
 
 
-@node Libraries for COMPAT, Libraries for SDIC, Setting Dictionary List, Customizations
+@node Library for SDIC, Libraries for COMPAT, Setting Dictionary List, Customizations
+@comment  node-name,  next,  previous,  up
+@section SDIC$B7A<0$N<-=q$r8!:w$9$k(B
+
+@file{sdicf-client.el} $B$O(BSDIC$B7A<0$N<-=q$r8!:w$9$k$?$a$N%i%$%V%i%j$G$9!#(B
+SDIC$B7A<0$N<-=q$N>\:Y$K$D$$$F$O!"(B@xref{SDIC Format}.
+
+@file{sdicf-client.el} $B$KBP$7$F;XDj$G$-$k%*%W%7%g%s$O<!$NDL$j$G$9!#(B
+
+@table @asis
+@item coding-system
+$B<-=q$N4A;z%3!<%I$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"(B
+@i{sdic-default-coding-system} $B$NCM$r;H$$$^$9!#(B
+
+@item title
+$B<-=q$N%?%$%H%k$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"<-=q$N%U%!%$%kL>$NHs%G%#%l%/(B
+$B%H%jItJ,$r%?%$%H%k$H$7$^$9!#(B
+
+@item add-keys-to-headword
+$BA4$F$N8!:w%-!<$r4^$a$F8+=P$78l$r9=@.$9$k>l9g$K(B nil $B0J30$K@_Dj$7$F2<$5$$!#(B
+$BOB1Q<-=q$r8!:w$9$k>l9g$K!"?6$j2>L>$b4^$a$F=PNO$9$k>l9g$KMxMQ$7$^$9!#(B
+
+@item strategy
+@file{sdicf-client.el} $B$O!"<-=q$r8!:w$9$kJ}K!$r;HMQ4D6-$K1~$8$F;H$$J,$1(B
+$B$k$3$H$,=PMh$^$9!#>JN,$7$?>l9g$O!"(B@file{sdicf.el} $B$N<+F0H=Dj$K$h$C$FA*$P(B
+$B$l$?J}K!$r;HMQ$7$^$9!#(B
+@end table
+
+
+@i{strategy} $B%*%W%7%g%s$KBP$7$F;XDj$G$-$k8!:wJ}K!$O0J2<$NDL$j$G$9!#(B
+
+@itemize @bullet
+@item
+direct
+
+$B<-=q%G!<%?$rA4$F%a%b%j$KFI$_9~$s$G$+$i8!:w$r9T$$$^$9!#30It%3%^%s%I$rI,MW(B
+$B$H$7$^$;$s$,!"BgNL$N%a%b%j$,I,MW$K$J$j$^$9!#(B
+
+@item
+grep
+
+fgrep $B$rMxMQ$7$F8!:w$r9T$$$^$9!#(B
+
+@item
+array
+
+array $B$rMxMQ$7$F8!:w$r9T$$$^$9!#<-=q$N:w0z%U%!%$%k$r;vA0$K@8@.$7$F$*$$$F(B
+$B$+$i8!:w$r9T$$$^$9$N$G!"9bB.$K8!:w$,2DG=$G$9!#$7$+$7!":w0z%U%!%$%k$O<-=q(B
+$B$N(B3$BG\DxEY$NBg$-$5$K$J$j$^$9!#:w0z%U%!%$%k$N=`Hw$J$I$N>\:Y$K$D$$$F$O!"(B
+@xref{SUFARY}.
+@end itemize
+
+$BHf3SE*>.5,LO$N<-=q$r8!:w$9$k>l9g$O(B grep $B$,:GE,$G$7$g$&!#$7$+$7!"(B5MByte 
+$B$h$jBg$-$$<-=q$N>l9g$O(B array $B$NMxMQ$r9MN8$9$Y$-$@$H;W$$$^$9!#(B
+
+
+
+@node SUFARY, , , Library for SDIC
+@comment  node-name,  next,  previous,  up
+@subsection SUFARY
+
+SDIC$B7A<0$N<-=q$r(B array $B$rMxMQ$7$F8!:w$9$k$?$a$K$O!"0J2<$N<j=g$G=`Hw$,I,(B
+$BMW$G$9!#(B
+
+@enumerate
+@item
+array $B$O!"(BSUFARY $B$KImB0$7$F$$$kBPOC7?A4J88!:w%W%m%0%i%`$G$9!#(BSUFARY $B$K$D(B
+$B$$$F$O!"(B@file{http://cactus.aist-nara.ac.jp/lab/nlt/ss/} $B$r;2>H$7$F2<$5(B
+$B$$!#8!:wBP>]$N%F%-%9%H$N:w0z$r;vA0$K:n@.$7$F$*$/%?%$%W$N8!:w%W%m%0%i%`$J(B
+$B$N$G!"(Bgrep $B$J$I$h$j$b9bB.$J8!:w$,2DG=$G$9!#(B
+
+@item
+SUFARY $B$NImB0J8=q$K=>$C$F!"(Barray $B$H(B mkary $B$r%$%s%9%H!<%k$7$F$*$$$F2<$5$$!#(B
+
+@item
+$B<-=q$r(BSDIC$B7A<0$KJQ49$7!"(Bmkary $B$r;H$C$F<-=q$N:w0z$r@8@.$7$F$*$-$^$9!#(B
+@end enumerate
+
+
+
+@node Libraries for COMPAT, Samples, Library for SDIC, Customizations
 @comment  node-name,  next,  previous,  up
 @section COMPAT$B7A<0$N<-=q$r8!:w$9$k(B
 
@@ -507,159 +589,7 @@ COMPAT $B7A<0$N<-=q$r30It%W%m%0%i%`(B( look / grep )$B$rMxMQ$7$F8!:w$9$k%i%$%
 
 
 
-@node Libraries for SDIC, Samples, Libraries for COMPAT, Customizations
-@comment  node-name,  next,  previous,  up
-@section SDIC$B7A<0$N<-=q$r8!:w$9$k(B
-
-@file{sdic-sgml.el}, @file{sdic-grep.el}, @file{sdic-array.el} $B$O(BSDIC$B7A(B
-$B<0$N<-=q$r8!:w$9$k$?$a$N%i%$%V%i%j$G$9!#$=$l$>$l$N0c$$$O<!$NDL$j$G$9!#(B
-
-@itemize @bullet
-@item
-sdic-sgml.el
-
-$B<-=q%G!<%?$rA4$F%a%b%j$KFI$_9~$s$G$+$i8!:w$r9T$$$^$9!#30It%3%^%s%I$rI,MW(B
-$B$H$7$^$;$s$,!"BgNL$N%a%b%j$,I,MW$K$J$j$^$9!#(B
-
-@item
-sdic-grep.el
-
-grep $B$rMxMQ$7$F8!:w$r9T$$$^$9!#(B
-
-@item
-sdic-array.el
-
-array $B$rMxMQ$7$F8!:w$r9T$$$^$9!#<-=q$N:w0z%U%!%$%k$r;vA0$K@8@.$7$F$*$$$F(B
-$B$+$i8!:w$r9T$$$^$9$N$G!"9bB.$K8!:w$,2DG=$G$9!#$7$+$7!":w0z%U%!%$%k$O<-=q(B
-$B$N(B3$BG\DxEY$NBg$-$5$K$J$j$^$9!#(B
-@end itemize
-
-$BHf3SE*>.5,LO$N<-=q$r8!:w$9$k>l9g$O(B @file{sdic-grep.el} $B$,:GE,$G$7$g$&!#(B
-$B$7$+$7!"(B5MByte $B$h$jBg$-$$<-=q$N>l9g$O(B @file{sdic-array.el} $B$NMxMQ$r9MN8(B
-$B$9$Y$-$@$H;W$$$^$9!#(B
-
-SDIC$B7A<0$N<-=q$N9=B$$K$D$$$F$O!"(B@xref{SDIC Format}.
-
-@menu
-* sdic-sgml.el::                Emacs $B$N%P%C%U%!>e$G8!:w$9$k(B
-* sdic-grep.el::                grep $B$r;H$C$F8!:w$9$k(B
-* sdic-array.el::               array $B$r;H$C$F8!:w$9$k(B
-@end menu
-
-
-
-@node sdic-sgml.el, sdic-grep.el, Libraries for SDIC, Libraries for SDIC
-@comment  node-name,  next,  previous,  up
-@subsection sdic-sgml.el
-
-@file{sdic-sgml.el}$B$O!"(BSDIC$B7A<0$N<-=q$r30It%W%m%0%i%`$KMj$i$:$K8!:w$9$k(B
-$B$?$a$N%i%$%V%i%j$G$9!#(B@xref{SDIC Format}.
-
-@file{sdic-sgml.el} $B$KBP$7$F;XDj$G$-$k%*%W%7%g%s$O<!$NDL$j$G$9!#(B
-
-@table @asis
-@item coding-system
-$B<-=q$N4A;z%3!<%I$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"(B
-@i{sdic-default-coding-system} $B$NCM$r;H$$$^$9!#(B
-
-@item title
-$B<-=q$N%?%$%H%k$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"<-=q$N%U%!%$%kL>$NHs%G%#%l%/(B
-$B%H%jItJ,$r%?%$%H%k$H$7$^$9!#(B
-
-@item add-keys-to-headword
-$BA4$F$N8!:w%-!<$r4^$a$F8+=P$78l$r9=@.$9$k>l9g$K(B nil $B0J30$K@_Dj$7$F2<$5$$!#(B
-$BOB1Q<-=q$r8!:w$9$k>l9g$K!"?6$j2>L>$b4^$a$F=PNO$9$k>l9g$KMxMQ$7$^$9!#(B
-
-@item extract
-$B05=L<-=q$rE83+$9$k$?$a$N30It%3%^%s%I$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"<-=q$,(B
-$B05=L$5$l$F$$$J$$$H8+$J$7$^$9!#(B
-
-@item extract-option
-@i{extract} $B%*%W%7%g%s$K$h$C$F;XDj$5$l$?30It%3%^%s%I$KBP$7$F!"<-=q$rE83+(B
-$B$7$FI8=`=PNO$K=PNO$5$;$k$?$a$N%3%^%s%I%i%$%s0z?t$r;XDj$7$^$9!#>JN,$7$?>l(B
-$B9g$O(B @i{sdic-sgml-extract-option} $B$NCM$r;H$$$^$9!#(B
-@end table
-
-
-
-@node sdic-grep.el, sdic-array.el, sdic-sgml.el, Libraries for SDIC
-@comment  node-name,  next,  previous,  up
-@subsection sdic-grep.el
-
-@file{sdic-grep.el} $B$O!"(BSDIC$B7A<0$N<-=q$r(B grep $B$rMxMQ$7$F8!:w$9$k%i%$%V%i(B
-$B%j$G$9!#(B@xref{SDIC Format}.
-
-@file{sdic-grep.el} $B$KBP$7$F;XDj$G$-$k%*%W%7%g%s$O<!$NDL$j$G$9!#(B
-
-@table @asis
-@item coding-system
-$B<-=q$N4A;z%3!<%I$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"(B
-@i{sdic-default-coding-system} $B$NCM$r;H$$$^$9!#(B
-
-@item title
-$B<-=q$N%?%$%H%k$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"<-=q$N%U%!%$%kL>$NHs%G%#%l%/(B
-$B%H%jItJ,$r%?%$%H%k$H$7$^$9!#(B
-
-@item add-keys-to-headword
-$BA4$F$N8!:w%-!<$r4^$a$F8+=P$78l$r9=@.$9$k>l9g$K(B nil $B0J30$K@_Dj$7$F2<$5$$!#(B
-$BOB1Q<-=q$r8!:w$9$k>l9g$K!"?6$j2>L>$b4^$a$F=PNO$9$k>l9g$KMxMQ$7$^$9!#(B
-
-@item command
-$B30It%3%^%s%I$NL>A0$r;XDj$7$^$9!#>JN,$7$?>l9g$O(B @i{sdic-grep-command} $B$N(B
-$BCM$r;H$$$^$9!#(B
-@end table
-
-
-
-@node sdic-array.el, , sdic-grep.el, Libraries for SDIC
-@comment  node-name,  next,  previous,  up
-@subsection sdic-array.el
-
-@file{sdic-array.el} $B$O!"(BSDIC$B7A<0$N<-=q$r(B array $B$rMxMQ$7$F8!:w$9$k%i%$%V(B
-$B%i%j$G$9!#(B@xref{SDIC Format}.
-
-@enumerate
-@item
-array $B$O!"(BSUFARY $B$KImB0$7$F$$$kBPOC7?A4J88!:w%W%m%0%i%`$G$9!#(BSUFARY $B$K$D(B
-$B$$$F$O!"(B@file{http://cactus.aist-nara.ac.jp/lab/nlt/ss/} $B$r;2>H$7$F2<$5(B
-$B$$!#8!:wBP>]$N%F%-%9%H$N:w0z$r;vA0$K:n@.$7$F$*$/%?%$%W$N8!:w%W%m%0%i%`$J(B
-$B$N$G!"(Bgrep $B$J$I$h$j$b9bB.$J8!:w$,2DG=$G$9!#(B
-
-@item
-SUFARY $B$NImB0J8=q$K=>$C$F!"(Barray $B$H(B mkary $B$r%$%s%9%H!<%k$7$F$*$$$F2<$5$$!#(B
-
-@item
-$B<-=q$r(BSDIC$B7A<0$KJQ49$7!"(Bmkary $B$r;H$C$F<-=q$N:w0z$r@8@.$7$F$*$-$^$9!#(B
-@end enumerate
-
-
-@file{sdic-array.el} $B$KBP$7$F;XDj$G$-$k%*%W%7%g%s$O<!$NDL$j$G$9!#(B
-
-@table @asis
-@item coding-system
-$B<-=q$N4A;z%3!<%I$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"(B
-@i{sdic-default-coding-system} $B$NCM$r;H$$$^$9!#(B
-
-@item title
-$B<-=q$N%?%$%H%k$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"<-=q$N%U%!%$%kL>$NHs%G%#%l%/(B
-$B%H%jItJ,$r%?%$%H%k$H$7$^$9!#(B
-
-@item add-keys-to-headword
-$BA4$F$N8!:w%-!<$r4^$a$F8+=P$78l$r9=@.$9$k>l9g$K(B nil $B0J30$K@_Dj$7$F2<$5$$!#(B
-$BOB1Q<-=q$r8!:w$9$k>l9g$K!"?6$j2>L>$b4^$a$F=PNO$9$k>l9g$KMxMQ$7$^$9!#(B
-
-@item command
-$B30It%3%^%s%I$NL>A0$r;XDj$7$^$9!#>JN,$7$?>l9g$O(B @i{sdic-array-command} $B$N(B
-$BCM$r;H$$$^$9!#(B
-
-@item array-file-name
-$B<-=q$N:w0z%U%!%$%k$NL>A0$r;XDj$7$^$9!#>JN,$7$?>l9g$O!"(B@i{command} $B%*%W%7%g(B
-$B%s$K$h$C$F;XDj$5$l$?30It%3%^%s%I$N%G%U%)%k%HCM$,;H$o$l$^$9!#(B
-@end table
-
-
-
-@node Samples, Trouble Shooting, Libraries for SDIC, Customizations
+@node Samples, Trouble Shooting, Libraries for COMPAT, Customizations
 @comment  node-name,  next,  previous,  up
 @section $B@_DjNc(B
 
@@ -685,7 +615,7 @@ SUFARY $B$NImB0J8=q$K=>$C$F!"(Barray $B$H(B mkary $B$r%$%s%9%H!<%k$7$F$*$$$
 @menu
 * Broken look::                 look $B$NIT6q9g$K$D$$$F(B
 * Broken grep::                 grep $B$NIT6q9g$K$D$$$F(B
-* Using sdic-array.el in Windows::
+* Using array in Windows::
 @end menu
 
 
@@ -719,7 +649,7 @@ grep -i '^a lot of' gene.dic
 @end lisp
 
 
-@node Broken grep, Using sdic-array.el in Windows, Broken look, Trouble Shooting
+@node Broken grep, Using array in Windows, Broken look, Trouble Shooting
 @comment  node-name,  next,  previous,  up
 @subsection grep $B$NIT6q9g$K$D$$$F(B
 
@@ -759,12 +689,12 @@ grep zymase /usr/dict/gene.dic
 @end lisp
 
 
-@node Using sdic-array.el in Windows, , Broken grep, Trouble Shooting
+@node Using array in Windows, , Broken grep, Trouble Shooting
 @comment  node-name,  next,  previous,  up
-@subsection sdic-array.el $B$r(B Windows $B4D6-$G;H$&$?$a$N@_Dj(B
+@subsection array $B$r(B Windows $B4D6-$G;H$&$?$a$N@_Dj(B
 
-Windows $B4D6-$O%5%V%W%m%;%9$N07$$$KLdBj$,$"$k$?$a$K!"(B@file{sdic-array.el} 
-$B$K$h$k8!:w$r9T$J$&$?$a$K$O!"4v$D$+Cm0U$9$k$3$H$,$"$j$^$9!#(B
+Windows $B4D6-$O%5%V%W%m%;%9$N07$$$KLdBj$,$"$k$?$a$K!"(B@file{sdicf-client.el}
+$B$+$i(B array $B$rMxMQ$7$F8!:w$r9T$J$&$?$a$K$O!"4v$D$+Cm0U$9$k$3$H$,$"$j$^$9!#(B
 
 $B0J2<$N<j=g$OGr0f$5$s$K65$($FD:$-$^$7$?!#(B
 
@@ -787,7 +717,7 @@ Meadow + Win-95/98 $B$G$O!"(Barray $B$H0lIt$N>oCs%=%U%H$NAj@-$,0-$$$h$&$G$9!#
 $B$=$l$G$b$@$a$J$H$-$O!"0J2<$N>r7o$r<i$l$PF0$/(B@emph{$B$+$b(B}$B$7$l$^$;$s!#(B
 @itemize @bullet
 @item
-@file{sdic-array.el} $B$r;H$C$F8!:w$9$k<-=q$r$R$H$D$@$1$K$9$k!#(B
+@file{sdicf-client.el} $B$r;H$C$F8!:w$9$k<-=q$r$R$H$D$@$1$K$9$k!#(B
 
 @item
 $B0J2<$NMM$J%3!<%I$r(B @file{~/.emacs} $B$K=q$/!#(B
@@ -840,9 +770,10 @@ SDIC$B7A<0$KJQ49$7$F$/$@$5$$!#$^$?!"9bNS$5$s$K$h$k(B @file{jgene.perl} $B$r;H
 $B$J$,$i%$%s%?!<%M%C%H>e$G$OG[I[$5$l$F$$$^$;$s!#(B
 
 $B%Q%C%1!<%8$KF1:-$5$l$F$$$k(B @file{eijirou.perl} $B$r;HMQ$7$F!"(BCOMPAT$B7A<0$^(B
-$B$?$O(BSDIC$B7A<0$KJQ49$7$F$/$@$5$$!#1Q<-O/$O6K$a$F5pBg$J$N$G!"8!:w$K;~4V$,$+(B
-$B$+$j$^$9!#(BUNIX $B4D6-$G;HMQ$5$l$k>l9g$O!"(BSDIC$B7A<0$KJQ49$7$F!"(B
-@file{sdic-array.el} $B$rMxMQ$5$l$?J}$,NI$$$G$7$g$&!#(B@xref{sdic-array.el}.
+$B$?$O(BSDIC$B7A<0$KJQ49$7$F$/$@$5$$!#$=$NJ}K!$K$D$$$F$O!"IUB0$N(B @file{INSTALL} 
+$B$b;2>H$7$F$/$@$5$$!#1Q<-O/$O6K$a$F5pBg$J$N$G!"8!:w$K;~4V$,$+$+$j$^$9!#(B
+UNIX $B4D6-$G;HMQ$5$l$k>l9g$O!"(BSDIC$B7A<0$KJQ49$7$F!"(BSUFARY $B$rMxMQ$7$F8!:w$9(B
+$B$kJ}$,NI$$$G$7$g$&!#(B@xref{Library for SDIC}.
 
 @item EDICT$B<-=q(B
 @file{ftp://ftp.u-aizu.ac.jp/pub/SciEng/nihongo/ftp.cc.monash.edu.au/00INDEX.html}

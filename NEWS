@@ -1,0 +1,6 @@
+`sdic-sgml.el', `sdic-grep.el', and `sdic-array.el' have been replaced
+by `sdicf.el' and `sdicf-client.el'.
+
+Install procedure has been re-constructed. Please use `./configure &
+make' instead of `make'.
+

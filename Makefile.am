@@ -1,4 +1,6 @@
-EXTRA_DIST = texi contrib
+# -*- Makefile -*-
+EXTRA_DIST = texi/sdic.texi contrib/edict.perl contrib/eijirou.perl contrib/gene.perl contrib/jgene.perl
+DISTCLEANFILES = texi/sdic.info
 SUBDIRS = lisp
 
 dict: @EIWA_DICTIONARY@ @WAEI_DICTIONARY@
@@ -9,10 +11,15 @@ install-dict:
 	$(INSTALL_DATA) @EIWA_DICTIONARY@ @DICTDIR@
 	$(INSTALL_DATA) @WAEI_DICTIONARY@ @DICTDIR@
 
-info: texi/sdic.texi
-	$(EMACS) -batch -q -l texinfmt -f batch-texinfo-format $?
+install-info: texi/sdic.info
+	$(INSTALL_DATA) texi/sdic.info @infodir@
 
-config: 
+info: texi/sdic.info
+
+texi/sdic.info: texi/sdic.texi
+	$(EMACS) -batch -q -l install.el -f batch-texinfo-format $?
+
+config: lisp/sample.emacs
 	@echo -n "本当に $$HOME/.emacs を書き換えますか[yes/no] " ;\
 	read YN ;\
 	test "$$YN" = yes

@@ -10,6 +10,8 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+# -*- Makefile -*-
+
 
 SHELL = @SHELL@
 
@@ -75,20 +77,21 @@ emacsdir = @emacsdir@
 lispdir = @lispdir@
 
 SOURCES = sdicf.el sdicf-client.el sdic-compat.el sdic-gene.el stem.el
-EXTRA_DIST = sdic.el.in lp.el
+EXTRA_DIST = sdic.el.in
 DISTCLEANFILES = sdic.el
-lisp_LISP = $(SOURCES) sdic.el  # sdic.el must be in this
+lisp_LISP = $(SOURCES) sdic.el
 ELCFILES = $(lisp_LISP:.el=.elc)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =  sdic.el sample.emacs
 LISP =  $(lisp_LISP)
 
-DIST_COMMON =  Makefile.am Makefile.in sample.emacs.in sdic.el.in
+DIST_COMMON =  Makefile.am Makefile.in elisp-comp sample.emacs.in \
+sdic.el.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -227,7 +230,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 $(ELCFILES): $(lisp_LISP)
-	$(EMACS) -batch -l lp.el -f batch-byte-compile $(lisp_LISP)
+	$(EMACS) -batch -q -no-site-file -l elisp-comp -f batch-byte-compile $(lisp_LISP)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
