@@ -663,15 +663,16 @@ sdic-read-from-minibuffer 関数のヒストリ")
 (defun sdic-close-window () "\
 検索表示バッファを表示しているウインドウを消去する関数"
   (interactive)
-  (let ((w (get-buffer-window sdic-buffer-name)))
+  (let ((w (get-buffer-window sdic-buffer-name))
+	(b (get-buffer sdic-buffer-name)))
     (if w
-	(cond
-	 ((= (window-height w) sdic-window-height)
-	  (delete-window w))
-	 (t
-	  (set-window-buffer w (other-buffer))
-	  (select-window (next-window)))
-	 ))))
+	(progn
+	  (bury-buffer b)
+	  (if (= (window-height w) sdic-window-height)
+	      (delete-window w)
+	    (set-window-buffer w (other-buffer))
+	    (select-window (next-window)))
+	  ))))
 
 
 (defun sdic-exit () "\
