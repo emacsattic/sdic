@@ -48,8 +48,12 @@ AC_SUBST(DICTDIR)
 DICTTYPE=sdic
 AC_ARG_WITH(
         dicttype,
-        [  --with-dicttype=TYPE    use TYPE of dictionaries (sdic|dic) [sdic]],
-        DICTTYPE=$with_dicttype,
+        [  --with-dicttype=TYPE    use TYPE of dictionaries (sdic|compat) [sdic]],
+	[case "${withval}" in
+		dic|sdic)	DICTTYPE=${withval} ;;
+		compat)		DICTTYPE=dic ;;
+		*)		AC_MSG_ERROR([Unknown dictionary type is specified.]) ;;
+	esac],
 )
 
 EIJIROU_DIR="./eijirou"
@@ -72,7 +76,10 @@ MULTI_DICT="no"
 AC_ARG_WITH(
         multidict,
         [  --with-multidict(=ARG)  use multiple dictionaries (yes|no) [no]],
-        MULTI_DICT=$with_multidict,
+	[case "${withval}" in
+		yes|no)	MULTI_DICT=$withval ;;
+		*)	AC_MSG_ERROR([Illegal value is specified.]) ;;
+	esac],
 )
 
 AC_SUBST(MULTI_DICT)

@@ -1,3 +1,12 @@
+Tue Jul 27 14:44:24 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* INSTALL: Modify documents of install procedure at UNIX
+	  environment.
+
+	* configure.in: Change range of legal values of `--with-dicttype'.
+
+	* install.el.in: Add help message for `--with-multidict'.
+
 Mon Jul 26 18:01:04 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* Release SDIC-2.1-pre2.

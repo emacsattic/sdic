@@ -10,6 +10,7 @@
 
 
 
+
 ◎ インストール手順 ( UNIX 環境の場合 )
 
 (1) このファイルと同じディレクトリに「GENE辞書」のデータ gene95.lzh ま
@@ -34,34 +35,34 @@
         + 使用する Emacs の種類を指定する
       --with-lispdir=DIR      emacs lisp files go to DIR [guessed]
         + Lispプログラムをインストールするディレクトリを指定する
-      --with-dictdir=DIR      dictionary files go to DIR [/usr/dict]
+      --with-dictdir=DIR      dictionary files go to DIR [/usr/local/share/dict]
         + 辞書ファイルをインストールするディレクトリを指定する
       --with-dicttype=TYPE    use TYPE of dictionaries [sdic]
-        + 辞書の種類を指定する sdic または dic
+        + 辞書の種類を指定する sdic または compat
 
-(3) make を実行してLispプログラムを作成します。
+(3) make を実行して Lisp プログラムを作成します。
 
-(4) make dict を実行して辞書ファイルを作成します。
-
-    既に辞書ファイルがインストールされているならば、、辞書ファ
-    イルを再作成する必要はありません。ただし、ディフォルトの
-    ディレクトリ (/usr/dict) 以外に辞書ファイルを格納してい
-    る場合は、 configure 時に --with-dictdir=DIR オプション
-    で、そのディレクトリを指定してください。
-
-(5) make install を実行して Lispプログラムをインストールします。
+(4) make install を実行して Lisp プログラムをインストールします。
     インストール先のディレクトリによっては root 特権が必要です。
 
-(6) make install-dict を実行して辞書ファイルをインストールします。
+(5) make install-info を実行して Info をインストールします。ただし、Emacs
+    のバージョンによっては正常に処理できない場合があります。その場合は、
+    直接 sdic.texi を Emacs で読み込んでから、M-x texinfo-format-buffer
+    を行って、手作業でインストールしてください。
+
+
+    ******************************************************************
+    インストール済の辞書ファイルを利用する場合には、(6),(7) の処理は必
+    要ありません。ただし、デフォルトのディレクトリ (/usr/local/share/dict)
+    以外に辞書ファイルを格納している場合は、configure 時に
+    --with-dictdir=DIR オプションで、そのディレクトリを指定してください。
+    ******************************************************************
+
+(6) make dict を実行して辞書ファイルを作成します。
+
+(7) make install-dict を実行して辞書ファイルをインストールします。
     インストール先のディレクトリによっては root 特権が必要です。
 
-    既に辞書ファイルがインストールされているならば、再インス
-    トールする必要はありません。
-
-(7) Info が必要ならば、make install-info を実行してください。ただし、
-    Emacs のバージョンによっては正常に処理できない場合があります。その
-    場合は、直接 sdic.texi を Emacs で読み込んでから、
-    M-x texinfo-format-buffer を行ってください。
 
 (8) ~/.emacs を編集して個人設定を行います。sample.emacs に設定例が入っ
     ていますので、参考にしてください。この設定をそのまま使う場合は、
@@ -95,13 +96,13 @@ Windows 環境では、必要なコマンドが不足しているために、上記の UNIX 用の
 
 (3) 次のコマンドを実行して、インストールを行ないます。
 
-        mule -batch -q -l install.el -f make-sdic
+        % mule -batch -q -l install.el -f make-sdic
 
     このスクリプトは、実行された Meadow の環境から適切なインストール先
     を推定して、インストールを実行します。実際に何処にインストールされ
     るか確認したい場合は、次のようにしてください。
 
-        mule -batch -q -l install.el -f make-sdic -n
+        % mule -batch -q -l install.el -f make-sdic -n
 
     インストール先のディレクトリを変更したい場合は、以下のオプションで
     指定してください。
@@ -111,10 +112,12 @@ Windows 環境では、必要なコマンドが不足しているために、上記の UNIX 用の
       --with-dictdir=DIR      dictionary files go to DIR [guessed]
         + 辞書ファイルをインストールするディレクトリを指定する
       --infodir=DIR           Info files go to DIR [guessed]
-	+ Info をインストールするディレクトリを指定する%
+	+ Info をインストールするディレクトリを指定する
 
     なお、これらのオプションは、`-f make-sdic' よりも後に指定するよう
-    にしてください。
+    にしてください。e.g.
+
+        % mule -batch -q -l install.el -f make-sdic --with-lispdir=C://home/elisp
 
     既に辞書ファイルがインストールされている場合は、(1),(2) の処理は必
     要ありません。ただし、デフォルト以外のディレクトリに辞書をインストー
@@ -128,31 +131,34 @@ Windows 環境では、必要なコマンドが不足しているために、上記の UNIX 用の
 
 ◎ 「英辞郎」を使う場合のインストール手順
 
-「英辞郎」とは、Nifty-Serve 英会話フォーラムまたは書籍から入手可能な辞
-書です。詳しくはそれらに附属のドキュメントを参照して下さい。単純なテキ
-スト形式で配布されている英和辞書としては、おそらく最大のものだと思われ
-ますが、残念ながらインターネット上では配布されていません。
+    「英辞郎」とは、Nifty-Serve 英会話フォーラムまたは書籍から入手可能
+    な辞書です。詳しくはそれらに附属のドキュメントを参照して下さい。単
+    純なテキスト形式で配布されている英和辞書としては、おそらく最大のも
+    のだと思われますが、残念ながらインターネット上では配布されていませ
+    ん。
 
-「英辞郎」を利用する場合は、英辞郎を構成するファイル群を一つディレクト
-リに置き、configure 時にそのディレクトリを --with-eijirou=DIR オプショ
-ンで指定します (標準では configure は ./eijirou を調べます)。 e.g.
+    「英辞郎」を利用する場合は、英辞郎を構成するファイル群を一つディレ
+    クトリに置き、configure 時にそのディレクトリを --with-eijirou=DIR 
+    オプションで指定します (標準では configure は ./eijirou を調べます)。 
+    e.g.
 
-  % ./configure --with-eijirou=/somewhere/eijirou
+        % ./configure --with-eijirou=/somewhere/eijirou
 
-# configure と同じディレクトリに gene95.lzh, gene95.tar.gz, edict.gz 
-# が置かれているとそちらを優先してしまいます。ご注意ください。
+    # configure と同じディレクトリに gene95.lzh, gene95.tar.gz, edict.gz
+    # が置かれているとそちらを優先してしまいます。ご注意ください。
 
-ただし、「英辞郎」は極めて巨大なので、SDIC形式では grep による検索に非
-常に時間がかかります。可能ならば SUFARY を利用されることをお勧めします。
-詳細については Info を参照して下さい。
+    ただし、「英辞郎」は極めて巨大なので、SDIC形式では grep による検索
+    に非常に時間がかかります。可能ならば SUFARY を利用されることをお勧
+    めします。詳細については Info を参照して下さい。
 
-一方、DIC形式であれば、検索方法は前方一致と完全一致に限られますが、
-look コマンドを利用して充分に実用的な速度で検索できます。DIC形式を
-使うには configure 時に --with-dicttype=dic とオプションを指定します。
+    一方、COMPAT形式であれば、検索方法は前方一致と完全一致に限られます
+    が、look コマンドを利用して充分に実用的な速度で検索できます。COMPAT
+    形式を使うには configure 時に --with-dicttype=compat とオプション
+    を指定します。
 
-また、「和英辞郎」という和英辞書も配布されています。これを利用される場
-合も「英辞郎」と基本的に同じです。--with-waeijirou=DIR オプションでディ
-レクトリを指定します (標準では configure は ./waeijirou を調べます)。 
-e.g.
+    また、「和英辞郎」という和英辞書も配布されています。これを利用され
+    る場合も「英辞郎」と基本的に同じです。--with-waeijirou=DIR オプショ
+    ンでディレクトリを指定します (標準では configure は ./waeijirou を
+    調べます)。 e.g.
 
-  % ./configure --with-waeijirou=/somewhere/waeijirou
+        % ./configure --with-waeijirou=/somewhere/waeijirou

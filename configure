@@ -18,7 +18,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --with-dictdir=DIR      dictionary files go to DIR [/usr/local/share/dict]"
 ac_help="$ac_help
-  --with-dicttype=TYPE    use TYPE of dictionaries (sdic|dic) [sdic]"
+  --with-dicttype=TYPE    use TYPE of dictionaries (sdic|compat) [sdic]"
 ac_help="$ac_help
   --with-eijirou=DIR      eijirou files are in DIR [./eijirou]"
 ac_help="$ac_help
@@ -705,7 +705,7 @@ fi
 
 PACKAGE=sdic
 
-VERSION=2.1-pre1
+VERSION=2.1-pre2
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -1171,7 +1171,11 @@ DICTTYPE=sdic
 # Check whether --with-dicttype or --without-dicttype was given.
 if test "${with_dicttype+set}" = set; then
   withval="$with_dicttype"
-  DICTTYPE=$with_dicttype
+  case "${withval}" in
+		dic|sdic)	DICTTYPE=${withval} ;;
+		compat)		DICTTYPE=dic ;;
+		*)		{ echo "configure: error: Unknown dictionary type is specified." 1>&2; exit 1; } ;;
+	esac
 fi
 
 
@@ -1197,7 +1201,10 @@ MULTI_DICT="no"
 # Check whether --with-multidict or --without-multidict was given.
 if test "${with_multidict+set}" = set; then
   withval="$with_multidict"
-  MULTI_DICT=$with_multidict
+  case "${withval}" in
+		yes|no)	MULTI_DICT=$withval ;;
+		*)	{ echo "configure: error: Illegal value is specified." 1>&2; exit 1; } ;;
+	esac
 fi
 
 
@@ -1205,7 +1212,7 @@ fi
 
 EIWA_DICT=""
 echo $ac_n "checking for EIWA Dictionary""... $ac_c" 1>&6
-echo "configure:1209: checking for EIWA Dictionary" >&5
+echo "configure:1216: checking for EIWA Dictionary" >&5
 for dict in gene.sdic eedict.sdic eijirou.sdic \
 	    gene.dic  eedict.dic  eijirou.dic \
 	    e4jwords.sdic ecompdic.sdic eenamdict.sdic \
@@ -1257,7 +1264,7 @@ EIWA_DICT_LIST='"'`echo "$EIWA_DICT_LIST" | sed 's/^	//;s/	/" "/g'`'"'
 
 
 echo $ac_n "checking for WAEI Dictionary""... $ac_c" 1>&6
-echo "configure:1261: checking for WAEI Dictionary" >&5
+echo "configure:1268: checking for WAEI Dictionary" >&5
 WAEI_DICT=""
 for dict in jedict.sdic jgene.sdic waeijirou.sdic \
 	    jedict.dic  jgene.dic  waeijirou.dic \

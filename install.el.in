@@ -216,6 +216,7 @@ Direcotry:
   --infodir=DIR           info documentation in DIR [guessed]
   --with-lispdir=DIR      emacs lisp files go to DIR [guessed]
   --with-dictdir=DIR      dictionary files go to DIR [guessed]
+  --with-multidict=(ARG)  use multiple dictionaries (yes|no) [no]
 "
 	 (if msg (concat msg "\n") "")))
 
