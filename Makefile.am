@@ -12,6 +12,17 @@ install-dict:
 info: texi/sdic.texi
 	$(EMACS) -batch -q -l texinfmt -f batch-texinfo-format $?
 
+config: 
+	@echo -n "本当に $$HOME/.emacs を書き換えますか[yes/no] " ;\
+	read YN ;\
+	test "$$YN" = yes
+	@if [ -f "$$HOME/.emacs" ] ;\
+	then \
+	     echo "元の $$HOME/.emacs を $$HOME/.emacs.orig として保存します"
+	     cp -p $$HOME/.emacs $$HOME/.emacs.orig ;\
+	fi
+	( echo ; cat sample.emacs )>>$$HOME/.emacs
+
 
 ## 辞書を生成するためのルール
 gene.dic: contrib/gene.perl gene.txt
