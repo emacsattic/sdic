@@ -1,6 +1,8 @@
 1999-07-22  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 
 	* configure.in: Change default DICTDIR.
+	* lisp/sdic.el: Replace %{EIWA,WAEI}_DICTIONARY_PATH% with
+	%{EIWA,WAEI}_DICT_PATH% ; notation changed.
 	
 1999-07-21  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 

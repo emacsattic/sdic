@@ -1156,7 +1156,7 @@ if test "$SORT" = "no"; then
 fi
 
 
-DICTDIR=/usr/dict
+DICTDIR=${datadir}/dict
 # Check whether --with-dictdir or --without-dictdir was given.
 if test "${with_dictdir+set}" = set; then
   withval="$with_dictdir"
