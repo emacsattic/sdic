@@ -109,7 +109,7 @@
 (require 'sdic)
 (require 'sdic-sgml)
 (provide 'sdic-array)
-(put 'sdic-array 'version "1.1")
+(put 'sdic-array 'version "2.0")
 (put 'sdic-array 'init-dictionary 'sdic-array-init-dictionary)
 (put 'sdic-array 'open-dictionary 'sdic-array-open-dictionary)
 (put 'sdic-array 'close-dictionary 'sdic-array-close-dictionary)

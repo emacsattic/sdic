@@ -38,15 +38,15 @@
 ;;
 ;; (3) 使えるようにした辞書のリストを、sdic-eiwa-dictionary-list およ
 ;;     び sdic-waei-dictionary-list に設定します。例えば、英和辞書
-;;     /usr/dict/gene.dic を sdic-grep.el を使って検索する場合は次のよ
-;;     うになります。
+;;     /usr/dict/gene.sdic を sdic-grep.el を使って検索する場合は次の
+;;     ようになります。
 ;;
-;;         (setq sdic-eiwa-dictionary-list '((sdic-grep "/usr/dict/gene.dic")))
+;;         (setq sdic-eiwa-dictionary-list '((sdic-grep "/usr/dict/gene.sdic")))
 ;;
 ;;     複数の辞書を同時に検索することも出来ます。
 ;;
-;;         (setq sdic-waei-dictionary-list '((sdic-array "~/data/edict")
-;;                                           (sdic-comat "/usr/dict/jgene.dic")))
+;;         (setq sdic-waei-dictionary-list '((sdic-array "~/data/jedict.sdic")
+;;                                           (sdic-compat "/usr/dict/jgene.dic")))
 ;;
 ;;     辞書を利用しない場合は nil を代入して下さい。また、これらの設定
 ;;     は ~/.emacs などの適切な場所に書き込んで下さい。
@@ -185,7 +185,7 @@ Regexp of Englist prepositions
 (defvar sdic-waei-symbol-list nil "和英辞典のシンボル")
 (defvar sdic-buffer-start-point nil "検索結果表示バッファの表示開始ポイント")
 (defvar sdic-mode-map nil "Keymap of sdic-mode")
-(defconst sdic-version "2.0pre1")
+(defconst sdic-version "2.0")
 (defconst sdic-buffer-name "*sdic*" "検索結果表示バッファの名前")
 (defconst sdic-mode-name "SDIC" "検索結果を表示するバッファの major mode")
 

@@ -90,7 +90,7 @@
 ;;; ライブラリ定義情報
 (require 'sdic)
 (provide 'sdic-sgml)
-(put 'sdic-sgml 'version "1.1")
+(put 'sdic-sgml 'version "2.0")
 (put 'sdic-sgml 'init-dictionary 'sdic-sgml-init-dictionary)
 (put 'sdic-sgml 'open-dictionary 'sdic-sgml-open-dictionary)
 (put 'sdic-sgml 'close-dictionary 'sdic-sgml-close-dictionary)

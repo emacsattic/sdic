@@ -107,7 +107,7 @@
 ;;; ライブラリ定義情報
 (require 'sdic)
 (provide 'sdic-compat)
-(put 'sdic-compat 'version "1.2")
+(put 'sdic-compat 'version "2.0")
 (put 'sdic-compat 'init-dictionary 'sdic-compat-init-dictionary)
 (put 'sdic-compat 'open-dictionary 'sdic-compat-open-dictionary)
 (put 'sdic-compat 'close-dictionary 'sdic-compat-close-dictionary)

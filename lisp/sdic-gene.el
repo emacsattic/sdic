@@ -74,7 +74,7 @@
 ;;; ライブラリ定義情報
 (require 'sdic)
 (provide 'sdic-gene)
-(put 'sdic-gene 'version "1.2")
+(put 'sdic-gene 'version "2.0")
 (put 'sdic-gene 'init-dictionary 'sdic-gene-init-dictionary)
 (put 'sdic-gene 'open-dictionary 'sdic-gene-open-dictionary)
 (put 'sdic-gene 'close-dictionary 'sdic-gene-close-dictionary)

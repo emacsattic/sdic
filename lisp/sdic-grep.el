@@ -89,7 +89,7 @@
 (require 'sdic)
 (require 'sdic-sgml)
 (provide 'sdic-grep)
-(put 'sdic-grep 'version "1.1")
+(put 'sdic-grep 'version "2.0")
 (put 'sdic-grep 'init-dictionary 'sdic-grep-init-dictionary)
 (put 'sdic-grep 'open-dictionary 'sdic-grep-open-dictionary)
 (put 'sdic-grep 'close-dictionary 'sdic-sgml-close-dictionary)
@@ -108,7 +108,7 @@
 			  (if (file-executable-p (expand-file-name file path))
 			      (throw 'which (expand-file-name file path))))
 		       exec-path))
-	    '("grep" "grep.exe")))
+	    '("fgrep" "fgrep.exe" "grep" "grep.exe")))
   "*Executable file name of grep")
 
 (defconst sdic-grep-buffer-name " *sdic-grep*")
