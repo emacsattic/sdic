@@ -25,6 +25,13 @@
 #    perl gene.perl --compat-to-sdic gene.dic >gene.sdic
 #
 # として下さい。
+#
+# SDIC形式の辞書をCOMPAT形式に変換する場合は、
+#
+#    perl gene.perl --sdic-to-compat gene.sdic >gene.dic
+#
+# として下さい。SDIC形式のほうが情報が豊かなので、この変換を行うと一般
+# 的には情報が欠落しますので、注意して使って下さい。
 
 
 if(( $ARGV[0] eq '--compat' )){
@@ -33,6 +40,9 @@ if(( $ARGV[0] eq '--compat' )){
 } elsif(( $ARGV[0] eq '--compat-to-sdic' )){
     shift;
     &compat_to_sdic();
+} elsif(( $ARGV[0] eq '--sdic-to-compat' )){
+    shift;
+    &sdic_to_compat();
 } else {
     &sdic();
 }
@@ -110,5 +120,31 @@ sub compat_to_sdic {
     for( sort @line ){
 	@f = split(/</,$_,2);
 	print $f[1];
+    }
+}
+
+# SDIC形式の辞書をCOMPAT形式に変換する関数
+#     SDIC形式のほうが情報が多いため、COMPAT形式にすると、どうしても情
+#     報の欠落が生じるため、注意して利用してください。
+sub sdic_to_compat {
+    while( <> ){
+	next unless /^</;
+	s/\s+$//;			# 行末の空白文字を削除
+	s!^<([KH])>(.*)</\1>!!;		# 見出し語を取り出す
+	$head = $2;
+	$head =~ s/&lt;/</g;		# 見出し語のメタキャラクタを置換する
+	$head =~ s/&gt;/>/g;
+	$head =~ s/&amp;/&/g;
+	while( s!^<K>(.*)</K>!! ){ ; }
+	s/&lt;/</g;			# 説明文のメタキャラクタを置換する
+	s/&gt;/>/g;
+	s/&amp;/&/g;
+	$key = $head;
+	$key  =~ tr/A-Z/a-z/;
+	push( @line, "$key\x00$head\x00\t$head\t$_\n" );
+    }
+    for( sort @line ){
+	@f = split(/\t/,$_,3);
+	print "$f[1]\t$f[2]";
     }
 }
