@@ -151,7 +151,7 @@
 						(progn (skip-chars-forward "^\t") (point)))
 			      (1+ (point)))
 			ret))))
-    (reverse ret)))
+    (nreverse ret)))
 
 
 (defsubst sdic-gene-re-search-internal (string)
@@ -163,7 +163,7 @@
 						(progn (skip-chars-forward "^\t") (point)))
 			      (1+ (point)))
 			ret))))
-    (reverse ret)))
+    (nreverse ret)))
 
 
 (defun sdic-gene-search-entry (dic string &optional search-type) "\
