@@ -72,7 +72,7 @@
 
 
 
-(defconst xdic:version "1.1")
+(defconst xdic:version "1.2")
 
 (defconst xdic:buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic:mode-name "Xdic" "検索結果を表示するバッファの major mode")
@@ -83,64 +83,17 @@
 
 
 
-
 ;;; ここから本体
+
+
+;;; -tion, -ize などの語尾変化を処理するためのライブラリをロード
+(load "stem")
 
 ;;; Emacs20 では、look が使う漢字コードの設定が必要
 (if (string-match "^20\\." emacs-version)
     (setq process-coding-system-alist (cons (cons ".*look" xdic:dictionary-kanji-code)
 					    (if (boundp 'process-coding-system-alist)
 						process-coding-system-alist))))
-
-
-
-(defun xdic:stripping-suffix (str) "\
-規則変化を行なう語の活用語尾を取り除く関数
-与えられた語の原形として可能性のある語のリストを返す"
-  (let ((c)(l))
-    (save-match-data
-      (if (setq l (cond
-		   ;; 比較級/最上級
-		   ((string-match "\\([^aeiou]\\)\\1e\\(r\\|st\\)$" str)
-		    (list (substring str (match-beginning 1) (match-end 1))
-			  (substring str (match-beginning 0) (match-beginning 2))))
-		   ((string-match "\\([^aeiou]\\)ie\\(r\\|st\\)$" str)
-		    (setq c (substring str (match-beginning 1) (match-end 1)))
-		    (list c (concat c "y") (concat c "ie")))
-		   ((string-match "e\\(r\\|st\\)$" str) '("" "e"))
-		   ;; 3単現/複数形
-		   ((string-match "ches$" str) '("ch" "che"))
-		   ((string-match "shes$" str) '("sh" "che"))
-		   ((string-match "ses$" str) '("s" "se"))
-		   ((string-match "xes$" str) '("x" "xe"))
-		   ((string-match "zes$" str) '("z" "ze"))
-		   ((string-match "ves$" str) '("f" "fe"))
-		   ((string-match "\\([^aeiou]\\)oes$" str)
-		    (setq c (substring str -4 -3))
-		    (list c (concat c "o") (concat c "oe")))
-		   ((string-match "\\([^aeiou]\\)ies$" str)
-		    (setq c (substring str -4 -3))
-		    (list c (concat c "y") (concat c "ie")))
-		   ((string-match "es$" str) '("" "e"))
-		   ((string-match "s$" str) '(""))
-		   ;; 過去形/過去分詞
-		   ((string-match "\\([^aeiou]\\)ied$" str)
-		    (setq c (substring str -4 -3))
-		    (list c (concat c "y") (concat c "ie")))
-		   ((string-match "\\([^aeiou]\\)\\1ed$" str)
-		    (list (substring str -4 -3)
-			  (substring str -4 -1)))
-		   ((string-match "cked$" str) '("c" "cke"))
-		   ((string-match "ed$" str) '("" "e"))
-		   ;; 現在分詞
-		   ((string-match "\\([^aeiou]\\)\\1ing$" str)
-		    (list (substring str -5 -4)))
-		   ((string-match "ing$" str) '("" "e"))
-		   ))
-	  (progn
-	    (setq c (substring str 0 (match-beginning 0)))
-	    (setq l (mapcar '(lambda (s) (concat c s)) l))))
-      (append l (list str)))))
 
 
 
@@ -223,10 +176,15 @@ xdic:read-from-minibuffer 関数のヒストリ")
       (setq word (xdic:read-from-minibuffer
 		  (format "\"%s\" is too short word. Input word again : " word)
 		  word)))
-  (let ((case-fold-search t)		; 大文字/子文字を区別しない
-	(l (xdic:stripping-suffix word)))
+  (let ((case-fold-search t))		; 大文字/子文字を区別しない
     (cond
-     ((xdic:lookup-dictionary (car l))
+     ((or
+       ;; 動詞/形容詞の規則変化、名詞の複数形を処理
+       (and (setq l (stem:stripping-conjugation word))
+	    (xdic:lookup-dictionary (car l)))
+       ;; 派生語の処理
+       (and (setq l (stem:stripping-inflection word))
+	    (xdic:lookup-dictionary (car l))))
       (catch 'loop
 	(mapcar
 	 '(lambda (s)			; 原形を探す
@@ -237,6 +195,7 @@ xdic:read-from-minibuffer 関数のヒストリ")
 	(xdic:format-buffer (car l))
 	(message "Can't find word : %s" word))
       (xdic:display-buffer))
+     ;; 単語が見つからなかった場合
      (t (message "Can't find word : %s / %s" (car l) word)))))
 
 
@@ -278,17 +237,15 @@ xdic:read-from-minibuffer 関数のヒストリ")
 (defun xdic:display-buffer () "\
 検索結果表示バッファを表示する関数"
   (interactive)
-  (let ((w (selected-window)))
-    (if (string= (buffer-name (window-buffer w))
-		 xdic:buffer-name)
-	(recenter 0)
-      (set-window-buffer
-       (select-window (if (one-window-p)
-			  (split-window w (- (window-height) xdic:window-height))
-			(next-window)))
-       xdic:buffer-name)
-      (recenter 0)
-      (if xdic:disable-select-window (select-window w)))))
+  (let ((w1 (selected-window))
+	(w2 (get-buffer-window xdic:buffer-name)))
+    (if w2 (select-window w2)
+      (setq w2 (select-window (if (one-window-p)
+				  (split-window w1 (- (window-height) xdic:window-height))
+				(next-window))))
+      (set-window-buffer w2 xdic:buffer-name))
+    (recenter 0)
+    (if xdic:disable-select-window (select-window w1))))
 
 
 
