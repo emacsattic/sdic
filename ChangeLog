@@ -10,6 +10,10 @@ Mon Jul 19 18:04:31 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 	  Edited comments.
 	* texi/sdic.texi: Update documents for SDIC-2.1.
 
+1999-07-18  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
+
+	* Makefile.am: Fix `config' entry bug.
+	
 Fri Jul 16 19:00:39 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* lisp/sdicf.el: Bug fix of sdicf-entry-keywords.
@@ -18,10 +22,10 @@ Fri Jul 16 19:00:39 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 1999-07-16  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 
-	* configure.in: Substitute lisp/sample.emacs at configure time
+	* configure.in: Substitute lisp/sample.emacs at configure time.
 	* lisp/sample.emacs.in: Be substituted at configure time.
 	* INSTALL: Rewrited to correspond to configured sdic.
-	* Makefile.am: Restore `config' entry
+	* Makefile.am: Restore `config' entry.
 	
 Wed Jun  2 17:55:44 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
