@@ -51,6 +51,11 @@
 ;;     辞書のタイトルを指定します。省略した場合は、辞書ファイルの 
 ;;     basename をタイトルとします。
 ;;
+;; add-keys-to-headword
+;;     全ての検索キーを含めて見出し語を構成する場合に t に設定して下さ
+;;     い。和英辞書を検索する場合に、振り仮名も含めて出力する場合に利
+;;     用します。
+;;
 ;; command
 ;;     外部コマンドの名前を指定します。省略した場合は 
 ;;     xdic-grep-command の値を使います。
@@ -169,7 +174,7 @@ search-type の値によって次のように動作を変更する。
       (goto-char limit)
       (while (progn
 	       (if (looking-at "<K>")
-		   (setq ret (cons (xdic-sgml-get-entry) ret)))
+		   (setq ret (cons (xdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
 	       (= 0 (forward-line 1))))
       (reverse ret))))
 

@@ -48,6 +48,11 @@
 ;;     辞書のタイトルを指定します。省略した場合は、辞書ファイルの 
 ;;     basename をタイトルとします。
 ;;
+;; add-keys-to-headword
+;;     全ての検索キーを含めて見出し語を構成する場合に t に設定して下さ
+;;     い。和英辞書を検索する場合に、振り仮名も含めて出力する場合に利
+;;     用します。
+;;
 ;; extract
 ;;     圧縮辞書を展開するための外部コマンドを指定します。省略した場合
 ;;     は、辞書が圧縮されていないと見なします。
@@ -169,7 +174,7 @@ search-type の値によって次のように動作を変更する。
     (setq string (xdic-sgml-make-query-string string search-type))
     (let ((case-fold-search nil) ret)
       (while (search-forward string nil t)
-	(setq ret (cons (xdic-sgml-get-entry) ret)))
+	(setq ret (cons (xdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
       (reverse ret))))
 
 
@@ -189,7 +194,7 @@ search-type の値によって次のように動作を変更する。
 	     (prin1-to-string search-type)))))
 
 
-(defun xdic-sgml-get-entry ()
+(defun xdic-sgml-get-entry (&optional add-keys-to-headword)
   "現在行から見出し語を取り出し、説明文の先頭の位置を求める。"
   (save-excursion
     (save-match-data
@@ -203,7 +208,17 @@ search-type の値によって次のように動作を変更する。
 	  (search-backward "</K>" start)
 	  (setq point (match-beginning 0))
 	  (search-backward "<K>" start))
-	(cons (xdic-sgml-recover-string (buffer-substring (match-end 0) point))
+	(cons (xdic-sgml-recover-string
+	       (apply 'concat
+		      (buffer-substring (match-end 0) point)
+		      (and add-keys-to-headword
+			   (/= start (match-beginning 0))
+			   (cons " "
+				 (mapcar
+				  (function (lambda (s) (format "[%s]" s)))
+				  (xdic-split-string (buffer-substring (+ start 3)
+								       (- (match-beginning 0) 4))
+						     "</K><K>"))))))
 	      (+ 4 point))
 	))))
 
