@@ -333,7 +333,7 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 ;; 英和辞典を検索する関数
 (defun xdic-search-eiwa-dictionary (query)
   (xdic-decide-query-type xdic-eiwa-symbol-list query
-    (let (word-list stem-list orig pat tmp point)
+    (let (word-list stem-list orig pat point)
       (setq word-list (xdic-split-string query))
       (prog1 (mapcar
 	      (function
