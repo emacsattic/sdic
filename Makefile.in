@@ -62,8 +62,9 @@ POST_UNINSTALL = :
 BZIP2 = @BZIP2@
 CP = @CP@
 DICTDIR = @DICTDIR@
-EIWA_DICTIONARY = @EIWA_DICTIONARY@
-EIWA_DICTIONARY_PATH = @EIWA_DICTIONARY_PATH@
+EIJIROU_DIR = @EIJIROU_DIR@
+EIWA_DICT = @EIWA_DICT@
+EIWA_DICT_PATH = @EIWA_DICT_PATH@
 EMACS = @EMACS@
 GZIP = @GZIP@
 MAKEINFO = @MAKEINFO@
@@ -71,8 +72,8 @@ NKF = @NKF@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 VERSION = @VERSION@
-WAEI_DICTIONARY = @WAEI_DICTIONARY@
-WAEI_DICTIONARY_PATH = @WAEI_DICTIONARY_PATH@
+WAEI_DICT = @WAEI_DICT@
+WAEI_DICT_PATH = @WAEI_DICT_PATH@
 emacsdir = @emacsdir@
 lispdir = @lispdir@
 
@@ -89,7 +90,7 @@ configure.in install-sh install.el.in missing mkinstalldirs
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -335,13 +336,13 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-dict: @EIWA_DICTIONARY@ @WAEI_DICTIONARY@
+dict: @EIWA_DICT@ @WAEI_DICT@
 # info_TEXINFOS = sdic.texi     # this requires makeinfo
 
 install-dict:
 	$(mkinstalldirs) @DICTDIR@
-	$(INSTALL_DATA) @EIWA_DICTIONARY@ @DICTDIR@
-	$(INSTALL_DATA) @WAEI_DICTIONARY@ @DICTDIR@
+	$(INSTALL_DATA) @EIWA_DICT@ @DICTDIR@
+	$(INSTALL_DATA) @WAEI_DICT@ @DICTDIR@
 
 install-info: texi/sdic.info
 	$(INSTALL_DATA) texi/sdic.info @infodir@
@@ -387,10 +388,10 @@ gene.txt:
 	test -s gene.txt
 
 eijirou.dic: contrib/eijirou.perl
-	@NKF@ -S -e *.txt | @PERL@ contrib/eijirou.perl --compat >eijirou.dic
+	@NKF@ -S -e @EIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --compat >eijirou.dic
 
 eijirou.sdic: contrib/eijirou.perl
-	@NKF@ -S -e *.txt | @PERL@ contrib/eijirou.perl >eijirou.sdic
+	@NKF@ -S -e @EIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl >eijirou.sdic
 
 ejdict.sdic: edict contrib/edict.perl
 	@PERL@ contrib/edict.perl --reverse edict >ejdict.sdic

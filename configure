@@ -18,7 +18,9 @@ ac_help="$ac_help
 ac_help="$ac_help
   --with-dictdir=DIR      dictionary files go to DIR [/usr/dict]"
 ac_help="$ac_help
-  --with-dicttype=TYPE    use TYPE of dictionaries [sdic]"
+  --with-dicttype=TYPE    use TYPE of dictionaries (sdic|dic) [sdic]"
+ac_help="$ac_help
+  --with-eijirou=DIR      eijirou files are in DIR [./eijirou]"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -560,7 +562,7 @@ ac_configure=$ac_aux_dir/configure # This should be Cygnus configure.
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
 echo $ac_n "checking for a BSD compatible install""... $ac_c" 1>&6
-echo "configure:564: checking for a BSD compatible install" >&5
+echo "configure:566: checking for a BSD compatible install" >&5
 if test -z "$INSTALL"; then
 if eval "test \"`echo '$''{'ac_cv_path_install'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -613,7 +615,7 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL_PROGRAM}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 echo $ac_n "checking whether build environment is sane""... $ac_c" 1>&6
-echo "configure:617: checking whether build environment is sane" >&5
+echo "configure:619: checking whether build environment is sane" >&5
 # Just in case
 sleep 1
 echo timestamp > conftestfile
@@ -670,7 +672,7 @@ test "$program_suffix" != NONE &&
 test "$program_transform_name" = "" && program_transform_name="s,x,x,"
 
 echo $ac_n "checking whether ${MAKE-make} sets \${MAKE}""... $ac_c" 1>&6
-echo "configure:674: checking whether ${MAKE-make} sets \${MAKE}" >&5
+echo "configure:676: checking whether ${MAKE-make} sets \${MAKE}" >&5
 set dummy ${MAKE-make}; ac_make=`echo "$2" | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_prog_make_${ac_make}_set'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -716,7 +718,7 @@ EOF
 
 missing_dir=`cd $ac_aux_dir && pwd`
 echo $ac_n "checking for working aclocal""... $ac_c" 1>&6
-echo "configure:720: checking for working aclocal" >&5
+echo "configure:722: checking for working aclocal" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -729,7 +731,7 @@ else
 fi
 
 echo $ac_n "checking for working autoconf""... $ac_c" 1>&6
-echo "configure:733: checking for working autoconf" >&5
+echo "configure:735: checking for working autoconf" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -742,7 +744,7 @@ else
 fi
 
 echo $ac_n "checking for working automake""... $ac_c" 1>&6
-echo "configure:746: checking for working automake" >&5
+echo "configure:748: checking for working automake" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -755,7 +757,7 @@ else
 fi
 
 echo $ac_n "checking for working autoheader""... $ac_c" 1>&6
-echo "configure:759: checking for working autoheader" >&5
+echo "configure:761: checking for working autoheader" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -768,7 +770,7 @@ else
 fi
 
 echo $ac_n "checking for working makeinfo""... $ac_c" 1>&6
-echo "configure:772: checking for working makeinfo" >&5
+echo "configure:774: checking for working makeinfo" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -800,7 +802,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:804: checking for $ac_word" >&5
+echo "configure:806: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_EMACS'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -841,7 +843,7 @@ test -n "$EMACS" || EMACS="no"
     fi
   fi
         echo $ac_n "checking where emacs files are in""... $ac_c" 1>&6
-echo "configure:845: checking where emacs files are in" >&5
+echo "configure:847: checking where emacs files are in" >&5
   EMACS_BASENAME="`echo x$EMACS | sed -e 's/x//' -e 's/^.*\///'`"
   if test "x$emacsdir" = x; then
     if test "x$prefix" = "xNONE"; then
@@ -896,7 +898,7 @@ else
 fi
 
   echo $ac_n "checking where .elc files should go""... $ac_c" 1>&6
-echo "configure:900: checking where .elc files should go" >&5
+echo "configure:902: checking where .elc files should go" >&5
   if test "x$lispdir" = x; then
     lispdir="$emacsdir/site-lisp"
     if test -d $emacsdir/lisp; then
@@ -914,7 +916,7 @@ echo "configure:900: checking where .elc files should go" >&5
 # Extract the first word of "nkf", so it can be a program name with args.
 set dummy nkf; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:918: checking for $ac_word" >&5
+echo "configure:920: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_NKF'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -954,7 +956,7 @@ fi
 # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:958: checking for $ac_word" >&5
+echo "configure:960: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_PERL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -994,7 +996,7 @@ fi
 # Extract the first word of "gzip", so it can be a program name with args.
 set dummy gzip; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:998: checking for $ac_word" >&5
+echo "configure:1000: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_GZIP'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1034,7 +1036,7 @@ fi
 # Extract the first word of "bzip2", so it can be a program name with args.
 set dummy bzip2; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1038: checking for $ac_word" >&5
+echo "configure:1040: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_BZIP2'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1074,7 +1076,7 @@ fi
 # Extract the first word of "cp", so it can be a program name with args.
 set dummy cp; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1078: checking for $ac_word" >&5
+echo "configure:1080: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_CP'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1128,62 +1130,78 @@ if test "${with_dicttype+set}" = set; then
 fi
 
 
+EIJIROU_DIR="./eijirou"
+# Check whether --with-eijirou or --without-eijirou was given.
+if test "${with_eijirou+set}" = set; then
+  withval="$with_eijirou"
+  EIJIROU_DIR=$with_eijirou
+fi
 
-EIWA_DICTIONARY=
+
+
+EIWA_DICT=
 echo $ac_n "checking for EIWA Dictionary""... $ac_c" 1>&6
-echo "configure:1135: checking for EIWA Dictionary" >&5
-for dict in gene.sdic ejdict.sdic gene.dic ejdict.dic; do
+echo "configure:1145: checking for EIWA Dictionary" >&5
+for dict in gene.sdic ejdict.sdic eijirou.sdic \
+	    gene.dic  ejdict.dic  eijirou.dic ; do
 	if test -f "$DICTDIR/$dict"; then
-		EIWA_DICTIONARY="$dict"
-		EIWA_DICTIONARY_PATH="$DICTDIR/$dict"
-		echo "$ac_t""$EIWA_DICTIONARY_PATH (already installed)" 1>&6
+		EIWA_DICT="$dict"
+		EIWA_DICT_PATH="$DICTDIR/$dict"
+		echo "$ac_t""$EIWA_DICT_PATH (already installed)" 1>&6
 		break
 	fi
 done
 
-if test -z "$EIWA_DICTIONARY"; then
+if test -z "$EIWA_DICT"; then
 	if test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
-		EIWA_DICTIONARY="gene.$DICTTYPE"
-		EIWA_DICTIONARY_PATH="$DICTDIR/$EIWA_DICTIONARY"
+		EIWA_DICT="gene.$DICTTYPE"
+		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
 		
 		
-		echo "$ac_t""$EIWA_DICTIONARY" 1>&6
+		echo "$ac_t""$EIWA_DICT" 1>&6
 	elif test -f edict.gz -o -f edict.bz2; then
-		EIWA_DICTIONARY="ejdict.$DICTTYPE"
-		EIWA_DICTIONARY_PATH="$DICTDIR/$EIWA_DICTIONARY"
+		EIWA_DICT="ejdict.$DICTTYPE"
+		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
 		
 		
-		echo "$ac_t""$EIWA_DICTIONARY" 1>&6
+		echo "$ac_t""$EIWA_DICT" 1>&6
+	elif test -d "$EIJIROU_DIR"; then    # if `eijirou' directory exists
+		EIWA_DICT="eijirou.$DICTTYPE"
+		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
+		
+		
+		
+		echo "$ac_t""$EIWA_DICT" 1>&6
 	else
 		echo "$ac_t""no" 1>&6
 	fi
 fi
 
-WAEI_DICTIONARY=
+WAEI_DICT=
 echo $ac_n "checking for WAEI Dictionary""... $ac_c" 1>&6
-echo "configure:1165: checking for WAEI Dictionary" >&5
+echo "configure:1183: checking for WAEI Dictionary" >&5
 for dict in jedict.sdic jgene.sdic jedict.dic jgene.dic; do
 	if test -f "$DICTDIR/$dict"; then
-		WAEI_DICTIONARY="$dict"
-		WAEI_DICTIONARY_PATH="$DICTDIR/$dict"
-		echo "$ac_t""$WAEI_DICTIONARY_PATH (already installed)" 1>&6
+		WAEI_DICT="$dict"
+		WAEI_DICT_PATH="$DICTDIR/$dict"
+		echo "$ac_t""$WAEI_DICT_PATH (already installed)" 1>&6
 		break
 	fi
 done
 
-if test -z "$WAEI_DICTIONARY"; then
+if test -z "$WAEI_DICT"; then
 	if test -f edict.gz -o -f edict.bz2; then
-		WAEI_DICTIONARY="jedict.$DICTTYPE"
-		WAEI_DICTIONARY_PATH="$DICTDIR/$WAEI_DICTIONARY"
+		WAEI_DICT="jedict.$DICTTYPE"
+		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
 		
 		
-		echo "$ac_t""$WAEI_DICTIONARY" 1>&6
+		echo "$ac_t""$WAEI_DICT" 1>&6
 	elif test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
-		WAEI_DICTIONARY="jgene.$DICTTYPE"
-		WAEI_DICTIONARY_PATH="$DICTDIR/$WAEI_DICTIONARY"
+		WAEI_DICT="jgene.$DICTTYPE"
+		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
 		
 		
-		echo "$ac_t""$WAEI_DICTIONARY" 1>&6
+		echo "$ac_t""$WAEI_DICT" 1>&6
 	else
 		echo "$ac_t""no" 1>&6
 	fi
@@ -1354,10 +1372,11 @@ s%@GZIP@%$GZIP%g
 s%@BZIP2@%$BZIP2%g
 s%@CP@%$CP%g
 s%@DICTDIR@%$DICTDIR%g
-s%@EIWA_DICTIONARY@%$EIWA_DICTIONARY%g
-s%@EIWA_DICTIONARY_PATH@%$EIWA_DICTIONARY_PATH%g
-s%@WAEI_DICTIONARY@%$WAEI_DICTIONARY%g
-s%@WAEI_DICTIONARY_PATH@%$WAEI_DICTIONARY_PATH%g
+s%@EIWA_DICT@%$EIWA_DICT%g
+s%@EIWA_DICT_PATH@%$EIWA_DICT_PATH%g
+s%@EIJIROU_DIR@%$EIJIROU_DIR%g
+s%@WAEI_DICT@%$WAEI_DICT%g
+s%@WAEI_DICT_PATH@%$WAEI_DICT_PATH%g
 
 CEOF
 EOF

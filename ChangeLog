@@ -1,3 +1,11 @@
+1999-07-21  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
+
+	* configure.in, Makefile.am: Add a feature to detect `EIJIROU'
+	  directory at configure time and process it make time.
+
+	* INSTALL: Update documents of install procedure for `EIJIROU'.
+	  
+
 Wed Jul 21 12:49:19 1999  Masaru Tawa  <tawa@ac.mbn.or.jp>
 
 	* eijirou.perl: Fix for `WAEIJIROU'.

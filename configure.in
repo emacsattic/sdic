@@ -28,6 +28,12 @@ if test "$CP" = "no"; then
     AC_MSG_WARN(cp not found)
 fi
 
+AC_PATH_PROG(SORT, sort, no)
+if test "$SORT" = "no"; then
+    AC_MSG_WARN(sort not found)
+fi
+
+
 DICTDIR=/usr/dict
 AC_ARG_WITH(
         dictdir,
@@ -39,64 +45,79 @@ AC_SUBST(DICTDIR)
 DICTTYPE=sdic
 AC_ARG_WITH(
         dicttype,
-        [  --with-dicttype=TYPE    use TYPE of dictionaries [sdic]],
+        [  --with-dicttype=TYPE    use TYPE of dictionaries (sdic|dic) [sdic]],
         DICTTYPE=$with_dicttype,
 )
 
+EIJIROU_DIR="./eijirou"
+AC_ARG_WITH(
+        eijirou,
+        [  --with-eijirou=DIR      eijirou files are in DIR [./eijirou]],
+        EIJIROU_DIR=$with_eijirou,
+)
 
-EIWA_DICTIONARY=
+
+EIWA_DICT=
 AC_MSG_CHECKING(for EIWA Dictionary)
-for dict in gene.sdic ejdict.sdic gene.dic ejdict.dic; do
+for dict in gene.sdic ejdict.sdic eijirou.sdic \
+	    gene.dic  ejdict.dic  eijirou.dic ; do
 	if test -f "$DICTDIR/$dict"; then
-		EIWA_DICTIONARY="$dict"
-		EIWA_DICTIONARY_PATH="$DICTDIR/$dict"
-		AC_MSG_RESULT($EIWA_DICTIONARY_PATH (already installed))
+		EIWA_DICT="$dict"
+		EIWA_DICT_PATH="$DICTDIR/$dict"
+		AC_MSG_RESULT($EIWA_DICT_PATH (already installed))
 		break
 	fi
 done
 
-if test -z "$EIWA_DICTIONARY"; then
+if test -z "$EIWA_DICT"; then
 	if test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
-		EIWA_DICTIONARY="gene.$DICTTYPE"
-		EIWA_DICTIONARY_PATH="$DICTDIR/$EIWA_DICTIONARY"
-		AC_SUBST(EIWA_DICTIONARY)
-		AC_SUBST(EIWA_DICTIONARY_PATH)
-		AC_MSG_RESULT($EIWA_DICTIONARY)
+		EIWA_DICT="gene.$DICTTYPE"
+		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
+		AC_SUBST(EIWA_DICT)
+		AC_SUBST(EIWA_DICT_PATH)
+		AC_MSG_RESULT($EIWA_DICT)
 	elif test -f edict.gz -o -f edict.bz2; then
-		EIWA_DICTIONARY="ejdict.$DICTTYPE"
-		EIWA_DICTIONARY_PATH="$DICTDIR/$EIWA_DICTIONARY"
-		AC_SUBST(EIWA_DICTIONARY)
-		AC_SUBST(EIWA_DICTIONARY_PATH)
-		AC_MSG_RESULT($EIWA_DICTIONARY)
+		EIWA_DICT="ejdict.$DICTTYPE"
+		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
+		AC_SUBST(EIWA_DICT)
+		AC_SUBST(EIWA_DICT_PATH)
+		AC_MSG_RESULT($EIWA_DICT)
+	elif test -d "$EIJIROU_DIR"; then    # if `eijirou' directory exists
+		EIWA_DICT="eijirou.$DICTTYPE"
+		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
+		AC_SUBST(EIWA_DICT)
+		AC_SUBST(EIWA_DICT_PATH)
+		AC_SUBST(EIJIROU_DIR)
+		AC_MSG_RESULT($EIWA_DICT)
 	else
 		AC_MSG_RESULT(no)
 	fi
 fi
 
-WAEI_DICTIONARY=
+WAEI_DICT=
 AC_MSG_CHECKING(for WAEI Dictionary)
 for dict in jedict.sdic jgene.sdic jedict.dic jgene.dic; do
 	if test -f "$DICTDIR/$dict"; then
-		WAEI_DICTIONARY="$dict"
-		WAEI_DICTIONARY_PATH="$DICTDIR/$dict"
-		AC_MSG_RESULT($WAEI_DICTIONARY_PATH (already installed))
+		WAEI_DICT="$dict"
+		WAEI_DICT_PATH="$DICTDIR/$dict"
+		AC_MSG_RESULT($WAEI_DICT_PATH (already installed))
 		break
 	fi
 done
 
-if test -z "$WAEI_DICTIONARY"; then
+if test -z "$WAEI_DICT"; then
 	if test -f edict.gz -o -f edict.bz2; then
-		WAEI_DICTIONARY="jedict.$DICTTYPE"
-		WAEI_DICTIONARY_PATH="$DICTDIR/$WAEI_DICTIONARY"
-		AC_SUBST(WAEI_DICTIONARY)
-		AC_SUBST(WAEI_DICTIONARY_PATH)
-		AC_MSG_RESULT($WAEI_DICTIONARY)
+		WAEI_DICT="jedict.$DICTTYPE"
+		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
+		AC_SUBST(WAEI_DICT)
+		AC_SUBST(WAEI_DICT_PATH)
+		AC_MSG_RESULT($WAEI_DICT)
 	elif test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
-		WAEI_DICTIONARY="jgene.$DICTTYPE"
-		WAEI_DICTIONARY_PATH="$DICTDIR/$WAEI_DICTIONARY"
-		AC_SUBST(WAEI_DICTIONARY)
-		AC_SUBST(WAEI_DICTIONARY_PATH)
-		AC_MSG_RESULT($WAEI_DICTIONARY)
+		WAEI_DICT="jgene.$DICTTYPE"
+		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
+		AC_SUBST(WAEI_DICT)
+		AC_SUBST(WAEI_DICT_PATH)
+		AC_MSG_RESULT($WAEI_DICT)
 	else
 		AC_MSG_RESULT(no)
 	fi
