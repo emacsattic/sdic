@@ -105,7 +105,7 @@
 (require 'xdic)
 (require 'xdic-sgml)
 (provide 'xdic-array)
-(put 'xdic-array 'version "1.0")
+(put 'xdic-array 'version "1.1")
 (put 'xdic-array 'init-dictionary 'xdic-array-init-dictionary)
 (put 'xdic-array 'open-dictionary 'xdic-array-open-dictionary)
 (put 'xdic-array 'close-dictionary 'xdic-array-close-dictionary)
@@ -129,7 +129,7 @@
 
 (defvar xdic-array-wait-prompt-flag nil)
 
-(defconst xdic-array-buffer-name "*xdic-array*")
+(defconst xdic-array-buffer-name " *xdic-array*")
 
 
 

@@ -85,7 +85,7 @@
 (require 'xdic)
 (require 'xdic-sgml)
 (provide 'xdic-grep)
-(put 'xdic-grep 'version "1.0")
+(put 'xdic-grep 'version "1.1")
 (put 'xdic-grep 'init-dictionary 'xdic-grep-init-dictionary)
 (put 'xdic-grep 'open-dictionary 'xdic-grep-open-dictionary)
 (put 'xdic-grep 'close-dictionary 'xdic-sgml-close-dictionary)
@@ -107,7 +107,7 @@
 	    '("grep" "grep.exe")))
   "*Executable file name of grep")
 
-(defconst xdic-grep-buffer-name "*xdic-grep*")
+(defconst xdic-grep-buffer-name " *xdic-grep*")
 
 
 
