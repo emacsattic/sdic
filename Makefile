@@ -156,7 +156,7 @@ sdic.el.in: sdic.el.orig
 		-e 's!"~/usr/dict/edict.sdic"!"%%WAEI_DICTIONARY%%"!;' sdic.el.orig >sdic.el.in
 
 info: sdic.info sdic_toc.html
-	cp -fp sdic*.html $(WWW)
+	cp -fp sdic*.html $(WWW)/info
 	cp -fp sdic.info $(HOME)/usr/info
 
 sdic_toc.html: texi2html sdic.texi
@@ -230,6 +230,7 @@ gene.txt:
 	else \
 		$(BZIP) gene95.tar.bz2 | tar xf - gene.txt; \
 	fi
+	test -s gene.txt
 
 eijirou.dic: eijirou.perl
 	$(NKF) *.txt | $(PERL) eijirou.perl --compat >eijirou.dic
@@ -243,8 +244,14 @@ ejdict.sdic: edict edict.perl
 jedict.sdic: edict edict.perl
 	$(PERL) edict.perl edict >jedict.sdic
 
-edict: edict.gz
-	$(GZIP) edict.gz >edict
+edict:
+	test -f edict.gz -o -f edict.bz2
+	if [ -f edict.gz ]; then \
+		$(GZIP) edict.gz >edict ;\
+	else \
+		$(BZIP) edict.bz2 >edict ;\
+	fi
+	test -s edict
 
 
 ## サンプル設定ファイルを生成するルール
