@@ -109,7 +109,7 @@ nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があ
 辞書閲覧に vi ライクのキーを使わない場合は nil 以外を設定する")
 
 (defvar sdic-eiwa-dictionary-list
-  (let ((file "~/usr/dict/gene.sdic"))
+  (let ((file "@EIWA_DICTIONARY_PATH@"))
     (and (file-readable-p (expand-file-name file))
 	 (list (list (if (string-match "\\.sdic$" file)
 			 'sdicf-client
@@ -122,7 +122,7 @@ nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があ
 英和辞典の検索メソッドのリストを指定する変数")
 
 (defvar sdic-waei-dictionary-list
-  (let ((file "~/usr/dict/edict.sdic"))
+  (let ((file "@WAEI_DICTIONARY_PATH@"))
     (and (file-readable-p (expand-file-name file))
 	 (list (list (if (string-match "\\.sdic$" file)
 			 'sdicf-client
