@@ -1,3 +1,7 @@
+1999-07-22  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
+
+	* configure.in: Change default DICTDIR.
+	
 1999-07-21  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 
 	* configure.in, Makefile.am: Add a feature to detect `WAEIJIROU'

@@ -34,7 +34,7 @@ if test "$SORT" = "no"; then
 fi
 
 
-DICTDIR=/usr/dict
+DICTDIR=${datadir}/dict
 AC_ARG_WITH(
         dictdir,
         [  --with-dictdir=DIR      dictionary files go to DIR [/usr/dict]],
