@@ -12,7 +12,7 @@
 ;; て下さい。
 
 ;; 一次配布元
-;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/elisp/xdic.html
+;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/sdic/index.html
 
 
 ;; -*- Emacs-Lisp -*-
