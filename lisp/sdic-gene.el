@@ -64,14 +64,14 @@
 
 ;;; Note:
 
-;; xdic-unix.el と xdic-gene.el は同じ機能を提供しているライブラリです。
-;; xdic-unix.el は外部コマンドを呼び出しているのに対して、xdic-gene.el 
-;; は Emacs の機能のみを利用しています。ただし、辞書をバッファに読み込
-;; んでから検索を行なうので、大量のメモリが必要になります。
+;; xdic-compat.el と xdic-gene.el は同じ機能を提供しているライブラリで
+;; す。xdic-compat.el は外部コマンドを呼び出しているのに対して、
+;; xdic-gene.el は Emacs の機能のみを利用しています。ただし、辞書をバッ
+;; ファに読み込んでから検索を行なうので、大量のメモリが必要になります。
 ;;
 ;; Default の設定では、必要な外部コマンドが見つかった場合は 
-;; xdic-unix.el を、見つからなかった場合には xdic-gene.el を使うように
-;; なっています。
+;; xdic-compat.el を、見つからなかった場合には xdic-gene.el を使うよう
+;; になっています。
 
 
 ;;; ライブラリ定義情報
@@ -125,13 +125,14 @@
   (if (or (xdic-buffer-live-p (get dic 'xdic-gene-search-buffer))
 	  (save-excursion
 	    (set-buffer (put dic 'xdic-gene-search-buffer (generate-new-buffer xdic-gene-search-buffer-name)))
+	    (insert "\n")
 	    (prog1 (if (get dic 'extract)
 		       (= 0 (xdic-call-process (get dic 'extract) nil t nil
 					       (get dic 'coding-system)
 					       (get dic 'extract-option)
 					       (get dic 'file-name)))
 		     (condition-case err
-			 (xdic-insert-file-contents (get dic 'file-name) nil nil nil nil (get dic 'coding-system))
+			 (xdic-insert-file-contents (get dic 'file-name) (get dic 'coding-system))
 		       (error nil)))
 	      (setq buffer-read-only t)
 	      (set-buffer-modified-p nil))))
@@ -150,33 +151,57 @@ search-type の値によって次のように動作を変更する。
     nil    : 前方一致検索
     t      : 後方一致検索
     lambda : 完全一致検索
-    0      : 任意検索
+    0      : 全文検索
+    regexp : 正規表現検索
 検索結果として見つかった見出し語をキーとし、その定義文の先頭の point を値とする
 連想配列を返す。
 "
   (save-excursion
     (set-buffer (get dic 'xdic-gene-search-buffer))
     (goto-char (point-min))
-    (setq string (cond
-		  ;; 前方一致検索の場合
-		  ((eq search-type nil) (concat "^" (regexp-quote string)))
-		  ;; 後方一致検索の場合
-		  ((eq search-type t) (format "^\\([^\t]*%s\\)\t" (regexp-quote string)))
-		  ;; 完全一致検索の場合
-		  ((eq search-type 'lambda) (format "^%s\t" (regexp-quote string)))
-		  ;; ユーザー指定のキーによる検索の場合
-		  ((eq search-type 0) string)
-		  ;; それ以外の検索形式を指定された場合
-		  (t (error "Not supported search type is specified. \(%s\)"
-			    (prin1-to-string search-type)))))
-    (let (ret (case-fold-search t))
-      (while (re-search-forward string nil t)
-	(save-excursion
-	  (setq ret (cons (cons (buffer-substring (progn (beginning-of-line) (point))
-						  (progn (skip-chars-forward "^\t") (point)))
-				(1+ (point)))
-			  ret))))
-      (reverse ret))))
+    (cond
+     ;; 前方一致検索
+     ((eq search-type nil)
+      (xdic-gene-search-internal (concat "\n" string)))
+     ;; 後方一致検索
+     ((eq search-type t)
+      (xdic-gene-search-internal (concat string "\t")))
+     ;; 完全一致検索
+     ((eq search-type 'lambda)
+      (xdic-gene-search-internal (concat "\n" string "\t")))
+     ;; 全文検索
+     ((eq search-type 0)
+      (xdic-gene-search-internal string))
+     ;; 正規表現検索
+     ((eq search-type 'regexp)
+      (xdic-gene-re-search-internal string))
+     ;; それ以外の検索形式を指定された場合
+     (t (error "Not supported search type is specified. \(%s\)"
+	       (prin1-to-string search-type))))))
+
+
+(defsubst xdic-gene-search-internal (string)
+  "通常の検索を行う内部関数"
+  (let (ret (case-fold-search t))
+    (while (search-forward string nil t)
+      (save-excursion
+	(setq ret (cons (cons (buffer-substring (progn (beginning-of-line) (point))
+						(progn (skip-chars-forward "^\t") (point)))
+			      (1+ (point)))
+			ret))))
+    (reverse ret)))
+
+
+(defsubst xdic-gene-re-search-internal (string)
+  "正規表現検索を行う内部関数"
+  (let (ret (case-fold-search t))
+    (while (re-search-forward string nil t)
+      (save-excursion
+	(setq ret (cons (cons (buffer-substring (progn (beginning-of-line) (point))
+						(progn (skip-chars-forward "^\t") (point)))
+			      (1+ (point)))
+			ret))))
+    (reverse ret)))
 
 
 (defun xdic-gene-get-content (dic point)
