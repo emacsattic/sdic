@@ -85,7 +85,8 @@
 
 (provide 'xdic)
 (require 'stem)
-
+(eval-when-compile (require 'xdic-unix))
+  
 
 ;;;----------------------------------------------------------------------
 ;;;		カスタマイズ用変数
