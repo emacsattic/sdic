@@ -67,7 +67,11 @@
 
 ;; インストール先を推定
 
-(defvar make-sdic-lisp-directory (expand-file-name "../../site-lisp/sdic" data-directory)
+(defvar make-sdic-lisp-directory
+  ;; Mule-for-Windows と Meadow ではディレクトリ構成が異なる
+  (if (fboundp 'mule-for-win32-version)
+      (expand-file-name "../site-lisp/sdic" data-directory)
+    (expand-file-name "../../site-lisp/sdic" data-directory))
   "Lisp program をインストールするディレクトリ")
 
 (defvar make-sdic-info-directory (and (require 'info) (car Info-directory-list))
@@ -219,13 +223,13 @@ Direcotry:
 	      (if (stringp eiwa)
 		  (progn
 		    (goto-char (point-min))
-		    (search-forward (concat "@" "EIWA_DICTIONARY_PATH" "@"))
+		    (search-forward (concat "@" "EIWA_DICT_PATH" "@"))
 		    (delete-region (goto-char (match-beginning 0)) (match-end 0))
 		    (insert (expand-file-name eiwa make-sdic-dict-directory))))
 	      (if (stringp waei)
 		  (progn
 		    (goto-char (point-min))
-		    (search-forward (concat "@" "WAEI_DICTIONARY_PATH" "@"))
+		    (search-forward (concat "@" "WAEI_DICT_PATH" "@"))
 		    (delete-region (goto-char (match-beginning 0)) (match-end 0))
 		    (insert (expand-file-name waei make-sdic-dict-directory))))
 	      (make-sdic-write-file out-file))
@@ -288,7 +292,7 @@ Direcotry:
 	(message "%s" copy-file)
       (message "%s -> %s -> %s" in-file out-file copy-file)
       (or (file-readable-p in-file) (error "Can't find file : %s" in-file))
-      (make-sdic-edict in-file out-file)
+      (make-sdic-jedict in-file out-file)
       (copy-file out-file copy-file t t))))
 
 
