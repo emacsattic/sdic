@@ -1,0 +1,11 @@
+;;; -*- Emacs-Lisp -*-
+
+(and (boundp 'emacs-major-version)
+     (>= emacs-major-version 20)
+     (fboundp 'set-language-environment)
+     (set-language-environment "Japanese"))
+
+(setq load-path (cons default-directory load-path))
+
+(load "sdic.el.in")
+(require 'sdicf)
