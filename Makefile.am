@@ -61,6 +61,12 @@ eijirou.dic: contrib/eijirou.perl
 eijirou.sdic: contrib/eijirou.perl
 	@NKF@ -S -e @EIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl >eijirou.sdic
 
+waeijirou.dic: contrib/eijirou.perl
+	@NKF@ -S -e @WAEIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --waei --compat >waeijirou.dic
+
+waeijirou.sdic: contrib/eijirou.perl
+	@NKF@ -S -e @WAEIJIROU_DIR@/*.txt | @PERL@ contrib/eijirou.perl --waei >waeijirou.sdic
+
 ejdict.sdic: edict contrib/edict.perl
 	@PERL@ contrib/edict.perl --reverse edict >ejdict.sdic
 

@@ -56,6 +56,13 @@ AC_ARG_WITH(
         EIJIROU_DIR=$with_eijirou,
 )
 
+WAEIJIROU_DIR="./waeijirou"
+AC_ARG_WITH(
+        waeijirou,
+        [  --with-waeijirou=DIR    waeijirou files are in DIR [./waeijirou]],
+        WAEIJIROU_DIR=$with_waeijirou,
+)
+
 
 EIWA_DICT=
 AC_MSG_CHECKING(for EIWA Dictionary)
@@ -82,7 +89,7 @@ if test -z "$EIWA_DICT"; then
 		AC_SUBST(EIWA_DICT)
 		AC_SUBST(EIWA_DICT_PATH)
 		AC_MSG_RESULT($EIWA_DICT)
-	elif test -d "$EIJIROU_DIR"; then    # if `eijirou' directory exists
+	elif test -d "$EIJIROU_DIR"; then
 		EIWA_DICT="eijirou.$DICTTYPE"
 		EIWA_DICT_PATH="$DICTDIR/$EIWA_DICT"
 		AC_SUBST(EIWA_DICT)
@@ -96,7 +103,8 @@ fi
 
 WAEI_DICT=
 AC_MSG_CHECKING(for WAEI Dictionary)
-for dict in jedict.sdic jgene.sdic jedict.dic jgene.dic; do
+for dict in jedict.sdic jgene.sdic waeijirou.sdic \
+	    jedict.dic  jgene.dic  waeijirou.dic; do
 	if test -f "$DICTDIR/$dict"; then
 		WAEI_DICT="$dict"
 		WAEI_DICT_PATH="$DICTDIR/$dict"
@@ -117,6 +125,13 @@ if test -z "$WAEI_DICT"; then
 		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
 		AC_SUBST(WAEI_DICT)
 		AC_SUBST(WAEI_DICT_PATH)
+		AC_MSG_RESULT($WAEI_DICT)
+	elif test -d "$WAEIJIROU_DIR"; then
+		WAEI_DICT="waeijirou.$DICTTYPE"
+		WAEI_DICT_PATH="$DICTDIR/$WAEI_DICT"
+		AC_SUBST(WAEI_DICT)
+		AC_SUBST(WAEI_DICT_PATH)
+		AC_SUBST(WAEIJIROU_DIR)
 		AC_MSG_RESULT($WAEI_DICT)
 	else
 		AC_MSG_RESULT(no)
