@@ -85,6 +85,18 @@
     (and (boundp 'MULE) *euc-japan*unix))
   "*Default coding system for sdicf.el")
 
+;; Error Symbols
+(put 'sdicf-missing-file 'error-conditions '(error sdicf-errors sdicf-missing-file))
+(put 'sdicf-missing-file 'error-message "Can't find file")
+(put 'sdicf-missing-executable 'error-conditions '(error sdicf-errors sdicf-missing-executable))
+(put 'sdicf-missing-executable 'error-message "Can't find executable")
+(put 'sdicf-invalid-strategy 'error-conditions '(error sdicf-errors sdicf-invalid-strategy))
+(put 'sdicf-invalid-strategy 'error-message "Invalid search strategy")
+(put 'sdicf-decide-strategy 'error-conditions '(error sdicf-errors sdicf-decide-strategy))
+(put 'sdicf-decide-strategy 'error-message "Can't decide strategy automatically")
+(put 'sdicf-invalid-method 'error-conditions '(error sdicf-errors sdicf-invalid-method))
+(put 'sdicf-invalid-method 'error-message "Invalid search method")
+
 
 
 ;;;------------------------------------------------------------
@@ -94,9 +106,9 @@
 (defconst sdicf-version "0.9" "Version number of sdicf.el")
 
 (defconst sdicf-strategy-alist
-  '((array sdicf-array-available-p sdicf-array-init sdicf-array-quit sdicf-array-search)
-    (grep sdicf-grep-available-p sdicf-grep-init sdicf-grep-quit sdicf-grep-search)
-    (direct sdicf-direct-available-p sdicf-direct-init sdicf-direct-quit sdicf-direct-search))
+  '((array sdicf-array-available sdicf-array-init sdicf-array-quit sdicf-array-search)
+    (grep sdicf-grep-available sdicf-grep-init sdicf-grep-quit sdicf-grep-search)
+    (direct sdicf-direct-available sdicf-direct-init sdicf-direct-quit sdicf-direct-search))
   "利用できる strategy の連想配列
 配列の各要素は、
     strategy のシンボル
@@ -214,8 +226,9 @@ CODING-SYSTEM 以外の引数の意味は start-process と同じ"
 
 ;;; Strategy `direct'
 
-(defun sdicf-direct-available-p (sdic)
-  (file-readable-p (sdicf-get-filename sdic)))
+(defun sdicf-direct-available (sdic)
+  (or (file-readable-p (sdicf-get-filename sdic))
+      (signal 'sdicf-missing-file (list (sdicf-get-filename sdic)))))
 
 (defun sdicf-direct-init (sdic)
   (or (buffer-live-p (sdicf-get-buffer sdic))
@@ -256,12 +269,15 @@ CODING-SYSTEM 以外の引数の意味は start-process と同じ"
 
 ;;; Strategy `grep'
 
-(defun sdicf-grep-available-p (sdic)
-  (and (file-readable-p (sdicf-get-filename sdic))
-       (stringp sdicf-fgrep-command)
-       (file-executable-p sdicf-fgrep-command)
-       (stringp sdicf-egrep-command)
-       (file-executable-p sdicf-egrep-command)))
+(defun sdicf-grep-available (sdic)
+  (and (or (file-readable-p (sdicf-get-filename sdic))
+	   (signal 'sdicf-missing-file (list (sdicf-get-filename sdic))))
+       (or (and (stringp sdicf-fgrep-command)
+		(file-executable-p sdicf-fgrep-command))
+	   (signal 'sdicf-missing-executable '(fgrep grep)))
+       (or (and (stringp sdicf-egrep-command)
+		(file-executable-p sdicf-egrep-command))
+	   (signal 'sdicf-missing-executable '(egrep grep)))))
 
 (defalias 'sdicf-grep-init 'sdicf-common-init)
 
@@ -295,11 +311,14 @@ sdicf-egrep-command で指定されたコマンドを使う。"
 
 ;;; Strategy `array'
 
-(defun sdicf-array-available-p (sdic)
-  (and (file-readable-p (sdicf-get-filename sdic))
-       (file-readable-p (concat (sdicf-get-filename sdic) ".ary"))
-       (stringp sdicf-array-command)
-       (file-executable-p sdicf-array-command)))
+(defun sdicf-array-available (sdic)
+  (and (or (file-readable-p (sdicf-get-filename sdic))
+	   (signal 'sdicf-missing-file (list (sdicf-get-filename sdic))))
+       (or (file-readable-p (concat (sdicf-get-filename sdic) ".ary"))
+	   (signal 'sdicf-missing-file (list (concat (sdicf-get-filename sdic) ".ary"))))
+       (or (and (stringp sdicf-array-command)
+		(file-executable-p sdicf-array-command))
+	   (signal 'sdicf-missing-executable '(array)))))
 
 (defun sdicf-array-init (sdic)
   (sdicf-common-init sdic)
@@ -361,7 +380,7 @@ array を使って検索を行う
 合は空りストを返す。"
   (sdicf-array-init sdic)
   (if regexp
-      nil
+      (signal 'sdicf-invalid-method '(regexp))
     (save-excursion
       (let ((proc (get-buffer-process (set-buffer (sdicf-get-buffer sdic))))
 	    (case-fold-search nil))
@@ -408,24 +427,20 @@ SDIC 辞書オブジェクトは CAR が `SDIC' のベクタである。以下の4
     $B!&strategy
     ・作業用バッファ
 "
-  (let ((sdic (vector 'SDIC
-		      (if (file-readable-p (setq filename (expand-file-name filename)))
-			  filename
-			(error "Cannot open file: %s" filename))
-		      (or coding-system sdicf-default-coding-system)
-		      nil nil)))
+  (let ((sdic (vector 'SDIC filename nil nil)))
     (aset sdic 3 (if strategy
 		     (if (assq strategy sdicf-strategy-alist)
 			 (if (funcall (nth 1 (assq strategy sdicf-strategy-alist)) sdic)
-			     strategy
-			   (error "Specified strategy is not available: %S" strategy))
-		       (error "Invalid search strategy: %S" strategy))
+			     strategy)
+		       (signal 'sdicf-invalid-strategy (list strategy)))
 		   (catch 'found-strategy
 		     (mapcar (lambda (e)
-			       (if (funcall (nth 1 e) sdic)
+			       (if (condition-case nil
+				       (funcall (nth 1 e) sdic)
+				     (sdicf-errors nil))
 				   (throw 'found-strategy (car e))))
 			     sdicf-strategy-alist)
-		     (error "%s" "Can't decide strategy automatically"))))
+		     (signal 'sdicf-decide-strategy nil))))
     sdic))
 
 (defun sdicf-close (sdic)
@@ -464,7 +479,7 @@ SDIC形式の辞書から WORD をキーとして検索を行う
 	      ((eq method 'exact) (concat "<K>" (sdicf-encode-string (downcase word)) "</K>"))
 	      ((eq method 'text) word)
 	      ((eq method 'regexp) word)
-	      (t (error "Invalid search method: %S" method)))
+	      (t (signal 'sdicf-invalid-method (list method))))
 	     (and (or (eq method 'text) (eq method 'regexp)) case-fold-search)
 	     (eq method 'regexp))))
 
@@ -481,9 +496,9 @@ SDIC形式の辞書から WORD をキーとして検索を行う
   (let ((list (cons (substring entry (match-beginning 1) (match-end 1)) nil))
 	(start (match-end 0)))     
     (while (equal start (string-match "<.>\\([^<]+\\)</.>" entry start))
-      (setq list (cons (substring entry (match-beginning 1) (match-end 1)) list)
+      (setq list (cons (sdicf-decode-substring (substring entry (match-beginning 1) (match-end 1)) list))
 	    start (match-end 0)))
-    (mapcar 'sdicf-decode-string (nreverse list))))
+    (nreverse list)))
 
 (defun sdicf-entry-text (entry)
   "エントリ ENTRY の本文を返す。"
