@@ -1,3 +1,9 @@
+Thu Sep 26 19:19:24 2002  TSUCHIYA Masatoshi  <tsuchiya@namazu.org>
+
+	* .cvsignore: Ignore some working files.
+
+	* contrib/edict.perl (reverse): Remove POS tags and double quotes.
+
 Sun Jul  7 23:10:47 2002  TSUCHIYA Masatoshi  <tsuchiya@namazu.org>
 
 	* Release SDIC-2.1.3.
@@ -12,7 +18,7 @@ Tue Jul  2 20:04:57 2002  TSUCHIYA Masatoshi  <tsuchiya@namazu.org>
 	* contrib/edict.perl, contrib/gene.perl: Update my address.  Unify
 	end of lines.
 
-	* autogen.sh, .cvsignore, lisp/cvsignore: New files.
+	* autogen.sh, .cvsignore, lisp/.cvsignore: New files.
 
 	* lisp/sdic-compat.el, lisp/sdic-gene.el, lisp/sdic.el.in,
 	lisp/sdicf.el, lisp/sdicf-client.el, lisp/stem.el,

@@ -1,8 +1,12 @@
 Makefile
 Makefile.in
+aclocal.m4
 config.cache
 config.log
 config.status
 configure
+edict
+edict.gz
 install.el
+*.sdic
 sdic-*.tar.gz
