@@ -19,32 +19,13 @@
 ;;;		定数/変数の宣言
 ;;;----------------------------------------------------------------------
 
-(defvar xdic-unix-coding-system (if (>= emacs-major-version 20) 'euc-japan *euc-japan*)
-  "*Coding system of dictionary")
-
 (defvar xdic-unix-look-command "look" "*Executable file name of look")
 
-(defvar xdic-unix-look-option "-f" "*Command line option for look")
+(defvar xdic-unix-look-case-option "-f" "*Command line option for look to ignore case")
 
 (defvar xdic-unix-grep-command "egrep" "*Executable file name of grep")
 
-(defvar xdic-unix-grep-option "-i" "*Command line option for grep")
-
-
-
-
-;;;----------------------------------------------------------------------
-;;;		初期化
-;;;----------------------------------------------------------------------
-
-;;; 漢字コードの設定
-(if (>= emacs-major-version 20)
-    (setq process-coding-system-alist
-	  (append (list (cons (format ".*%s" xdic-unix-look-command) xdic-unix-coding-system)
-			(cons (format ".*%s" xdic-unix-grep-command) xdic-unix-coding-system))
-		  (if (boundp 'process-coding-system-alist) process-coding-system-alist)))
-  (define-program-coding-system nil (format ".*%s" xdic-unix-look-command) xdic-unix-coding-system)
-  (define-program-coding-system nil (format ".*%s" xdic-unix-grep-command) xdic-unix-coding-system))
+(defvar xdic-unix-grep-case-option "-i" "*Command line option for grep to ignore case")
 
 
   
@@ -82,24 +63,36 @@ search-type の値によって次のように動作を変更する。
     (cond
      ;; 前方一致検索の場合 -> look を使って検索
      ((eq search-type nil)
-      (call-process xdic-unix-look-command nil t nil xdic-unix-look-option
-		    string (get dic 'file-name)))
+      (if (string-match "\\Ca" string)
+	  (xdic-call-process xdic-unix-look-command nil t nil
+			     (get dic 'coding-system)
+			     string (get dic 'file-name))
+	(xdic-call-process xdic-unix-look-command nil t nil
+			   (get dic 'coding-system)
+			   xdic-unix-look-case-option string (get dic 'file-name))))
      ;; 後方一致検索の場合 -> grep を使って検索
      ((eq search-type t)
-      (call-process xdic-unix-grep-command nil t nil xdic-unix-grep-option
-		    (format "^[^\t]*%s\t" string) (get dic 'file-name)))
+      (if (string-match "\\Ca" string)
+	  (xdic-call-process xdic-unix-grep-command nil t nil
+			     (get dic 'coding-system)
+			     (format "^[^\t]*%s\t" string) (get dic 'file-name))
+	(xdic-call-process xdic-unix-grep-command nil t nil xdic-unix-grep-case-option
+			   (get dic 'coding-system)
+			   (format "^[^\t]*%s\t" string) (get dic 'file-name))))
      ;; 完全一致検索の場合 -> look を使って検索 / 余分なデータを消去
      ((eq search-type 'lambda)
-      (call-process xdic-unix-look-command nil t nil xdic-unix-look-option
-		    string (get dic 'file-name))
+      (xdic-call-process xdic-unix-look-command nil t nil
+			 (get dic 'coding-system)
+			 string (get dic 'file-name))
       (goto-char (point-min))
       (while (if (looking-at (format "%s\t" (regexp-quote string)))
 		 (= 0 (forward-line 1))
 	       (delete-region (point) (point-max)))))
      ;; ユーザー指定のキーによる検索の場合 -> grep を使って検索
      ((eq search-type 0)
-      (call-process xdic-unix-grep-command nil t nil xdic-unix-grep-option
-		    string (get dic 'file-name)))
+      (xdic-call-process xdic-unix-grep-command nil t nil
+			 (get dic 'coding-system)
+			 string (get dic 'file-name)))
      ;; それ以外の検索形式を指定された場合
      (t (error "Not supported search type is specified. \(%s\)"
 	       (prin1-to-string search-type))))
@@ -108,7 +101,7 @@ search-type の値によって次のように動作を変更する。
     (let (ret)
       (while (if (looking-at "\\([^\t]+\\)\t")
 		 (progn
-		   (setq ret (cons (cons (match-string 1) (match-end 0)) ret))
+		   (setq ret (cons (cons (xdic-match-string 1) (match-end 0)) ret))
 		   (= 0 (forward-line 1)))))
       (reverse ret))))
 
