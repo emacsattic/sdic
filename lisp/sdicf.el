@@ -153,7 +153,9 @@
 ファを返す。"
   (or (and (buffer-live-p (sdicf-get-buffer sdic))
 	   (sdicf-get-buffer sdic))
-      (aset sdic 4 (generate-new-buffer (format " *sdic %s*" (sdicf-get-filename sdic))))))
+      (let ((buf (generate-new-buffer (format " *sdic %s*" (sdicf-get-filename sdic)))))
+	(buffer-disable-undo buf)
+	(aset sdic 4 buf))))
 
 (defun sdicf-common-quit (sdic) "\
 共通の辞書終了関数"
