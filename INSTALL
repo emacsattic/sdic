@@ -59,40 +59,35 @@
 ◎ インストール手順 ( Windows 環境の場合 )
 
 Cygnus-win や Perl for windows, nkf などをインストールしている場合は、
-UNIX 環境の場合のインストール手順がそのまま使えます。が、それらがない
-場合は多少面倒な手順が必要になります。特に Perl がないと辞書を変換する
-ためのスクリプトが使えませんので、現時点では和英辞書をつくる方法があり
-ません。
+UNIX 環境の場合のインストール手順がそのまま使えます。ここでは、それら
+が使えない場合のインストール方法について説明しています。この手順では、
+Mule for windows または Meadow 以外のコマンドを必要としません。ただし、
+辞書変換部分に制限があります。
 
-ここでは、以下のディレクトリにファイルを置く場合のインストール手順につ
-いて説明します。この手順では、Meadow または Mule for windows 以外のコ
-マンドを必要としません。
+(1) GENE辞書のデータ gene95.lzh または gene95.tar.gz を展開して、
+    gene.txt をこのファイルと同じディレクトリに置いて下さい。
 
-   ・辞書をインストールするディレクトリ -> C:\Dict
-   ・Emacs-Lisp プログラムをインストールするディレクトリ -> C:\Meadow\site-lisp
+(2) EDICT辞書のデータ edict.gz を展開して、edict をこのファイルと同じ
+    ディレクトリに置いて下さい。
 
-(1) sdic.el.in を sdic.el と名前を変えてコピーします。
+(3) 次のコマンドを実行して、インストールを行ないます。
 
-(2) 「GENE 辞書」のデータ gene95.lzh または gene95.tar.gz を展開して、
-    gene.txt をこのファイルと同じディレクトリに置きます。それから、以
-    下のコマンドを実行して下さい。
+        mule -batch -q -l ./lp.el -f make-sdic C:\Meadow\site-lisp C:\Meadow\info C:\Dict
 
-        mule -batch -q -l ./lp.el -l ./gene.el -f gene-batch-conv gene.txt gene.dic
-        copy gene.dic C:\Dict
+    この例では、以下のディレクトリにそれぞれのファイルがインストールさ
+    れます。
 
-(3) sdic.el, sdic-sgml.el, sdic-grep.el, sdic-array.el,
-    sdic-compat.el, stem.el を C:\Meadow\site-lisp にコピーします。
+        ・辞書をインストールするディレクトリ -> C:\Dict
+        ・Emacs-Lisp プログラムをインストールするディレクトリ -> C:\Meadow\site-lisp
+        ・Info をインストールするディレクトリ -> C:\Meadow\info
 
 (4) 以下の設定を .emacs に付け加えて下さい。
 
         (setq load-path (cons "C:/Meadow/site-lisp" load-path))
-        (setq sdic-eiwa-dictionary-list '((sdic-sgml "C:/Dict/gene.dic")))
-        (setq sdic-waei-dictionary-list nil)
-        (autoload 'sdic-describe-word "sdic" "英単語の意味を調べる" t nil)
-        (global-set-key "\C-cw" 'sdic-describe-word)
+        (autoload 'sdic "sdic" "英単語の意味を調べる" t nil)
+        (global-set-key "\C-cw" 'sdic)
 
-    この手順によって英和辞書を利用できるようになります。
-
+    キーバインドは適当に変更して下さい。
 
 
 
