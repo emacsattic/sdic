@@ -3,6 +3,7 @@
 	* configure.in: Substitute lisp/sample.emacs at configure time
 	* lisp/sample.emacs.in: Be substituted at configure time.
 	* INSTALL: Rewrited to correspond to configured sdic.
+	* Makefile.am: Restore `config' entry
 	
 Wed Jun  2 17:55:44 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
