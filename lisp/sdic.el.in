@@ -33,7 +33,7 @@
 
 ;;; Install:
 
-;; (1) sdic.el, sdicf.el, sdicf-client.el, sdic-compat.el,sdic-gene.el
+;; (1) sdic.el, sdicf.el, sdicf-client.el, sdic-compat.el, sdic-gene.el
 ;;     と stem.el を適当な場所に保存して、必要ならバイトコンパイルして
 ;;     下さい。
 ;;

@@ -1,3 +1,7 @@
+Sun Jul 25 13:00:15 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release SDIC-2.1-pre1.
+
 Fri Jul 23 19:06:54 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* install.el.in: Following the change of dictionary naming rule.
