@@ -71,6 +71,7 @@ MAKEINFO = @MAKEINFO@
 NKF = @NKF@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
+SORT = @SORT@
 VERSION = @VERSION@
 WAEI_DICT = @WAEI_DICT@
 WAEI_DICT_PATH = @WAEI_DICT_PATH@
@@ -398,6 +399,10 @@ ejdict.sdic: edict contrib/edict.perl
 
 jedict.sdic: edict contrib/edict.perl
 	@PERL@ contrib/edict.perl edict >jedict.sdic
+
+jedict.dic: edict
+	@NKF@ -deZ2 edict | \
+	@PERL@ -pe 's!\s+/!\t!;s!/!, !g;s!, $$!!' | @SORT@ -f > $@
 
 edict:
 	test -f edict.gz -o -f edict.bz2

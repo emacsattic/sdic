@@ -1113,6 +1113,47 @@ if test "$CP" = "no"; then
     echo "configure: warning: cp not found" 1>&2
 fi
 
+# Extract the first word of "sort", so it can be a program name with args.
+set dummy sort; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:1120: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_SORT'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$SORT" in
+  /*)
+  ac_cv_path_SORT="$SORT" # Let the user override the test with a path.
+  ;;
+  ?:/*)			 
+  ac_cv_path_SORT="$SORT" # Let the user override the test with a dos path.
+  ;;
+  *)
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_dummy="$PATH"
+  for ac_dir in $ac_dummy; do 
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_path_SORT="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  test -z "$ac_cv_path_SORT" && ac_cv_path_SORT="no"
+  ;;
+esac
+fi
+SORT="$ac_cv_path_SORT"
+if test -n "$SORT"; then
+  echo "$ac_t""$SORT" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+if test "$SORT" = "no"; then
+    echo "configure: warning: sort not found" 1>&2
+fi
+
+
 DICTDIR=/usr/dict
 # Check whether --with-dictdir or --without-dictdir was given.
 if test "${with_dictdir+set}" = set; then
@@ -1141,7 +1182,7 @@ fi
 
 EIWA_DICT=
 echo $ac_n "checking for EIWA Dictionary""... $ac_c" 1>&6
-echo "configure:1145: checking for EIWA Dictionary" >&5
+echo "configure:1186: checking for EIWA Dictionary" >&5
 for dict in gene.sdic ejdict.sdic eijirou.sdic \
 	    gene.dic  ejdict.dic  eijirou.dic ; do
 	if test -f "$DICTDIR/$dict"; then
@@ -1179,7 +1220,7 @@ fi
 
 WAEI_DICT=
 echo $ac_n "checking for WAEI Dictionary""... $ac_c" 1>&6
-echo "configure:1183: checking for WAEI Dictionary" >&5
+echo "configure:1224: checking for WAEI Dictionary" >&5
 for dict in jedict.sdic jgene.sdic jedict.dic jgene.dic; do
 	if test -f "$DICTDIR/$dict"; then
 		WAEI_DICT="$dict"
@@ -1371,6 +1412,7 @@ s%@PERL@%$PERL%g
 s%@GZIP@%$GZIP%g
 s%@BZIP2@%$BZIP2%g
 s%@CP@%$CP%g
+s%@SORT@%$SORT%g
 s%@DICTDIR@%$DICTDIR%g
 s%@EIWA_DICT@%$EIWA_DICT%g
 s%@EIWA_DICT_PATH@%$EIWA_DICT_PATH%g
