@@ -1,0 +1,5 @@
+This is the -*- text -*- to give development outline.
+
+・エラーメッセージの拡充
+    現状のように、ただ黙って Can't find word というだけでは、バグなの
+    か、インストールまたは設定のミスなのかの判断がつけ難い。
