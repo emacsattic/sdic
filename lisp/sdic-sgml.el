@@ -88,7 +88,7 @@
 ;;     line     := key* headkey content | key+ headword content
 ;;     headkey  := key
 ;;     key      := '<K>' word '</K>'
-;;     headword := '<H>' word '<H>'
+;;     headword := '<H>' word '</H>'
 ;;     word     := char+
 ;;     char     := [^<>&] | '&lt;' | '&gt;' | '&amp;'
 ;;     content  := string
