@@ -426,7 +426,7 @@ SDIC 辞書オブジェクトは CAR が `SDIC' のベクタである。以下の4
     $B!&strategy
     ・作業用バッファ
 "
-  (let ((sdic (vector 'SDIC filename nil nil nil)))
+  (let ((sdic (vector 'SDIC filename (or coding-system sdicf-default-coding-system) nil nil)))
     (aset sdic 3 (if strategy
 		     (if (assq strategy sdicf-strategy-alist)
 			 (if (funcall (nth 1 (assq strategy sdicf-strategy-alist)) sdic)
