@@ -6,9 +6,9 @@
 
 ;;; Commentary:
 
-;; This file is a part of xdic. Please see xdic.el for more detail.
+;; This file is a part of sdic. Please see sdic.el for more detail.
 
-;; XDIC 形式の辞書を array を利用して検索するライブラリです。
+;; SDIC 形式の辞書を array を利用して検索するライブラリです。
 
 
 ;;; Install:
@@ -40,28 +40,28 @@
 ;;     すると、/usr/dict/gene.dic.ary が生成されます。
 ;;
 ;;
-;; (4) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
-;;     は xdic-waei-dictionary-list に追加して下さい。
+;; (4) 使えるようにした辞書の定義情報を sdic-eiwa-dictionary-list また
+;;     は sdic-waei-dictionary-list に追加して下さい。
 ;;
-;;         (setq xdic-eiwa-dictionary-list
-;;               (cons '(xdic-array "/usr/dict/gene.dic") xdic-eiwa-dictionary-list))
+;;         (setq sdic-eiwa-dictionary-list
+;;               (cons '(sdic-array "/usr/dict/gene.dic") sdic-eiwa-dictionary-list))
 ;;
 ;;     辞書定義情報は次のような構成になっています。
 ;;
-;;         (xdic-array ファイル名 (オプションA 値A) (オプションB 値B) ...)
+;;         (sdic-array ファイル名 (オプションA 値A) (オプションB 値B) ...)
 ;;
 ;;     特別な指定が不要な場合には、オプションは省略できます。
 ;;
-;;         (xdic-array ファイル名)
+;;         (sdic-array ファイル名)
 
 
 ;;; Options:
 
-;; xdic-array.el に対して指定できるオプションは次の通りです。
+;; sdic-array.el に対して指定できるオプションは次の通りです。
 ;;
 ;; coding-system
 ;;     辞書の漢字コードを指定します。省略した場合は、
-;;     xdic-default-coding-system の値を使います。
+;;     sdic-default-coding-system の値を使います。
 ;;
 ;; title
 ;;     辞書のタイトルを指定します。省略した場合は、辞書ファイルの 
@@ -74,7 +74,7 @@
 ;;
 ;; command
 ;;     外部コマンドの名前を指定します。省略した場合は 
-;;     xdic-array-command の値を使います。
+;;     sdic-array-command の値を使います。
 ;;
 ;; array-file-name
 ;;     辞書の array file の名前を指定します。省略した場合は、外部コマ
@@ -83,46 +83,45 @@
 
 ;;; Note;
 
-;; xdic-sgml.el , xdic-grep.el , xdic-array.el は XDIC 形式の辞書を検
+;; sdic-sgml.el , sdic-grep.el , sdic-array.el は SDIC 形式の辞書を検
 ;; 索するためのライブラリです。それぞれの違いは次の通りです。
 ;;
-;; ・xdic-sgml.el
+;; ・sdic-sgml.el
 ;;     辞書データを全てメモリに読み込んでから検索を行います。外部コマ
 ;;     ンドを必要としませんが、大量のメモリが必要になります。
 ;;
-;; ・xdic-grep.el
+;; ・sdic-grep.el
 ;;     grep を利用して検索を行います。
 ;;
-;; ・xdic-array.el
+;; ・sdic-array.el
 ;;     array を利用して検索を行います。辞書の index file を事前に生成
 ;;     しておいてから検索を行いますので、高速に検索が可能です。しかし、
 ;;     index file は辞書の3倍程度の大きさになります。
 ;;
-;; 比較的小規模の辞書を検索する場合は xdic-grep.el が最適でしょう。し
-;; かし、5MByte より大きい辞書の場合は xdic-array.el の利用を考慮すべ
+;; 比較的小規模の辞書を検索する場合は sdic-grep.el が最適でしょう。し
+;; かし、5MByte より大きい辞書の場合は sdic-array.el の利用を考慮すべ
 ;; きだと思います。
 ;;
-;; XDIC 形式の辞書の構造については、dictionary-format.txt を参照してく
-;; ださい。
+;; SDIC 形式の辞書の構造については、sdic.texi を参照してください。
 
 
 ;;; ライブラリ定義情報
-(require 'xdic)
-(require 'xdic-sgml)
-(provide 'xdic-array)
-(put 'xdic-array 'version "1.1")
-(put 'xdic-array 'init-dictionary 'xdic-array-init-dictionary)
-(put 'xdic-array 'open-dictionary 'xdic-array-open-dictionary)
-(put 'xdic-array 'close-dictionary 'xdic-array-close-dictionary)
-(put 'xdic-array 'search-entry 'xdic-array-search-entry)
-(put 'xdic-array 'get-content 'xdic-array-get-content)
+(require 'sdic)
+(require 'sdic-sgml)
+(provide 'sdic-array)
+(put 'sdic-array 'version "1.1")
+(put 'sdic-array 'init-dictionary 'sdic-array-init-dictionary)
+(put 'sdic-array 'open-dictionary 'sdic-array-open-dictionary)
+(put 'sdic-array 'close-dictionary 'sdic-array-close-dictionary)
+(put 'sdic-array 'search-entry 'sdic-array-search-entry)
+(put 'sdic-array 'get-content 'sdic-array-get-content)
 
 
 ;;;----------------------------------------------------------------------
 ;;;		定数/変数の宣言
 ;;;----------------------------------------------------------------------
 
-(defvar xdic-array-command
+(defvar sdic-array-command
   (catch 'which
     (mapcar '(lambda (file)
 	       (mapcar '(lambda (path)
@@ -132,9 +131,9 @@
 	    '("array" "array.exe")))
   "*Executable file name of array")
 
-(defvar xdic-array-wait-prompt-flag nil)
+(defvar sdic-array-wait-prompt-flag nil)
 
-(defconst xdic-array-buffer-name " *xdic-array*")
+(defconst sdic-array-buffer-name " *sdic-array*")
 
 
 
@@ -142,33 +141,33 @@
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
-(defun xdic-array-init-dictionary (file-name &rest option-list)
+(defun sdic-array-init-dictionary (file-name &rest option-list)
   "Function to initialize dictionary"
-  (let ((dic (xdic-make-dictionary-symbol)))
+  (let ((dic (sdic-make-dictionary-symbol)))
     (if (file-readable-p (setq file-name (expand-file-name file-name)))
 	(progn
 	  (mapcar '(lambda (c) (put dic (car c) (nth 1 c))) option-list)
 	  (put dic 'file-name file-name)
-	  (put dic 'identifier (concat "xdic-array+" file-name))
+	  (put dic 'identifier (concat "sdic-array+" file-name))
 	  (or (get dic 'title)
 	      (put dic 'title (file-name-nondirectory file-name)))
 	  (or (get dic 'command)
-	      (put dic 'command xdic-array-command))
+	      (put dic 'command sdic-array-command))
 	  (or (get dic 'coding-system)
-	      (put dic 'coding-system xdic-default-coding-system))
+	      (put dic 'coding-system sdic-default-coding-system))
 	  dic)
       (error "Can't read dictionary: %s" (prin1-to-string file-name)))))
 
 
-(defun xdic-array-open-dictionary (dic)
+(defun sdic-array-open-dictionary (dic)
   "Function to open dictionary"
   (let	((old-buffer (current-buffer))
-	 (buf (or (xdic-buffer-live-p (get dic 'xdic-sgml-buffer))
-		  (put dic 'xdic-sgml-buffer (generate-new-buffer xdic-array-buffer-name)))))
+	 (buf (or (sdic-buffer-live-p (get dic 'sdic-sgml-buffer))
+		  (put dic 'sdic-sgml-buffer (generate-new-buffer sdic-array-buffer-name)))))
     (unwind-protect
-	(and (or (xdic-array-process-live-p dic)
+	(and (or (sdic-array-process-live-p dic)
 		 (let ((limit (progn (set-buffer buf) (goto-char (point-max))))
-		       (proc (xdic-start-process "array" buf
+		       (proc (sdic-start-process "array" buf
 						 (get dic 'coding-system)
 						 (get dic 'command)
 						 (get dic 'file-name)
@@ -176,26 +175,26 @@
 		   (accept-process-output proc 5)
 		   (if (search-backward "ok\n" limit t)
 		       (progn
-			 (set-process-filter proc 'xdic-array-wait-prompt)
+			 (set-process-filter proc 'sdic-array-wait-prompt)
 			 (process-kill-without-query proc)
-			 (xdic-array-send-string proc "style line")
+			 (sdic-array-send-string proc "style line")
 			 t))))
 	     dic)
       (set-buffer old-buffer))))
 
 
-(defun xdic-array-close-dictionary (dic)
+(defun sdic-array-close-dictionary (dic)
   "Function to close dictionary"
-  (let ((proc (xdic-array-process-live-p dic)))
+  (let ((proc (sdic-array-process-live-p dic)))
     (if proc
 	(progn
 	  (set-process-filter proc nil)
 	  (process-send-string proc "quit\n"))))
-  (kill-buffer (get dic 'xdic-sgml-buffer))
-  (put dic 'xdic-sgml-buffer nil))
+  (kill-buffer (get dic 'sdic-sgml-buffer))
+  (put dic 'sdic-sgml-buffer nil))
 
 
-(defun xdic-array-search-entry (dic string &optional search-type) "\
+(defun sdic-array-search-entry (dic string &optional search-type) "\
 Function to search word with look or grep, and write results to current buffer.
 search-type の値によって次のように動作を変更する。
     nil    : 前方一致検索
@@ -206,59 +205,59 @@ search-type の値によって次のように動作を変更する。
 連想配列を返す。
 "
   (save-excursion
-    (let* ((buf (set-buffer (get dic 'xdic-sgml-buffer)))
+    (let* ((buf (set-buffer (get dic 'sdic-sgml-buffer)))
 	   (proc (get-buffer-process buf))
 	   limit ret)
-      (if (get dic 'xdic-array-erase-buffer)
+      (if (get dic 'sdic-array-erase-buffer)
 	  (delete-region (point-min) (point-max))
 	(goto-char (point-max)))
-      (put dic 'xdic-array-erase-buffer nil)
-      (xdic-array-send-string proc "init") ; 検索条件を初期化
+      (put dic 'sdic-array-erase-buffer nil)
+      (sdic-array-send-string proc "init") ; 検索条件を初期化
       (setq limit (point))
-      (xdic-array-send-string proc (format "search %s" (xdic-sgml-make-query-string string search-type)))
+      (sdic-array-send-string proc (format "search %s" (sdic-sgml-make-query-string string search-type)))
       (if (re-search-backward "^FOUND: [0-9]+$" limit t)
 	  (progn
 	    (setq limit (+ 3 (match-end 0)))
-	    (xdic-array-send-string proc "show")
+	    (sdic-array-send-string proc "show")
 	    ;; 各検索結果に ID を付与する
 	    (goto-char limit)
 	    (while (progn
 		     (if (looking-at "<K>")
-			 (setq ret (cons (xdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
+			 (setq ret (cons (sdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
 		     (= 0 (forward-line 1))))
 	    (reverse ret))))))
 
 
-(defun xdic-array-get-content (dic point)
-  (put dic 'xdic-array-erase-buffer t)
-  (xdic-sgml-get-content dic point))
+(defun sdic-array-get-content (dic point)
+  (put dic 'sdic-array-erase-buffer t)
+  (sdic-sgml-get-content dic point))
 
 
-(defun xdic-array-process-live-p (dic)
-  (let ((proc (get-buffer-process (get dic 'xdic-sgml-buffer))))
+(defun sdic-array-process-live-p (dic)
+  (let ((proc (get-buffer-process (get dic 'sdic-sgml-buffer))))
     (and (processp proc)
 	 (eq (process-status proc) 'run)
 	 proc)))
 
 
-(defun xdic-array-send-string (proc string) "\
+(defun sdic-array-send-string (proc string) "\
 Send STRING as command to process."
   (setq string (concat string "\n"))
   (let ((old-buffer (current-buffer)))
     (unwind-protect
-	(let ((xdic-array-wait-prompt-flag t))
+	(let ((sdic-array-wait-prompt-flag t))
 	  (set-buffer (process-buffer proc))
 	  (goto-char (point-max))
 	  (insert string)
 	  (set-marker (process-mark proc) (point))
 	  (process-send-string proc string)
-	  (while xdic-array-wait-prompt-flag (accept-process-output proc)))
+	  (while sdic-array-wait-prompt-flag (accept-process-output proc)))
       (set-buffer old-buffer))))
 
 
-(defun xdic-array-wait-prompt (proc string) "\
+(defun sdic-array-wait-prompt (proc string) "\
 Process filter function of Array.
-プロンプトが現れたことを検知して、xdic-array-wait-prompt-flag を nil 
+プロンプトが現れたことを検知して、sdic-array-wait-prompt-flag を nil 
 にする。"
   (let ((old-buffer (current-buffer)))
     (unwind-protect
@@ -273,6 +272,6 @@ Process filter function of Array.
 	    (if (looking-at "ok\n")
 		(progn
 		  (goto-char (match-end 0))
-		  (setq xdic-array-wait-prompt-flag nil))
+		  (setq sdic-array-wait-prompt-flag nil))
 	      (goto-char start))))
       (set-buffer old-buffer))))

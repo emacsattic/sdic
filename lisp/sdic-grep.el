@@ -6,9 +6,9 @@
 
 ;;; Commentary:
 
-;; This file is a part of xdic. Please see xdic.el for more detail.
+;; This file is a part of sdic. Please see sdic.el for more detail.
 
-;; XDIC 形式の辞書を grep を利用して検索するライブラリです。
+;; SDIC 形式の辞書を grep を利用して検索するライブラリです。
 
 
 ;;; Install:
@@ -24,28 +24,28 @@
 ;;         edict.perl   - EDICT 辞書
 ;;         eijirou.perl - 英辞郎
 ;;
-;; (3) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
-;;     は xdic-waei-dictionary-list に追加して下さい。
+;; (3) 使えるようにした辞書の定義情報を sdic-eiwa-dictionary-list また
+;;     は sdic-waei-dictionary-list に追加して下さい。
 ;;
-;;         (setq xdic-eiwa-dictionary-list
-;;               (cons '(xdic-grep "/usr/dict/gene.dic") xdic-eiwa-dictionary-list))
+;;         (setq sdic-eiwa-dictionary-list
+;;               (cons '(sdic-grep "/usr/dict/gene.dic") sdic-eiwa-dictionary-list))
 ;;
 ;;     辞書定義情報は次のような構成になっています。
 ;;
-;;         (xdic-grep ファイル名 (オプションA 値A) (オプションB 値B) ...)
+;;         (sdic-grep ファイル名 (オプションA 値A) (オプションB 値B) ...)
 ;;
 ;;     特別な指定が不要な場合には、オプションは省略できます。
 ;;
-;;         (xdic-grep ファイル名)
+;;         (sdic-grep ファイル名)
 
 
 ;;; Options:
 
-;; xdic-grep.el に対して指定できるオプションは次の通りです。
+;; sdic-grep.el に対して指定できるオプションは次の通りです。
 ;;
 ;; coding-system
 ;;     辞書の漢字コードを指定します。省略した場合は、
-;;     xdic-default-coding-system の値を使います。
+;;     sdic-default-coding-system の値を使います。
 ;;
 ;; title
 ;;     辞書のタイトルを指定します。省略した場合は、辞書ファイルの 
@@ -58,51 +58,50 @@
 ;;
 ;; command
 ;;     外部コマンドの名前を指定します。省略した場合は 
-;;     xdic-grep-command の値を使います。
+;;     sdic-grep-command の値を使います。
 
 
 ;;; Note;
 
-;; xdic-sgml.el , xdic-grep.el , xdic-array.el は XDIC 形式の辞書を検
+;; sdic-sgml.el , sdic-grep.el , sdic-array.el は SDIC 形式の辞書を検
 ;; 索するためのライブラリです。それぞれの違いは次の通りです。
 ;;
-;; ・xdic-sgml.el
+;; ・sdic-sgml.el
 ;;     辞書データを全てメモリに読み込んでから検索を行います。外部コマ
 ;;     ンドを必要としませんが、大量のメモリが必要になります。
 ;;
-;; ・xdic-grep.el
+;; ・sdic-grep.el
 ;;     grep を利用して検索を行います。
 ;;
-;; ・xdic-array.el
+;; ・sdic-array.el
 ;;     array を利用して検索を行います。辞書の index file を事前に生成
 ;;     しておいてから検索を行いますので、高速に検索が可能です。しかし、
 ;;     index file は辞書の3倍程度の大きさになります。
 ;;
-;; 比較的小規模の辞書を検索する場合は xdic-grep.el が最適でしょう。し
-;; かし、5MByte より大きい辞書の場合は xdic-array.el の利用を考慮すべ
+;; 比較的小規模の辞書を検索する場合は sdic-grep.el が最適でしょう。し
+;; かし、5MByte より大きい辞書の場合は sdic-array.el の利用を考慮すべ
 ;; きだと思います。
 ;;
-;; XDIC 形式の辞書の構造については、dictionary-format.txt を参照してく
-;; ださい。
+;; SDIC 形式の辞書の構造については、sdic.texi を参照してください。
 
 
 ;;; ライブラリ定義情報
-(require 'xdic)
-(require 'xdic-sgml)
-(provide 'xdic-grep)
-(put 'xdic-grep 'version "1.1")
-(put 'xdic-grep 'init-dictionary 'xdic-grep-init-dictionary)
-(put 'xdic-grep 'open-dictionary 'xdic-grep-open-dictionary)
-(put 'xdic-grep 'close-dictionary 'xdic-sgml-close-dictionary)
-(put 'xdic-grep 'search-entry 'xdic-grep-search-entry)
-(put 'xdic-grep 'get-content 'xdic-grep-get-content)
+(require 'sdic)
+(require 'sdic-sgml)
+(provide 'sdic-grep)
+(put 'sdic-grep 'version "1.1")
+(put 'sdic-grep 'init-dictionary 'sdic-grep-init-dictionary)
+(put 'sdic-grep 'open-dictionary 'sdic-grep-open-dictionary)
+(put 'sdic-grep 'close-dictionary 'sdic-sgml-close-dictionary)
+(put 'sdic-grep 'search-entry 'sdic-grep-search-entry)
+(put 'sdic-grep 'get-content 'sdic-grep-get-content)
 
 
 ;;;----------------------------------------------------------------------
 ;;;		定数/変数の宣言
 ;;;----------------------------------------------------------------------
 
-(defvar xdic-grep-command
+(defvar sdic-grep-command
   (catch 'which
     (mapcar '(lambda (file)
 	       (mapcar '(lambda (path)
@@ -112,7 +111,7 @@
 	    '("grep" "grep.exe")))
   "*Executable file name of grep")
 
-(defconst xdic-grep-buffer-name " *xdic-grep*")
+(defconst sdic-grep-buffer-name " *sdic-grep*")
 
 
 
@@ -120,36 +119,36 @@
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
-(defun xdic-grep-available-p ()
-  (stringp xdic-grep-command))
+(defun sdic-grep-available-p ()
+  (stringp sdic-grep-command))
 
 
-(defun xdic-grep-init-dictionary (file-name &rest option-list)
+(defun sdic-grep-init-dictionary (file-name &rest option-list)
   "Function to initialize dictionary"
-  (let ((dic (xdic-make-dictionary-symbol)))
+  (let ((dic (sdic-make-dictionary-symbol)))
     (if (file-readable-p (setq file-name (expand-file-name file-name)))
 	(progn
 	  (mapcar '(lambda (c) (put dic (car c) (nth 1 c))) option-list)
 	  (put dic 'file-name file-name)
-	  (put dic 'identifier (concat "xdic-grep+" file-name))
+	  (put dic 'identifier (concat "sdic-grep+" file-name))
 	  (or (get dic 'title)
 	      (put dic 'title (file-name-nondirectory file-name)))
 	  (or (get dic 'command)
-	      (put dic 'command xdic-grep-command))
+	      (put dic 'command sdic-grep-command))
 	  (or (get dic 'coding-system)
-	      (put dic 'coding-system xdic-default-coding-system))
+	      (put dic 'coding-system sdic-default-coding-system))
 	  dic)
       (error "Can't read dictionary: %s" (prin1-to-string file-name)))))
 
 
-(defun xdic-grep-open-dictionary (dic)
+(defun sdic-grep-open-dictionary (dic)
   "Function to open dictionary"
-  (and (or (xdic-buffer-live-p (get dic 'xdic-sgml-buffer))
-	   (put dic 'xdic-sgml-buffer (generate-new-buffer xdic-grep-buffer-name)))
+  (and (or (sdic-buffer-live-p (get dic 'sdic-sgml-buffer))
+	   (put dic 'sdic-sgml-buffer (generate-new-buffer sdic-grep-buffer-name)))
        dic))
 
 
-(defun xdic-grep-search-entry (dic string &optional search-type) "\
+(defun sdic-grep-search-entry (dic string &optional search-type) "\
 Function to search word with look or grep, and write results to current buffer.
 search-type の値によって次のように動作を変更する。
     nil    : 前方一致検索
@@ -160,25 +159,25 @@ search-type の値によって次のように動作を変更する。
 連想配列を返す。
 "
   (save-excursion
-    (set-buffer (get dic 'xdic-sgml-buffer))
+    (set-buffer (get dic 'sdic-sgml-buffer))
     (let (limit ret)
-      (if (get dic 'xdic-grep-erase-buffer)
+      (if (get dic 'sdic-grep-erase-buffer)
 	  (delete-region (point-min) (point-max)))
       (setq limit (goto-char (point-max)))
-      (put dic 'xdic-grep-erase-buffer nil)
-      (xdic-call-process (get dic 'command) nil t nil
+      (put dic 'sdic-grep-erase-buffer nil)
+      (sdic-call-process (get dic 'command) nil t nil
 			 (get dic 'coding-system)
-			 (xdic-sgml-make-query-string string search-type)
+			 (sdic-sgml-make-query-string string search-type)
 			 (get dic 'file-name))
       ;; 各検索結果に ID を付与する
       (goto-char limit)
       (while (progn
 	       (if (looking-at "<K>")
-		   (setq ret (cons (xdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
+		   (setq ret (cons (sdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
 	       (= 0 (forward-line 1))))
       (reverse ret))))
 
 
-(defun xdic-grep-get-content (dic point)
-  (put dic 'xdic-grep-erase-buffer t)
-  (xdic-sgml-get-content dic point))
+(defun sdic-grep-get-content (dic point)
+  (put dic 'sdic-grep-erase-buffer t)
+  (sdic-sgml-get-content dic point))

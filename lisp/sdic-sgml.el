@@ -6,9 +6,9 @@
 
 ;;; Commentary:
 
-;; This file is a part of xdic. Please see xdic.el for more detail.
+;; This file is a part of sdic. Please see sdic.el for more detail.
 
-;; XDIC 形式の辞書を扱うためのライブラリです。
+;; SDIC 形式の辞書を扱うためのライブラリです。
 
 
 ;;; Install:
@@ -21,28 +21,28 @@
 ;;         edict.perl   - EDICT 辞書
 ;;         eijirou.perl - 英辞郎
 ;;
-;; (2) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
-;;     は xdic-waei-dictionary-list に追加して下さい。
+;; (2) 使えるようにした辞書の定義情報を sdic-eiwa-dictionary-list また
+;;     は sdic-waei-dictionary-list に追加して下さい。
 ;;
-;;         (setq xdic-eiwa-dictionary-list
-;;               (cons '(xdic-sgml "/usr/dict/gene.dic") xdic-eiwa-dictionary-list))
+;;         (setq sdic-eiwa-dictionary-list
+;;               (cons '(sdic-sgml "/usr/dict/gene.dic") sdic-eiwa-dictionary-list))
 ;;
 ;;     辞書定義情報は次のような構成になっています。
 ;;
-;;         (xdic-sgml ファイル名 (オプションA 値A) (オプションB 値B) ...)
+;;         (sdic-sgml ファイル名 (オプションA 値A) (オプションB 値B) ...)
 ;;
 ;;     特別な指定が不要な場合には、オプションは省略できます。
 ;;
-;;         (xdic-sgml ファイル名)
+;;         (sdic-sgml ファイル名)
 
 
 ;;; Options:
 
-;; xdic-sgml.el に対して指定できるオプションは次の通りです。
+;; sdic-sgml.el に対して指定できるオプションは次の通りです。
 ;;
 ;; coding-system
 ;;     辞書の漢字コードを指定します。省略した場合は、
-;;     xdic-default-coding-system の値を使います。
+;;     sdic-default-coding-system の値を使います。
 ;;
 ;; title
 ;;     辞書のタイトルを指定します。省略した場合は、辞書ファイルの 
@@ -60,54 +60,53 @@
 ;; extract-option
 ;;     extract オプションによって指定された外部コマンドに対して、辞書
 ;;     を展開して標準出力に出力させるためのコマンドライン引数を指定し
-;;     ます。省略した場合は xdic-sgml-extract-option の値を使います。
+;;     ます。省略した場合は sdic-sgml-extract-option の値を使います。
 
 
 ;;; Note;
 
-;; xdic-sgml.el , xdic-grep.el , xdic-array.el は XDIC 形式の辞書を検
+;; sdic-sgml.el , sdic-grep.el , sdic-array.el は SDIC 形式の辞書を検
 ;; 索するためのライブラリです。それぞれの違いは次の通りです。
 ;;
-;; ・xdic-sgml.el
+;; ・sdic-sgml.el
 ;;     辞書データを全てメモリに読み込んでから検索を行います。外部コマ
 ;;     ンドを必要としませんが、大量のメモリが必要になります。
 ;;
-;; ・xdic-grep.el
+;; ・sdic-grep.el
 ;;     grep を利用して検索を行います。
 ;;
-;; ・xdic-array.el
+;; ・sdic-array.el
 ;;     array を利用して検索を行います。辞書の index file を事前に生成
 ;;     しておいてから検索を行いますので、高速に検索が可能です。しかし、
 ;;     index file は辞書の3倍程度の大きさになります。
 ;;
-;; 比較的小規模の辞書を検索する場合は xdic-grep.el が最適でしょう。し
-;; かし、5MByte より大きい辞書の場合は xdic-array.el の利用を考慮すべ
+;; 比較的小規模の辞書を検索する場合は sdic-grep.el が最適でしょう。し
+;; かし、5MByte より大きい辞書の場合は sdic-array.el の利用を考慮すべ
 ;; きだと思います。
 ;;
-;; XDIC 形式の辞書の構造については、dictionary-format.txt を参照してく
-;; ださい。
+;; SDIC 形式の辞書の構造については、sdic.texi を参照してください。
 
 
 ;;; ライブラリ定義情報
-(require 'xdic)
-(provide 'xdic-sgml)
-(put 'xdic-sgml 'version "1.1")
-(put 'xdic-sgml 'init-dictionary 'xdic-sgml-init-dictionary)
-(put 'xdic-sgml 'open-dictionary 'xdic-sgml-open-dictionary)
-(put 'xdic-sgml 'close-dictionary 'xdic-sgml-close-dictionary)
-(put 'xdic-sgml 'search-entry 'xdic-sgml-search-entry)
-(put 'xdic-sgml 'get-content 'xdic-sgml-get-content)
+(require 'sdic)
+(provide 'sdic-sgml)
+(put 'sdic-sgml 'version "1.1")
+(put 'sdic-sgml 'init-dictionary 'sdic-sgml-init-dictionary)
+(put 'sdic-sgml 'open-dictionary 'sdic-sgml-open-dictionary)
+(put 'sdic-sgml 'close-dictionary 'sdic-sgml-close-dictionary)
+(put 'sdic-sgml 'search-entry 'sdic-sgml-search-entry)
+(put 'sdic-sgml 'get-content 'sdic-sgml-get-content)
 
 
 ;;;----------------------------------------------------------------------
 ;;;		定数/変数の宣言
 ;;;----------------------------------------------------------------------
 
-(defvar xdic-sgml-extract-option "-dc" "\
+(defvar sdic-sgml-extract-option "-dc" "\
 *Option for archiver.
 圧縮辞書を展開するために使うオプション")
 
-(defconst xdic-sgml-buffer-name " *xdic-sgml*")
+(defconst sdic-sgml-buffer-name " *sdic-sgml*")
 
 
 
@@ -115,50 +114,50 @@
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
-(defun xdic-sgml-init-dictionary (file-name &rest option-list)
+(defun sdic-sgml-init-dictionary (file-name &rest option-list)
   "Function to initialize dictionary"
-  (let ((dic (xdic-make-dictionary-symbol)))
+  (let ((dic (sdic-make-dictionary-symbol)))
     (if (file-readable-p (setq file-name (expand-file-name file-name)))
 	(progn
 	  (mapcar '(lambda (c) (put dic (car c) (nth 1 c))) option-list)
 	  (put dic 'file-name file-name)
-	  (put dic 'identifier (concat "xdic-sgml+" file-name))
+	  (put dic 'identifier (concat "sdic-sgml+" file-name))
 	  (or (get dic 'title)
 	      (put dic 'title (file-name-nondirectory file-name)))
 	  (if (get dic 'extract)
 	      (or (get dic 'extract-option)
-		  (put dic 'extract-option xdic-sgml-extract-option)))
+		  (put dic 'extract-option sdic-sgml-extract-option)))
 	  (or (get dic 'coding-system)
-	      (put dic 'coding-system xdic-default-coding-system))
+	      (put dic 'coding-system sdic-default-coding-system))
 	  dic)
       (error "Can't read dictionary: %s" (prin1-to-string file-name)))))
 
 
-(defun xdic-sgml-open-dictionary (dic)
+(defun sdic-sgml-open-dictionary (dic)
   "Function to open dictionary"
-  (if (or (xdic-buffer-live-p (get dic 'xdic-sgml-buffer))
+  (if (or (sdic-buffer-live-p (get dic 'sdic-sgml-buffer))
 	  (save-excursion
-	    (set-buffer (put dic 'xdic-sgml-buffer (generate-new-buffer xdic-sgml-buffer-name)))
+	    (set-buffer (put dic 'sdic-sgml-buffer (generate-new-buffer sdic-sgml-buffer-name)))
 	    (prog1 (if (get dic 'extract)
-		       (= 0 (xdic-call-process (get dic 'extract) nil t nil
+		       (= 0 (sdic-call-process (get dic 'extract) nil t nil
 					       (get dic 'coding-system)
 					       (get dic 'extract-option)
 					       (get dic 'file-name)))
 		     (condition-case err
-			 (xdic-insert-file-contents (get dic 'file-name) (get dic 'coding-system))
+			 (sdic-insert-file-contents (get dic 'file-name) (get dic 'coding-system))
 		       (error nil)))
 	      (setq buffer-read-only t)
 	      (set-buffer-modified-p nil))))
       dic))
 
 
-(defun xdic-sgml-close-dictionary (dic)
+(defun sdic-sgml-close-dictionary (dic)
   "Function to close dictionary"
-  (kill-buffer (get dic 'xdic-sgml-buffer))
-  (put dic 'xdic-sgml-buffer nil))
+  (kill-buffer (get dic 'sdic-sgml-buffer))
+  (put dic 'sdic-sgml-buffer nil))
 
 
-(defun xdic-sgml-search-entry (dic string &optional search-type) "\
+(defun sdic-sgml-search-entry (dic string &optional search-type) "\
 Function to search word with look or grep, and write results to current buffer.
 search-type の値によって次のように動作を変更する。
     nil    : 前方一致検索
@@ -169,32 +168,32 @@ search-type の値によって次のように動作を変更する。
 連想配列を返す。
 "
   (save-excursion
-    (set-buffer (get dic 'xdic-sgml-buffer))
+    (set-buffer (get dic 'sdic-sgml-buffer))
     (goto-char (point-min))
-    (setq string (xdic-sgml-make-query-string string search-type))
+    (setq string (sdic-sgml-make-query-string string search-type))
     (let ((case-fold-search nil) ret)
       (while (search-forward string nil t)
-	(setq ret (cons (xdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
+	(setq ret (cons (sdic-sgml-get-entry (get dic 'add-keys-to-headword)) ret)))
       (reverse ret))))
 
 
-(defun xdic-sgml-make-query-string (string search-type)
+(defun sdic-sgml-make-query-string (string search-type)
   "STR から適切な検索文字列を生成する"
   (cond
    ;; 前方一致検索の場合
-   ((eq search-type nil) (concat "<K>" (xdic-sgml-escape-string (downcase string))))
+   ((eq search-type nil) (concat "<K>" (sdic-sgml-escape-string (downcase string))))
    ;; 後方一致検索の場合
-   ((eq search-type t) (concat (xdic-sgml-escape-string (downcase string)) "</K>"))
+   ((eq search-type t) (concat (sdic-sgml-escape-string (downcase string)) "</K>"))
    ;; 完全一致検索の場合
-   ((eq search-type 'lambda) (concat "<K>" (xdic-sgml-escape-string (downcase string)) "</K>"))
+   ((eq search-type 'lambda) (concat "<K>" (sdic-sgml-escape-string (downcase string)) "</K>"))
    ;; 全文検索の場合
-   ((eq search-type 0) (xdic-sgml-escape-string string))
+   ((eq search-type 0) (sdic-sgml-escape-string string))
    ;; それ以外の検索形式を指定された場合
    (t (error "Not supported search type is specified. \(%s\)"
 	     (prin1-to-string search-type)))))
 
 
-(defun xdic-sgml-get-entry (&optional add-keys-to-headword)
+(defun sdic-sgml-get-entry (&optional add-keys-to-headword)
   "現在行から見出し語を取り出し、説明文の先頭の位置を求める。"
   (save-excursion
     (save-match-data
@@ -208,11 +207,11 @@ search-type の値によって次のように動作を変更する。
 	  (search-backward "</K>" start)
 	  (setq point (match-beginning 0))
 	  (search-backward "<K>" start))
-	(cons (xdic-sgml-recover-string
+	(cons (sdic-sgml-recover-string
 	       (if (and add-keys-to-headword (> (match-beginning 0) start))
 		   (format "%s [%s]"
 			   (buffer-substring (match-end 0) point)
-			   (xdic-sgml-replace-string (buffer-substring (+ start 3)
+			   (sdic-sgml-replace-string (buffer-substring (+ start 3)
 								       (- (match-beginning 0) 4))
 						     "</K><K>" "]["))
 		 (buffer-substring (match-end 0) point)))
@@ -220,26 +219,26 @@ search-type の値によって次のように動作を変更する。
 	))))
 
 
-(defun xdic-sgml-get-content (dic point)
+(defun sdic-sgml-get-content (dic point)
   (save-excursion
-    (set-buffer (get dic 'xdic-sgml-buffer))
+    (set-buffer (get dic 'sdic-sgml-buffer))
     (if (<= point (point-max))
-	(xdic-sgml-recover-string (buffer-substring (goto-char point)
+	(sdic-sgml-recover-string (buffer-substring (goto-char point)
 						    (progn (end-of-line) (point))))
       (error "Can't find content. (ID=%d)" point))))
 
 
-(defun xdic-sgml-recover-string (str &optional recover-lf)
+(defun sdic-sgml-recover-string (str &optional recover-lf)
   "STR に含まれているエスケープ文字列を復元する"
   (save-match-data
-    (setq str (xdic-sgml-replace-string str "&lt;" "<"))
-    (setq str (xdic-sgml-replace-string str "&gt;" ">"))
+    (setq str (sdic-sgml-replace-string str "&lt;" "<"))
+    (setq str (sdic-sgml-replace-string str "&gt;" ">"))
     (if recover-lf
-	(setq str (xdic-sgml-replace-string str "&lf;" "\n")))
-    (xdic-sgml-replace-string str "&amp;" "&")))
+	(setq str (sdic-sgml-replace-string str "&lf;" "\n")))
+    (sdic-sgml-replace-string str "&amp;" "&")))
 
 
-(defun xdic-sgml-recover-region (start end &optional recover-lf)
+(defun sdic-sgml-recover-region (start end &optional recover-lf)
   "リージョンに含まれているエスケープ文字列を復元する"
   (save-excursion
     (save-match-data
@@ -262,17 +261,17 @@ search-type の値によって次のように動作を変更する。
 	))))
 
 
-(defun xdic-sgml-escape-string (str &optional escape-lf)
+(defun sdic-sgml-escape-string (str &optional escape-lf)
   "STR に含まれている特殊文字をエスケープする"
   (save-match-data
-    (setq str (xdic-sgml-replace-string str "&" "&amp;"))
+    (setq str (sdic-sgml-replace-string str "&" "&amp;"))
     (if escape-lf
-	(setq str (xdic-sgml-replace-string str "\n" "&lf;")))
-    (setq str (xdic-sgml-replace-string str "<" "&lt;"))
-    (xdic-sgml-replace-string str ">" "&gt;")))
+	(setq str (sdic-sgml-replace-string str "\n" "&lf;")))
+    (setq str (sdic-sgml-replace-string str "<" "&lt;"))
+    (sdic-sgml-replace-string str ">" "&gt;")))
 
 
-(defun xdic-sgml-escape-region (start end &optional escape-lf)
+(defun sdic-sgml-escape-region (start end &optional escape-lf)
   "リージョンに含まれている特殊文字をエスケープする"
   (save-excursion
     (save-match-data
@@ -295,7 +294,7 @@ search-type の値によって次のように動作を変更する。
 	))))
 
 
-(defun xdic-sgml-replace-string (string from to) "\
+(defun sdic-sgml-replace-string (string from to) "\
 文字列 STRING に含まれている文字列 FROM を全て文字列 TO に置換した文字列を返す
 FROM には正規表現を含む文字列を指定できるが、TO は固定文字列しか指定で
 きないので、注意して使うこと。"

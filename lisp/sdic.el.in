@@ -1,4 +1,4 @@
-;;; xdic.el ---- major mode to view dictionary
+;;; sdic.el ---- major mode to view dictionary
 ;;; $Id$
 
 ;;; Author: Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
@@ -11,7 +11,7 @@
 ;; て下さい。
 
 ;; 一次配布元
-;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/elisp/xdic.html
+;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/elisp/sdic.html
 
 
 ;;; ※※※ 注意 ※※※
@@ -25,28 +25,28 @@
 
 ;;; Install:
 
-;; (1) xdic.el, xdic-sgml.el, xdic-grep.el, xdic-array.el,
-;;     xdic-compat.el, xdic-gene.el と stem.el を適当な場所に保存して、
+;; (1) sdic.el, sdic-sgml.el, sdic-grep.el, sdic-array.el,
+;;     sdic-compat.el, sdic-gene.el と stem.el を適当な場所に保存して、
 ;;     必要ならバイトコンパイルして下さい。
 ;;
 ;;
-;; (2) xdic-sgml.el, xdic-grep.el, xdic-array.el, xdic-compat.el,
-;;     xdic-gene.el は辞書を検索するためのライブラリです。これらのライ
+;; (2) sdic-sgml.el, sdic-grep.el, sdic-array.el, sdic-compat.el,
+;;     sdic-gene.el は辞書を検索するためのライブラリです。これらのライ
 ;;     ブラリのどれかを使って辞書を検索できるようにして下さい。詳細に
 ;;     ついては、README とそれぞれのソースファイルを参照。
 ;;
 ;;
-;; (3) 使えるようにした辞書のリストを、xdic-eiwa-dictionary-list およ
-;;     び xdic-waei-dictionary-list に設定します。例えば、英和辞書
-;;     /usr/dict/gene.dic を xdic-grep.el を使って検索する場合は次のよ
+;; (3) 使えるようにした辞書のリストを、sdic-eiwa-dictionary-list およ
+;;     び sdic-waei-dictionary-list に設定します。例えば、英和辞書
+;;     /usr/dict/gene.dic を sdic-grep.el を使って検索する場合は次のよ
 ;;     うになります。
 ;;
-;;         (setq xdic-eiwa-dictionary-list '((xdic-grep "/usr/dict/gene.dic")))
+;;         (setq sdic-eiwa-dictionary-list '((sdic-grep "/usr/dict/gene.dic")))
 ;;
 ;;     複数の辞書を同時に検索することも出来ます。
 ;;
-;;         (setq xdic-waei-dictionary-list '((xdic-array "~/data/edict")
-;;                                           (xdic-comat "/usr/dict/jgene.dic")))
+;;         (setq sdic-waei-dictionary-list '((sdic-array "~/data/edict")
+;;                                           (sdic-comat "/usr/dict/jgene.dic")))
 ;;
 ;;     辞書を利用しない場合は nil を代入して下さい。また、これらの設定
 ;;     は ~/.emacs などの適切な場所に書き込んで下さい。
@@ -54,8 +54,8 @@
 ;;
 ;; (4) ~/.emacs に次のようなコードを挿入します。
 ;;
-;;         (autoload 'xdic-describe-word "xdic" "英単語の意味を調べる" t nil)
-;;         (global-set-key "\C-cw" 'xdic-describe-word)
+;;         (autoload 'sdic-describe-word "sdic" "英単語の意味を調べる" t nil)
+;;         (global-set-key "\C-cw" 'sdic-describe-word)
 ;;
 ;;     好みに合わせて適当にキーバインドは変更して下さい。
 
@@ -85,76 +85,76 @@
 ;; と .emacs に設定されているか確認してください。
 
 
-(provide 'xdic)
-(require 'xdic-sgml)
+(provide 'sdic)
+(require 'sdic-sgml)
 (require 'stem)
 (eval-when-compile
-  (require 'xdic-grep)
-  (require 'xdic-compat))
+  (require 'sdic-grep)
+  (require 'sdic-compat))
 
 
 ;;;----------------------------------------------------------------------
 ;;;		カスタマイズ用変数
 ;;;----------------------------------------------------------------------
 
-(defvar xdic-left-margin 2 "*Left margin of contents.
+(defvar sdic-left-margin 2 "*Left margin of contents.
 説明文の左側の余白幅")
 
-(defvar xdic-fill-column default-fill-column "*Right edge of contents.
+(defvar sdic-fill-column default-fill-column "*Right edge of contents.
 説明文を整形する幅")
 
-(defvar xdic-window-height 10 "*Height of window to show entrys and contents.
+(defvar sdic-window-height 10 "*Height of window to show entrys and contents.
 検索結果表示ウインドウの高さ")
 
-(defvar xdic-warning-hidden-entry t "*If non-nil, warning of hidden entries is enable.
+(defvar sdic-warning-hidden-entry t "*If non-nil, warning of hidden entries is enable.
 nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があれば警告する")
 
-(defvar xdic-disable-select-window nil "*Option to disable to select other window.
+(defvar sdic-disable-select-window nil "*Option to disable to select other window.
 検索結果表示ウインドウにカーソルを移動しないようにする場合は nil 以外を設定する")
 
-(defvar xdic-face-style 'bold  "*Style of entry.
+(defvar sdic-face-style 'bold  "*Style of entry.
 見出し語を表示するために使う装飾形式")
 
-(defvar xdic-face-color "black" "*Color of entry.
+(defvar sdic-face-color "black" "*Color of entry.
 見出し語を表示するために使う色")
 
-(defvar xdic-disable-vi-key nil "*Option to disable some key.
+(defvar sdic-disable-vi-key nil "*Option to disable some key.
 辞書閲覧に vi ライクのキーを使わない場合は nil 以外を設定する")
 
-(defvar xdic-eiwa-dictionary-list
-  (let ((file "~/usr/dict/gene.xdic"))
+(defvar sdic-eiwa-dictionary-list
+  (let ((file "~/usr/dict/gene.sdic"))
     (and (file-readable-p (expand-file-name file))
-	 (list (list (if (string-match "\\.xdic$" file)
-			 (if (and (require 'xdic-grep)
-				  (xdic-grep-available-p))
-			     'xdic-grep
-			   'xdic-gene)
-		       (if (and (require 'xdic-compat)
-				(xdic-compat-available-p))
-			   'xdic-compat
-			 'xdic-gene))
+	 (list (list (if (string-match "\\.sdic$" file)
+			 (if (and (require 'sdic-grep)
+				  (sdic-grep-available-p))
+			     'sdic-grep
+			   'sdic-gene)
+		       (if (and (require 'sdic-compat)
+				(sdic-compat-available-p))
+			   'sdic-compat
+			 'sdic-gene))
 		     file)))) "\
 *Options of an English-Japanese dictionary.
 英和辞典の検索メソッドのリストを指定する変数")
 
-(defvar xdic-waei-dictionary-list
-  (let ((file "~/usr/dict/edict.xdic"))
+(defvar sdic-waei-dictionary-list
+  (let ((file "~/usr/dict/edict.sdic"))
     (and (file-readable-p (expand-file-name file))
-	 (list (list (if (string-match "\\.xdic$" file)
-			 (if (and (require 'xdic-grep)
-				  (xdic-grep-available-p))
-			     'xdic-grep
-			   'xdic-gene)
-		       (if (and (require 'xdic-compat)
-				(xdic-compat-available-p))
-			   'xdic-compat
-			 'xdic-gene))
+	 (list (list (if (string-match "\\.sdic$" file)
+			 (if (and (require 'sdic-grep)
+				  (sdic-grep-available-p))
+			     'sdic-grep
+			   'sdic-gene)
+		       (if (and (require 'sdic-compat)
+				(sdic-compat-available-p))
+			   'sdic-compat
+			 'sdic-gene))
 		     file
 		     '(add-keys-to-headword t))))) "\
 *Options of an English-Japanese dictionary.
 和英辞典の検索メソッドのリストを指定する変数")
 
-(defvar xdic-default-coding-system
+(defvar sdic-default-coding-system
   (if (>= emacs-major-version 20)
       (if (string-match "XEmacs" emacs-version)
 	  (cond
@@ -163,7 +163,7 @@ nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があ
 	   (t 'euc-japan))
 	'euc-japan-unix)
     *euc-japan*unix)
-  "*Default coding-system for xdic and libraries.")
+  "*Default coding-system for sdic and libraries.")
 
 
 
@@ -172,22 +172,22 @@ nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があ
 ;;;		内部変数
 ;;;----------------------------------------------------------------------
 
-(defvar xdic-english-prep-list '("at" "by" "for" "in" "on" "of" "with" "as" "before" "after") "\
+(defvar sdic-english-prep-list '("at" "by" "for" "in" "on" "of" "with" "as" "before" "after") "\
 List of English prepositions
 英語の前置詞のリスト")
 
-(defvar xdic-english-prep-regexp
-  (format "\\(%s\\)\\b" (mapconcat 'regexp-quote xdic-english-prep-list "\\|")) "\
+(defvar sdic-english-prep-regexp
+  (format "\\(%s\\)\\b" (mapconcat 'regexp-quote sdic-english-prep-list "\\|")) "\
 Regexp of Englist prepositions
 英語の前置詞とマッチする正規表現")
 
-(defvar xdic-eiwa-symbol-list nil "英和辞典のシンボル")
-(defvar xdic-waei-symbol-list nil "和英辞典のシンボル")
-(defvar xdic-buffer-start-point nil "検索結果表示バッファの表示開始ポイント")
-(defvar xdic-mode-map nil "Keymap of xdic-mode")
-(defconst xdic-version "2.0beta6")
-(defconst xdic-buffer-name "*xdic*" "検索結果表示バッファの名前")
-(defconst xdic-mode-name "Xdic" "検索結果を表示するバッファの major mode")
+(defvar sdic-eiwa-symbol-list nil "英和辞典のシンボル")
+(defvar sdic-waei-symbol-list nil "和英辞典のシンボル")
+(defvar sdic-buffer-start-point nil "検索結果表示バッファの表示開始ポイント")
+(defvar sdic-mode-map nil "Keymap of sdic-mode")
+(defconst sdic-version "2.0pre1")
+(defconst sdic-buffer-name "*sdic*" "検索結果表示バッファの名前")
+(defconst sdic-mode-name "SDIC" "検索結果を表示するバッファの major mode")
 
 
 
@@ -196,7 +196,7 @@ Regexp of Englist prepositions
 ;;;		検索メソッドを呼び出す関数
 ;;;----------------------------------------------------------------------
 
-(defun xdic-init-dictionary (option-list) "\
+(defun sdic-init-dictionary (option-list) "\
 Function to initialize dictionary.
 指定された辞書と関連付けられている検索ライブラリを初期化する関数"
   (let (dic)
@@ -204,26 +204,26 @@ Function to initialize dictionary.
 	 (listp option-list)
 	 (require (car option-list))
 	 (setq dic (apply (get (car option-list) 'init-dictionary) (cdr option-list)))
-	 (xdic-dictionary-symbol-p dic)
+	 (sdic-dictionary-symbol-p dic)
 	 (put dic 'search-method (car option-list))
 	 dic)))
 
 
-(defun xdic-open-dictionary (dic) "\
+(defun sdic-open-dictionary (dic) "\
 Function to open dictionary.
 指定された辞書を検索できるようにする関数"
-  (and (xdic-dictionary-symbol-p dic)
+  (and (sdic-dictionary-symbol-p dic)
        (funcall (get (get dic 'search-method) 'open-dictionary) dic)))
 
 
-(defun xdic-close-dictionary (dic) "\
+(defun sdic-close-dictionary (dic) "\
 Function to close dictionary.
 指定された辞書と関連付けられている検索ライブラリを終了する関数"
-  (and (xdic-dictionary-symbol-p dic)
+  (and (sdic-dictionary-symbol-p dic)
        (funcall (get (get dic 'search-method) 'close-dictionary) dic)))
 
 
-(defun xdic-search-entry (dic word &optional search-type) "\
+(defun sdic-search-entry (dic word &optional search-type) "\
 Function to search word in dictionary.
 指定された辞書を検索する関数
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列を返す。"
@@ -233,7 +233,7 @@ Function to search word in dictionary.
 	  (funcall (get (get dic 'search-method) 'search-entry) dic word search-type)))
 
 
-(defun xdic-sort-dictionary-order (entry-list) "\
+(defun sdic-sort-dictionary-order (entry-list) "\
 Function to sort entry list in dictionary order.
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列 
 ENTRY-LIST を、見出し語の辞書順に並べ替える関数。"
@@ -242,41 +242,41 @@ ENTRY-LIST を、見出し語の辞書順に並べ替える関数。"
 			 (lambda (entry)
 			   (if (string-match "\\Ca" (car entry))
 			       (cons (concat (car entry) "\^@") entry)
-			     (cons (concat (xdic-sgml-replace-string (downcase (car entry)) "[^A-z0-9]+" " ")
+			     (cons (concat (sdic-sgml-replace-string (downcase (car entry)) "[^A-z0-9]+" " ")
 					   "\^@" (car entry) "\^@")
 				   entry))))
 			entry-list)
 		(function (lambda (a b) (string< (car a) (car b)))))))
 
 
-(defun xdic-search-multi-dictionaries (dic-list word &optional search-type) "\
+(defun sdic-search-multi-dictionaries (dic-list word &optional search-type) "\
 Function to search word in multi dictionaries.
 指定されている複数の辞書を串刺検索する関数
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列を返す。"
-  (xdic-sort-dictionary-order
+  (sdic-sort-dictionary-order
    (apply 'append
 	  (mapcar (function
 		   (lambda (dic)
-		     (xdic-search-entry dic word search-type)))
+		     (sdic-search-entry dic word search-type)))
 		  dic-list))))
 
 
-(defun xdic-get-content (dic id) "\
+(defun sdic-get-content (dic id) "\
 Function to get content.
 指定されている辞書から定義文を読み出す関数"
   (funcall (get (get dic 'search-method) 'get-content) dic id))
 
 
-(defun xdic-buffer-live-p (buffer)
+(defun sdic-buffer-live-p (buffer)
   (and (bufferp buffer) (buffer-name buffer) buffer))
 
 
-(defun xdic-make-dictionary-symbol ()
-  (make-symbol "xdic-dictionary"))
+(defun sdic-make-dictionary-symbol ()
+  (make-symbol "sdic-dictionary"))
 
 
-(defun xdic-dictionary-symbol-p (symbol)
-  (equal (symbol-name symbol) "xdic-dictionary"))
+(defun sdic-dictionary-symbol-p (symbol)
+  (equal (symbol-name symbol) "sdic-dictionary"))
 
 
 
@@ -285,9 +285,9 @@ Function to get content.
 ;;;		内部関数
 ;;;----------------------------------------------------------------------
 
-(defun xdic-insert-content (word content)
+(defun sdic-insert-content (word content)
   "見出し語と定義文を整形しながら挿入する関数"
-  (xdic-overlay-put (xdic-make-overlay (point) (progn (insert word) (point))) 'face 'xdic-face)
+  (sdic-overlay-put (sdic-make-overlay (point) (progn (insert word) (point))) 'face 'sdic-face)
   (insert "\n")
   (save-restriction
     (narrow-to-region (point) (progn (insert content) (point)))
@@ -303,13 +303,13 @@ Function to get content.
       (goto-char (1+ (point)))
       (insert " ")
       (goto-char (1+ (point))))
-    (xdic-fill-region (point-min) (goto-char (point-max))))
+    (sdic-fill-region (point-min) (goto-char (point-max))))
   (insert "\n"))
 
 
 ;; 検索形式を判別するマクロ
-(put 'xdic-decide-query-type 'lisp-indent-function 2)
-(defmacro xdic-decide-query-type (dic-list query &rest sexp) "\
+(put 'sdic-decide-query-type 'lisp-indent-function 2)
+(defmacro sdic-decide-query-type (dic-list query &rest sexp) "\
 QUERY から検索形式を判定して複数の辞書 DIC-LIST を検索するマクロ
 
 QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
@@ -321,53 +321,53 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 	    (equal "'" (substring (, query) -1)))
        (mapcar (function
 		(lambda (entry)
-		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		  (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
 		  (car entry)))
-	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1 -1) 'lambda)))
+	       (sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1 -1) 'lambda)))
       ;; 検索語の先頭に / がある場合 -> 全文検索
       ((equal ?/ (string-to-char (, query)))
        (mapcar (function
 		(lambda (entry)
-		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		  (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
 		  (car entry)))
-	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) 0)))
+	       (sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) 0)))
       ;; 検索語の先頭に * がある場合 -> 後方一致検索
       ((equal ?* (string-to-char (, query)))
        (mapcar (function
 		(lambda (entry)
-		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		  (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
 		  (car entry)))
-	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) t)))
+	       (sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) t)))
       ;; 検索語の末尾に * がある場合 -> 前方一致検索
       ((equal "*" (substring (, query) -1))
        (mapcar (function
 		(lambda (entry)
-		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		  (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
 		  (car entry)))
-	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 0 -1))))
+	       (sdic-search-multi-dictionaries (, dic-list) (substring (, query) 0 -1))))
       ;; 特に指定がない場合 -> 指定された S 式を評価
       (t
        (,@ sexp)))))
 
 
 ;; 英和辞典を検索する関数
-(defun xdic-search-eiwa-dictionary (query)
-  (xdic-decide-query-type xdic-eiwa-symbol-list query
+(defun sdic-search-eiwa-dictionary (query)
+  (sdic-decide-query-type sdic-eiwa-symbol-list query
     (let (word-list stem-list orig pat point str)
-      (setq word-list (xdic-split-string (downcase query)))
+      (setq word-list (sdic-split-string (downcase query)))
       (prog1 (mapcar
 	      (function
 	       (lambda (entry)
 		 (and (not point)
 		      (string-match pat (car entry))
 		      (setq point (point)))
-		 (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		 (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
 		 (car entry)))
 	      (prog1 (or
 		      ;; (1) 不規則変化動詞を検索する
 		      (and
 		       (setq stem-list (copy-sequence (assoc (car word-list) stem:irregular-verb-alist)))
-		       (xdic-sort-dictionary-order
+		       (sdic-sort-dictionary-order
 			(apply 'append
 			       (mapcar
 				(function
@@ -385,8 +385,8 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 						 (mapcar
 						  (function
 						   (lambda (dic)
-						     (xdic-search-entry dic word)))
-						  xdic-eiwa-symbol-list))))))
+						     (sdic-search-entry dic word)))
+						  sdic-eiwa-symbol-list))))))
 				stem-list))))
 		      ;; (2) 不規則変化動詞を無視した stemming を行なって検索する
 		      (progn
@@ -413,7 +413,7 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 						   (not (member str orig))
 						   (setq orig (cons str orig)))
 					      entry))
-					   (xdic-search-multi-dictionaries xdic-eiwa-symbol-list pat))
+					   (sdic-search-multi-dictionaries sdic-eiwa-symbol-list pat))
 				     (if orig
 					 (setq stem-list (copy-sequence orig)
 					       orig (if (member (car word-list) orig)
@@ -446,18 +446,18 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 					  "\\)"
 					(format "\\|%s\\)" (regexp-quote orig))))
 			    (format "^%s$" (regexp-quote orig))))))
-	(if point (setq xdic-buffer-start-point point))))))
+	(if point (setq sdic-buffer-start-point point))))))
 
 
 ;; 和英辞典を検索する関数
-(defun xdic-search-waei-dictionary (query)
-  (xdic-decide-query-type xdic-waei-symbol-list query
+(defun sdic-search-waei-dictionary (query)
+  (sdic-decide-query-type sdic-waei-symbol-list query
     ;; 特に指定がない場合 -> 前方一致検索
     (mapcar (function
 	     (lambda (entry)
-	       (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+	       (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
 	       (car entry)))
-	    (xdic-search-multi-dictionaries xdic-waei-symbol-list query))))
+	    (sdic-search-multi-dictionaries sdic-waei-symbol-list query))))
 
 
 
@@ -466,161 +466,161 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
-(defun xdic-word-at-point () "\
+(defun sdic-word-at-point () "\
 カーソル位置の単語を返す関数"
   (save-excursion
     (if (not (looking-at "\\<")) (forward-word -1))
     (downcase
-     (if (looking-at xdic-english-prep-regexp)
+     (if (looking-at sdic-english-prep-regexp)
 	 (buffer-substring (progn (forward-word -1) (point)) (progn (forward-word 2) (point)))
        (buffer-substring (point) (progn (forward-word 1) (point)))))))
 
 
-(defvar xdic-read-minibuffer-history '() "\
-xdic-read-from-minibuffer 関数のヒストリ")
-(defun xdic-read-from-minibuffer (&optional prompt init) "\
+(defvar sdic-read-minibuffer-history '() "\
+sdic-read-from-minibuffer 関数のヒストリ")
+(defun sdic-read-from-minibuffer (&optional prompt init) "\
 ミニバッファから単語を読みとる関数"
-  (or init (setq init (or (xdic-word-at-point) "")))
-  (setq xdic-read-minibuffer-history
-	(cons init xdic-read-minibuffer-history))
+  (or init (setq init (or (sdic-word-at-point) "")))
+  (setq sdic-read-minibuffer-history
+	(cons init sdic-read-minibuffer-history))
   (downcase (read-from-minibuffer (or prompt "Input word : ") init
-				  nil nil '(xdic-read-minibuffer-history . 1))))
+				  nil nil '(sdic-read-minibuffer-history . 1))))
 
 
-(defun xdic-select-search-function ()
+(defun sdic-select-search-function ()
   "検索関数を選ぶ"
   (message "辞書を選んで下さい: E)英和 J)和英")
   (let ((sw (selected-window))
 	(c (read-char)))
     (select-window sw)
     (cond
-     ((= c ?e) 'xdic-search-eiwa-dictionary)
-     ((= c ?j) 'xdic-search-waei-dictionary)
-     (t (xdic-select-search-function)))))
+     ((= c ?e) 'sdic-search-eiwa-dictionary)
+     ((= c ?j) 'sdic-search-waei-dictionary)
+     (t (sdic-select-search-function)))))
 
 
 ;; 単語を辞書で調べる関数
-(defun xdic-describe-word (word &optional search-function)
+(defun sdic-describe-word (word &optional search-function)
   "Display the meaning of word."
   (interactive
-   (list (xdic-read-from-minibuffer)
-	 (if current-prefix-arg (xdic-select-search-function))))
+   (list (sdic-read-from-minibuffer)
+	 (if current-prefix-arg (sdic-select-search-function))))
   (and (interactive-p)
        (< (length word) 2)
-       (setq word (xdic-read-from-minibuffer
+       (setq word (sdic-read-from-minibuffer
 		   (format "\"%s\" is too short word. Input word again : " word)
 		   word)))
-  (set-buffer (get-buffer-create xdic-buffer-name))
-  (or (string= mode-name xdic-mode-name) (xdic-mode))
+  (set-buffer (get-buffer-create sdic-buffer-name))
+  (or (string= mode-name sdic-mode-name) (sdic-mode))
   (setq buffer-read-only nil)
   (erase-buffer)
   (let ((case-fold-search t)
-	(xdic-buffer-start-point (point-min)))
+	(sdic-buffer-start-point (point-min)))
     (if (prog1 (funcall (or search-function
 			    (if (string-match "\\cj" word)
-				'xdic-search-waei-dictionary
-			      'xdic-search-eiwa-dictionary))
+				'sdic-search-waei-dictionary
+			      'sdic-search-eiwa-dictionary))
 			word)
 	  (setq buffer-read-only t)
 	  (set-buffer-modified-p nil))
-	(xdic-display-buffer xdic-buffer-start-point)
+	(sdic-display-buffer sdic-buffer-start-point)
       (message "Can't find word, \"%s\"." word))))
 
 
-(defun xdic-describe-region (start end &optional search-function)
+(defun sdic-describe-region (start end &optional search-function)
   "Display the meaning of pattern."
   (interactive
    (list (region-beginning)
 	 (region-end)
-	 (if current-prefix-arg (xdic-select-search-function))))
-  (xdic-describe-word (buffer-substring start end) search-function))
+	 (if current-prefix-arg (sdic-select-search-function))))
+  (sdic-describe-word (buffer-substring start end) search-function))
 
 
-(defun xdic-describe-word-at-point ()
+(defun sdic-describe-word-at-point ()
   "Display the meaning of word at point in Japanese."
   (interactive)
-  (xdic-describe-word (or (xdic-word-at-point)
-			  (xdic-read-from-minibuffer))))
+  (sdic-describe-word (or (sdic-word-at-point)
+			  (sdic-read-from-minibuffer))))
 
 
 ;;; 次の項目に移動する関数
-(defun xdic-forward-item ()
+(defun sdic-forward-item ()
   "Move point to the next item."
   (interactive)
   (let ((o))
-    (goto-char (xdic-next-overlay-change
-		(if (setq o (car (xdic-overlays-at (point))))
-		    (xdic-overlay-end o)
+    (goto-char (sdic-next-overlay-change
+		(if (setq o (car (sdic-overlays-at (point))))
+		    (sdic-overlay-end o)
 		  (point))))))
 
 
 ;;; 前の項目に移動する関数
-(defun xdic-backward-item ()
+(defun sdic-backward-item ()
   "Move point to the previous item."
   (interactive)
   (let ((o))
-    (goto-char (xdic-previous-overlay-change
-		(xdic-previous-overlay-change
-		 (if (setq o (car (xdic-overlays-at (point))))
-		     (xdic-overlay-start o)
-		   (xdic-previous-overlay-change (xdic-previous-overlay-change (point)))))))))
+    (goto-char (sdic-previous-overlay-change
+		(sdic-previous-overlay-change
+		 (if (setq o (car (sdic-overlays-at (point))))
+		     (sdic-overlay-start o)
+		   (sdic-previous-overlay-change (sdic-previous-overlay-change (point)))))))))
 
 
-(defun xdic-goto-point-min () "\
+(defun sdic-goto-point-min () "\
 バッファの先頭に移動する関数"
   (interactive)
   (goto-char (point-min)))
 
 
-(defun xdic-goto-point-max () "\
+(defun sdic-goto-point-max () "\
 バッファの末尾に移動する関数"
   (interactive)
   (goto-char (point-max)))
 
 
-(defun xdic-display-buffer (&optional start-point) "\
+(defun sdic-display-buffer (&optional start-point) "\
 検索結果表示バッファを表示する関数"
   (let ((old-buffer (current-buffer)))
     (unwind-protect
-	(let* ((buf (set-buffer xdic-buffer-name))
+	(let* ((buf (set-buffer sdic-buffer-name))
 	       (w1 (selected-window))
 	       (w2 (get-buffer-window buf))
 	       (p (or start-point (point)))
-	       (h xdic-window-height))
+	       (h sdic-window-height))
 	  (if w2 (progn (select-window w2) (setq h (window-height w2)))
 	    (setq w2 (select-window (if (one-window-p)
 					(split-window w1 (- (window-height) h))
 				      (next-window))))
 	    (set-window-buffer w2 buf))
 	  (set-window-start w2 p)
-	  (and xdic-warning-hidden-entry
+	  (and sdic-warning-hidden-entry
 	       (> p (point-min))
 	       (message "この前にもエントリがあります。"))
 	  (goto-char p)
-	  (if xdic-disable-select-window (select-window w1)))
+	  (if sdic-disable-select-window (select-window w1)))
       (set-buffer old-buffer))))
 
 
-(defun xdic-other-window () "\
+(defun sdic-other-window () "\
 検索表示バッファから元のバッファに戻る関数"
   (interactive)
   (let ((w (selected-window)))
     (if (and (string= (buffer-name (window-buffer w))
-		      xdic-buffer-name)
+		      sdic-buffer-name)
 	     (one-window-p))
 	(progn
-	  (split-window w (- (window-height) xdic-window-height))
+	  (split-window w (- (window-height) sdic-window-height))
 	  (set-window-buffer w (other-buffer)))
       (other-window -1))))
 
 
-(defun xdic-close-window () "\
+(defun sdic-close-window () "\
 検索表示バッファを表示しているウインドウを消去する関数"
   (interactive)
-  (let ((w (get-buffer-window xdic-buffer-name)))
+  (let ((w (get-buffer-window sdic-buffer-name)))
     (if w
 	(cond
-	 ((= (window-height w) xdic-window-height)
+	 ((= (window-height w) sdic-window-height)
 	  (delete-window w))
 	 (t
 	  (set-window-buffer w (other-buffer))
@@ -628,19 +628,19 @@ xdic-read-from-minibuffer 関数のヒストリ")
 	 ))))
 
 
-(defun xdic-exit () "\
+(defun sdic-exit () "\
 検索結果表示バッファを削除する関数"
   (interactive)
-  (xdic-close-window)
-  (kill-buffer xdic-buffer-name)
-  (mapcar 'xdic-close-dictionary xdic-eiwa-symbol-list)
-  (mapcar 'xdic-close-dictionary xdic-waei-symbol-list)
-  (setq xdic-eiwa-symbol-list nil
-	xdic-waei-symbol-list nil))
+  (sdic-close-window)
+  (kill-buffer sdic-buffer-name)
+  (mapcar 'sdic-close-dictionary sdic-eiwa-symbol-list)
+  (mapcar 'sdic-close-dictionary sdic-waei-symbol-list)
+  (setq sdic-eiwa-symbol-list nil
+	sdic-waei-symbol-list nil))
 
 
 ;;; 辞書を閲覧する major-mode
-(defun xdic-mode () "\
+(defun sdic-mode () "\
 辞書を閲覧するメジャーモード
 
 次のような形式の文字列を入力することによって検索方式を指定できます。
@@ -665,65 +665,65 @@ p               前の項目
 M-TAB           前の項目
 o               辞書を閲覧しているウインドウから他のウインドウに移る
 q               辞書を閲覧しているウインドウを消す
-Q               Xdic を終了する
+Q               SDIC を終了する
 <               バッファの先頭に移動
 >               バッファの終端に移動
 ?               ヘルプ表示
 "
   (kill-all-local-variables)
   (make-local-variable 'fill-column)
-  (setq major-mode 'xdic-mode
-	mode-name   xdic-mode-name
-	fill-column xdic-fill-column
-	left-margin xdic-left-margin
-	xdic-mode-map (make-keymap))
+  (setq major-mode 'sdic-mode
+	mode-name   sdic-mode-name
+	fill-column sdic-fill-column
+	left-margin sdic-left-margin
+	sdic-mode-map (make-keymap))
   ;; キーバインドの設定
-  (define-key xdic-mode-map " " 'scroll-up)
-  (define-key xdic-mode-map "b" 'scroll-down)
-  (define-key xdic-mode-map [backspace] 'scroll-down)
-  (define-key xdic-mode-map [delete] 'scroll-down)
-  (define-key xdic-mode-map "\C-?" 'scroll-down)
-  (define-key xdic-mode-map "n" 'xdic-forward-item)
-  (define-key xdic-mode-map "\t" 'xdic-forward-item)
-  (define-key xdic-mode-map "p" 'xdic-backward-item)
-  (define-key xdic-mode-map "\M-\t" 'xdic-backward-item)
-  (define-key xdic-mode-map "o" 'xdic-other-window)
-  (define-key xdic-mode-map "q" 'xdic-close-window)
-  (define-key xdic-mode-map "Q" 'xdic-exit)
-  (define-key xdic-mode-map "w" 'xdic-describe-word)
-  (define-key xdic-mode-map "<" 'xdic-goto-point-min)
-  (define-key xdic-mode-map ">" 'xdic-goto-point-max)
-  (define-key xdic-mode-map "?" 'describe-mode)
+  (define-key sdic-mode-map " " 'scroll-up)
+  (define-key sdic-mode-map "b" 'scroll-down)
+  (define-key sdic-mode-map [backspace] 'scroll-down)
+  (define-key sdic-mode-map [delete] 'scroll-down)
+  (define-key sdic-mode-map "\C-?" 'scroll-down)
+  (define-key sdic-mode-map "n" 'sdic-forward-item)
+  (define-key sdic-mode-map "\t" 'sdic-forward-item)
+  (define-key sdic-mode-map "p" 'sdic-backward-item)
+  (define-key sdic-mode-map "\M-\t" 'sdic-backward-item)
+  (define-key sdic-mode-map "o" 'sdic-other-window)
+  (define-key sdic-mode-map "q" 'sdic-close-window)
+  (define-key sdic-mode-map "Q" 'sdic-exit)
+  (define-key sdic-mode-map "w" 'sdic-describe-word)
+  (define-key sdic-mode-map "<" 'sdic-goto-point-min)
+  (define-key sdic-mode-map ">" 'sdic-goto-point-max)
+  (define-key sdic-mode-map "?" 'describe-mode)
   (cond
-   ((not xdic-disable-vi-key)
-    (define-key xdic-mode-map "h" 'backward-char)
-    (define-key xdic-mode-map "j" 'next-line)
-    (define-key xdic-mode-map "k" 'previous-line)
-    (define-key xdic-mode-map "l" 'forward-char)))
-  (use-local-map xdic-mode-map)
+   ((not sdic-disable-vi-key)
+    (define-key sdic-mode-map "h" 'backward-char)
+    (define-key sdic-mode-map "j" 'next-line)
+    (define-key sdic-mode-map "k" 'previous-line)
+    (define-key sdic-mode-map "l" 'forward-char)))
+  (use-local-map sdic-mode-map)
   ;; 見出し語の face の設定
-  (make-face 'xdic-face)
+  (make-face 'sdic-face)
   (and (or (not (fboundp 'facep))
-	   (facep xdic-face-style))
-       (copy-face xdic-face-style 'xdic-face))
+	   (facep sdic-face-style))
+       (copy-face sdic-face-style 'sdic-face))
   (and window-system
-       xdic-face-color
-       (set-face-foreground 'xdic-face xdic-face-color))
+       sdic-face-color
+       (set-face-foreground 'sdic-face sdic-face-color))
   ;; それぞれの辞書を初期化する
-  (or xdic-eiwa-symbol-list
-      (setq xdic-eiwa-symbol-list
-	    (delq nil (mapcar 'xdic-init-dictionary xdic-eiwa-dictionary-list))))
-  (setq xdic-eiwa-symbol-list (delq nil (mapcar 'xdic-open-dictionary xdic-eiwa-symbol-list)))
-  (or xdic-waei-symbol-list
-      (setq xdic-waei-symbol-list
-	    (delq nil (mapcar 'xdic-init-dictionary xdic-waei-dictionary-list))))
-  (setq xdic-waei-symbol-list (delq nil (mapcar 'xdic-open-dictionary xdic-waei-symbol-list)))
-  (run-hooks 'xdic-mode-hook))
+  (or sdic-eiwa-symbol-list
+      (setq sdic-eiwa-symbol-list
+	    (delq nil (mapcar 'sdic-init-dictionary sdic-eiwa-dictionary-list))))
+  (setq sdic-eiwa-symbol-list (delq nil (mapcar 'sdic-open-dictionary sdic-eiwa-symbol-list)))
+  (or sdic-waei-symbol-list
+      (setq sdic-waei-symbol-list
+	    (delq nil (mapcar 'sdic-init-dictionary sdic-waei-dictionary-list))))
+  (setq sdic-waei-symbol-list (delq nil (mapcar 'sdic-open-dictionary sdic-waei-symbol-list)))
+  (run-hooks 'sdic-mode-hook))
 
 
 ;;; 1.6 との互換性を維持するための宣言
-(defalias 'xdic:describe-word 'xdic-describe-word)
-(defalias 'xdic:describe-word-at-point 'xdic-describe-word-at-point)
+(defalias 'sdic:describe-word 'sdic-describe-word)
+(defalias 'sdic:describe-word-at-point 'sdic-describe-word-at-point)
 
 
 
@@ -733,9 +733,9 @@ Q               Xdic を終了する
 ;;;----------------------------------------------------------------------
 
 (if (fboundp 'next-overlay-change)
-    (defalias 'xdic-next-overlay-change 'next-overlay-change)
+    (defalias 'sdic-next-overlay-change 'next-overlay-change)
   ;; XEmacs の場合
-  (defun xdic-next-overlay-change (pos) "\
+  (defun sdic-next-overlay-change (pos) "\
 Return the next position after POS where an extent starts or ends.
 If there are no more extent boundaries after POS, return (point-max)."
     (catch 'found-next-extent
@@ -751,10 +751,10 @@ If there are no more extent boundaries after POS, return (point-max)."
 
 
 (if (fboundp 'previous-overlay-change)
-    (defalias 'xdic-previous-overlay-change 'previous-overlay-change)
+    (defalias 'sdic-previous-overlay-change 'previous-overlay-change)
   (if (fboundp 'extent-list)
       ;; XEmacs の場合
-      (defun xdic-previous-overlay-change (pos) "\
+      (defun sdic-previous-overlay-change (pos) "\
 Return the previous position before POS where an extent starts or ends.
 If there are no more extent boundaries before POS, return (point-min)."
 	(catch 'found-previous-extent
@@ -768,21 +768,21 @@ If there are no more extent boundaries before POS, return (point-min)."
 		  (reverse (extent-list)))
 	  (point-min)))
     ;; Emacs 19.34 以前の場合
-    (defun xdic-previous-overlay-change (pos) "\
+    (defun sdic-previous-overlay-change (pos) "\
 Return the previous position before POS where an overlay starts or ends.
 If there are no more overlay boundaries before POS, return (point-min)."
       (if (> pos (point-max))
 	  (error "Specified position is larger than point-max"))
       (save-excursion
 	(let (next (prev (point-min)))
-	  (while (> pos (setq next (xdic-next-overlay-change prev)))
+	  (while (> pos (setq next (sdic-next-overlay-change prev)))
 	    (setq prev next))
 	  prev)))))
 
 
 (if (fboundp 'overlays-at)
-    (defalias 'xdic-overlays-at 'overlays-at)
-  (defun xdic-overlays-at (pos) "\
+    (defalias 'sdic-overlays-at 'overlays-at)
+  (defun sdic-overlays-at (pos) "\
 Return a list of the extents that contain position POS."
     (delq nil (mapcar (function (lambda (ext)
 				  (and (<= (extent-start-position ext) pos)
@@ -792,29 +792,29 @@ Return a list of the extents that contain position POS."
 
 
 (if (fboundp 'overlay-put)
-    (defalias 'xdic-overlay-put 'overlay-put)
-  (defalias 'xdic-overlay-put 'set-extent-property))
+    (defalias 'sdic-overlay-put 'overlay-put)
+  (defalias 'sdic-overlay-put 'set-extent-property))
 
 
 (if (fboundp 'make-overlay)
-    (defalias 'xdic-make-overlay 'make-overlay)
-  (defalias 'xdic-make-overlay 'make-extent))
+    (defalias 'sdic-make-overlay 'make-overlay)
+  (defalias 'sdic-make-overlay 'make-extent))
 
 
 (if (fboundp 'overlay-start)
-    (defalias 'xdic-overlay-start 'overlay-start)
-  (defalias 'xdic-overlay-start 'extent-start-position))
+    (defalias 'sdic-overlay-start 'overlay-start)
+  (defalias 'sdic-overlay-start 'extent-start-position))
 
 
 (if (fboundp 'overlay-end)
-    (defalias 'xdic-overlay-end 'overlay-end)
-  (defalias 'xdic-overlay-end 'extent-end-position))
+    (defalias 'sdic-overlay-end 'overlay-end)
+  (defalias 'sdic-overlay-end 'extent-end-position))
 
 
 (if (fboundp 'match-string)
-    (defalias 'xdic-match-string 'match-string)
+    (defalias 'sdic-match-string 'match-string)
   ;; Introduced in Emacs 19.29.
-  (defun xdic-match-string (num &optional string) "\
+  (defun sdic-match-string (num &optional string) "\
 Return string of text matched by last search.
 NUM specifies which parenthesized expression in the last regexp.
 Value is nil if NUMth pair didn't match, or there were less than NUM pairs.
@@ -826,7 +826,7 @@ STRING should be given if the last search was by `string-match' on STRING."
 	  (buffer-substring (match-beginning num) (match-end num))))))
 
 
-(defun xdic-split-string (string &optional separators) "\
+(defun sdic-split-string (string &optional separators) "\
 Splits STRING into substrings where there are matches for SEPARATORS.
 Each match for SEPARATORS is a splitting point.
 The substrings between the splitting points are made into a list
@@ -845,29 +845,29 @@ at the end of STRING, we don't include a null substring for that."
     (reverse (if (= start (length string)) list (cons (substring string start) list)))))
 
 
-(defvar xdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
+(defvar sdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
 fill-region 関数が left-margin の設定を無視する場合は nil 以外を設定する")
-(defun xdic-fill-region (start end) "\
+(defun sdic-fill-region (start end) "\
 Standarized fill-region.
 fill-region の Emacs のバージョンによって異なる動作を標準化する関数"
   (save-match-data
-    (if xdic-left-margin-ignored-by-fill-region
+    (if sdic-left-margin-ignored-by-fill-region
 	;; Emacs-19.28 附属の fill-region は、left-margin を無視するので強制的に indent する
-	(let ((fill-column (- fill-column xdic-left-margin)))
+	(let ((fill-column (- fill-column sdic-left-margin)))
 	  (fill-region start end)
-	  (indent-region start (point) xdic-left-margin))
+	  (indent-region start (point) sdic-left-margin))
       (fill-region start end))
     ;; 余分な空行を削除する
     (delete-region (point) (progn (skip-chars-backward " \t\n") (point)))))
 
 
-(defun xdic-insert-file-contents (filename coding-system &optional visit beg end replace)
+(defun sdic-insert-file-contents (filename coding-system &optional visit beg end replace)
   (let ((coding-system-for-read coding-system)
 	(file-coding-system-for-read coding-system))
     (insert-file-contents filename visit beg end replace)))
 
 
-(defun xdic-call-process (program &optional infile buffer display coding-system &rest args)
+(defun sdic-call-process (program &optional infile buffer display coding-system &rest args)
   (let ((coding-system-for-read coding-system)
 	(coding-system-for-write coding-system)
 	(process-input-coding-system coding-system)
@@ -876,7 +876,7 @@ fill-region の Emacs のバージョンによって異なる動作を標準化する関数"
     (apply 'call-process program infile buffer display args)))
 
 
-(defun xdic-start-process (name buffer coding-system program &rest args)
+(defun sdic-start-process (name buffer coding-system program &rest args)
   (let ((proc (apply 'start-process name buffer program args)))
     (if (fboundp 'set-process-coding-system)
 	(set-process-coding-system proc coding-system coding-system)
