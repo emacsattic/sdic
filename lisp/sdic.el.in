@@ -185,6 +185,28 @@ Regexp of Englist prepositions
 (defvar sdic-waei-symbol-list nil "和英辞典のシンボル")
 (defvar sdic-buffer-start-point nil "検索結果表示バッファの表示開始ポイント")
 (defvar sdic-mode-map nil "Keymap of sdic-mode")
+
+(defvar sdic-kinsoku-bol-list
+  (funcall (if (fboundp 'string-to-char-list)
+	       'string-to-char-list
+	     'string-to-list)
+	   "!)-_~}]:;',.?、。，．・：；？！゛゜´｀¨＾￣＿ヽヾゝゞ〃仝々〆〇ー―‐／＼〜‖｜…‥’”）〕］｝〉》」』】°′″℃ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ")
+  "行頭禁則文字のリスト")
+
+(defvar sdic-kinsoku-eol-list
+  (funcall (if (fboundp 'string-to-char-list)
+	       'string-to-char-list
+	     'string-to-list)
+	   "({[`‘“（〔［｛〈《「『【°′″§")
+  "行末禁則文字のリスト")
+
+(defvar sdic-kinsoku-spc-list
+  (funcall (if (fboundp 'string-to-char-list)
+	       'string-to-char-list
+	     'string-to-list)
+	   "\t 　")
+  "空白文字のリスト")
+
 (defconst sdic-version "2.0")
 (defconst sdic-buffer-name "*sdic*" "検索結果表示バッファの名前")
 (defconst sdic-mode-name "SDIC" "検索結果を表示するバッファの major mode")
@@ -285,45 +307,56 @@ Function to get content.
 ;;;		内部関数
 ;;;----------------------------------------------------------------------
 
-(defvar sdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
-fill-region 関数が left-margin の設定を無視する場合は nil 以外を設定する")
-(defsubst sdic-fill-region (start end) "\
-Standarized fill-region.
-fill-region の Emacs のバージョンによって異なる動作を標準化する関数"
-  (save-match-data
-    (if sdic-left-margin-ignored-by-fill-region
-	;; Emacs-19.28 附属の fill-region は、left-margin を無視するので強制的に indent する
-	(let ((fill-column (- fill-column sdic-left-margin)))
-	  (fill-region start end)
-	  (indent-region start (point) sdic-left-margin))
-      (fill-region start end))
-    ;; 余分な空行を削除する
-    (delete-region (point) (progn (skip-chars-backward " \t\n") (point)))))
-
-
-(defsubst sdic-insert-content (word content)
-  "見出し語と定義文を整形しながら挿入する関数"
+(defun sdic-insert-content (word content)
+  "見出し語と説明文を整形しながら挿入する"
   (sdic-overlay-put (sdic-make-overlay (point) (progn (insert word) (point))) 'face 'sdic-face)
-  (insert "\n")
-  (let ((str "")
-	(pos 0)
-	(start (point)))
+  (let ((spc (make-string left-margin ?\ )) top buf (pos 0))
+    (insert "\n" spc)
+    (setq top (point))
     (while (string-match ",\\([^ ]\\)" content pos)
-      (setq str (concat str (substring content pos (match-beginning 0)) ", ")
+      (setq buf (cons ", " (cons (substring content pos (match-beginning 0)) buf))
 	    pos (match-beginning 1)))
-    (setq content (concat str (substring content pos))
-	  str ""
+    (setq content (eval (cons 'concat (nreverse (if (< pos (length content)) (cons (substring content pos) buf) buf))))
+	  buf nil
 	  pos 0)
     (while (string-match "[^ 0-9]\\(/\\)[^ 0-9]" content pos)
-      (setq str (concat str (substring content pos (match-beginning 1)) " / ")
+      (setq buf (cons " / " (cons (substring content pos (match-beginning 1)) buf))
 	    pos (match-end 1)))
-    (insert str (substring content pos))
-    (if (> (+ (current-column) left-margin) fill-column)
-	(sdic-fill-region start (point))
-      (beginning-of-line)
-      (insert (make-string left-margin ? ))
-      (end-of-line)))
-  (insert "\n"))
+    (eval (cons 'insert (nreverse (if (< pos (length content)) (cons (substring content pos) buf) buf))))
+    (insert "\n")
+    (backward-char)
+    (while (if (>= (move-to-column fill-column) fill-column)
+	       (not (progn
+		      (if (memq (preceding-char) sdic-kinsoku-eol-list)
+			  (progn
+			    (backward-char)
+			    (while (memq (preceding-char) sdic-kinsoku-eol-list)
+			      (backward-char))
+			    (insert "\n" spc))
+			(while (memq (setq buf (following-char)) sdic-kinsoku-bol-list)
+			  (forward-char))
+			(if (memq buf sdic-kinsoku-spc-list)
+			    (delete-region (point)
+					   (progn
+					     (forward-char)
+					     (while (memq (following-char) sdic-kinsoku-spc-list)
+					       (forward-char))
+					     (point)))
+			  (or (> (char-width buf) 1)
+			      (re-search-backward "\\<" top t)
+			      (end-of-line)))
+			(or (eolp) (insert "\n" spc))))))
+      (setq top (point)))
+    (forward-char)))
+
+
+(defun sdic-insert-entry-list (entry-list)
+  "見出し語と説明文を整形しながら挿入する"
+  (mapcar (function
+	   (lambda (entry)
+	     (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
+	     (car entry)))
+	  entry-list))
 
 
 ;; 検索形式を判別するマクロ
@@ -338,32 +371,20 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
       ;; 検索語が '' で囲まれている場合 -> 完全一致検索
       ((and (equal ?' (string-to-char (, query)))
 	    (equal "'" (substring (, query) -1)))
-       (mapcar (function
-		(lambda (entry)
-		  (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
-		  (car entry)))
-	       (sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1 -1) 'lambda)))
+       (sdic-insert-entry-list
+	(sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1 -1) 'lambda)))
       ;; 検索語の先頭に / がある場合 -> 全文検索
       ((equal ?/ (string-to-char (, query)))
-       (mapcar (function
-		(lambda (entry)
-		  (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
-		  (car entry)))
-	       (sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) 0)))
+       (sdic-insert-entry-list
+	(sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) 0)))
       ;; 検索語の先頭に * がある場合 -> 後方一致検索
       ((equal ?* (string-to-char (, query)))
-       (mapcar (function
-		(lambda (entry)
-		  (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
-		  (car entry)))
-	       (sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) t)))
+       (sdic-insert-entry-list
+	(sdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) t)))
       ;; 検索語の末尾に * がある場合 -> 前方一致検索
       ((equal "*" (substring (, query) -1))
-       (mapcar (function
-		(lambda (entry)
-		  (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
-		  (car entry)))
-	       (sdic-search-multi-dictionaries (, dic-list) (substring (, query) 0 -1))))
+       (sdic-insert-entry-list
+	(sdic-search-multi-dictionaries (, dic-list) (substring (, query) 0 -1))))
       ;; 特に指定がない場合 -> 指定された S 式を評価
       (t
        (,@ sexp)))))
@@ -472,11 +493,8 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 (defun sdic-search-waei-dictionary (query)
   (sdic-decide-query-type sdic-waei-symbol-list query
     ;; 特に指定がない場合 -> 前方一致検索
-    (mapcar (function
-	     (lambda (entry)
-	       (sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
-	       (car entry)))
-	    (sdic-search-multi-dictionaries sdic-waei-symbol-list query))))
+    (sdic-insert-entry-list
+     (sdic-search-multi-dictionaries sdic-waei-symbol-list query))))
 
 
 
@@ -667,8 +685,10 @@ sdic-read-from-minibuffer 関数のヒストリ")
 (defun sdic-exit () "\
 検索結果表示バッファを削除する関数"
   (interactive)
-  (sdic-close-window)
-  (kill-buffer sdic-buffer-name)
+  (if (sdic-buffer-live-p (get-buffer sdic-buffer-name))
+      (progn
+	(sdic-close-window)
+	(kill-buffer sdic-buffer-name)))
   (mapcar 'sdic-close-dictionary sdic-eiwa-symbol-list)
   (mapcar 'sdic-close-dictionary sdic-waei-symbol-list)
   (setq sdic-eiwa-symbol-list nil
