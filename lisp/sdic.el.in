@@ -749,8 +749,8 @@ Q               SDIC を終了する
   (define-key sdic-mode-map "W" (function
 				 (lambda ()
 				   (interactive)
-				   (let ((current-prefix-arg t))
-				     (sdic-describe-word)))))
+				   (let ((f (sdic-select-search-function)))
+				     (sdic-describe-word (sdic-read-from-minibuffer) f)))))
   (define-key sdic-mode-map "/" (function
 				 (lambda ()
 				   (interactive)
