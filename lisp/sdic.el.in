@@ -139,7 +139,7 @@ Regexp of Englist prepositions
 (defvar xdic-eiwa-symbol-list nil "英和辞典のシンボル")
 (defvar xdic-waei-symbol-list nil "和英辞典のシンボル")
 (defvar xdic-mode-map nil "*Keymap of xdic-mode")
-(defconst xdic-version "1.7alpha4")
+(defconst xdic-version "2.0beta1")
 (defconst xdic-buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic-mode-name "Xdic" "検索結果を表示するバッファの major mode")
 
@@ -395,18 +395,16 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 ;;;----------------------------------------------------------------------
 
 (defun xdic-word-at-point () "\
-カーソル位置の英単語を返す関数"
+カーソル位置の単語を返す関数"
   (save-excursion
-    (if (not (looking-at "\\<"))
-        (forward-word -1))
-    (if (looking-at "[A-Za-z]+")
-	(downcase (buffer-substring (match-beginning 0) (match-end 0))))))
+    (if (not (looking-at "\\<")) (forward-word -1))
+    (downcase (buffer-substring (point) (progn (forward-word 1) (point))))))
 
 
 (defvar xdic-read-minibuffer-history '() "\
 xdic-read-from-minibuffer 関数のヒストリ")
 (defun xdic-read-from-minibuffer (&optional prompt init) "\
-ミニバッファから英単語を読みとる関数"
+ミニバッファから単語を読みとる関数"
   (or init (setq init (or (xdic-word-at-point) "")))
   (setq xdic-read-minibuffer-history
 	(cons init xdic-read-minibuffer-history))
@@ -435,6 +433,12 @@ xdic-read-from-minibuffer 関数のヒストリ")
 	  (set-buffer-modified-p nil)
 	  (xdic-display-buffer)
 	  ))))
+
+
+(defun xdic-describe-region (start end)
+  "Display the meaning of pattern."
+  (interactive (list (region-beginning) (region-end)))
+  (xdic-describe-word (buffer-substring start end)))
 
 
 (defun xdic-describe-word-at-point ()
