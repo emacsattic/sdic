@@ -79,7 +79,7 @@ lispdir = @lispdir@
 SOURCES = sdicf.el sdicf-client.el sdic-compat.el sdic-gene.el stem.el
 EXTRA_DIST = sdic.el.in
 DISTCLEANFILES = sdic.el
-lisp_LISP = $(SOURCES) sdic.el
+lisp_LISP = $(SOURCES) sdic.el  # sdic.el must be in this
 ELCFILES = $(lisp_LISP:.el=.elc)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =  sdic.el sample.emacs
