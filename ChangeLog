@@ -1,3 +1,8 @@
+Wed Jan 05 19:07:41 2000  Hideyuki SHIRAI  <shirai@rdmg.mgcs.mei.co.jp>
+
+	* lisp/sdic.el.in (sdic-word-at-point): Use sdic-split-string,
+	 when found a prepositional word.
+
 Tue Sep  7 12:42:34 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* Release SDIC-2.1.2.
