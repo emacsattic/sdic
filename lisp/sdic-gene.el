@@ -145,6 +145,30 @@
   (put dic 'xdic-gene-search-buffer nil))
 
 
+(defsubst xdic-gene-search-internal (string)
+  "通常の検索を行う内部関数"
+  (let (ret (case-fold-search t))
+    (while (search-forward string nil t)
+      (save-excursion
+	(setq ret (cons (cons (buffer-substring (progn (beginning-of-line) (point))
+						(progn (skip-chars-forward "^\t") (point)))
+			      (1+ (point)))
+			ret))))
+    (reverse ret)))
+
+
+(defsubst xdic-gene-re-search-internal (string)
+  "正規表現検索を行う内部関数"
+  (let (ret (case-fold-search t))
+    (while (re-search-forward string nil t)
+      (save-excursion
+	(setq ret (cons (cons (buffer-substring (progn (beginning-of-line) (point))
+						(progn (skip-chars-forward "^\t") (point)))
+			      (1+ (point)))
+			ret))))
+    (reverse ret)))
+
+
 (defun xdic-gene-search-entry (dic string &optional search-type) "\
 Function to search word with look or grep, and write results to current buffer.
 search-type の値によって次のように動作を変更する。
@@ -178,30 +202,6 @@ search-type の値によって次のように動作を変更する。
      ;; それ以外の検索形式を指定された場合
      (t (error "Not supported search type is specified. \(%s\)"
 	       (prin1-to-string search-type))))))
-
-
-(defsubst xdic-gene-search-internal (string)
-  "通常の検索を行う内部関数"
-  (let (ret (case-fold-search t))
-    (while (search-forward string nil t)
-      (save-excursion
-	(setq ret (cons (cons (buffer-substring (progn (beginning-of-line) (point))
-						(progn (skip-chars-forward "^\t") (point)))
-			      (1+ (point)))
-			ret))))
-    (reverse ret)))
-
-
-(defsubst xdic-gene-re-search-internal (string)
-  "正規表現検索を行う内部関数"
-  (let (ret (case-fold-search t))
-    (while (re-search-forward string nil t)
-      (save-excursion
-	(setq ret (cons (cons (buffer-substring (progn (beginning-of-line) (point))
-						(progn (skip-chars-forward "^\t") (point)))
-			      (1+ (point)))
-			ret))))
-    (reverse ret)))
 
 
 (defun xdic-gene-get-content (dic point)
