@@ -1252,13 +1252,12 @@ else
 	echo "$ac_t""$EIWA_DICT" 1>&6
 fi
 
-EIWA_DICT_LIST=`echo "$EIWA_DICT_LIST" | \
-		sed 's/^	/"/;s/$/"/;s/	/" "/g'`
+EIWA_DICT_LIST='"'`echo "$EIWA_DICT_LIST" | sed 's/^	//;s/	/" "/g'`'"'
 
 
 
 echo $ac_n "checking for WAEI Dictionary""... $ac_c" 1>&6
-echo "configure:1262: checking for WAEI Dictionary" >&5
+echo "configure:1261: checking for WAEI Dictionary" >&5
 WAEI_DICT=""
 for dict in jedict.sdic jgene.sdic waeijirou.sdic \
 	    jedict.dic  jgene.dic  waeijirou.dic \
@@ -1303,8 +1302,7 @@ else
 	echo "$ac_t""$WAEI_DICT" 1>&6
 fi
 
-WAEI_DICT_LIST=`echo "$WAEI_DICT_LIST" | \
-		sed 's/^	/"/;s/$/"/;s/	/" "/g'`
+WAEI_DICT_LIST='"'`echo "$WAEI_DICT_LIST" | sed 's/^	//;s/	/" "/g'`'"'
 
 
 

@@ -65,6 +65,7 @@ POST_UNINSTALL = :
 BZIP2 = @BZIP2@
 CP = @CP@
 DICTDIR = @DICTDIR@
+EIJIROU_DIR = @EIJIROU_DIR@
 EIWA_DICT = @EIWA_DICT@
 EIWA_DICT_LIST = @EIWA_DICT_LIST@
 EMACS = @EMACS@
@@ -76,6 +77,7 @@ PACKAGE = @PACKAGE@
 PERL = @PERL@
 SORT = @SORT@
 VERSION = @VERSION@
+WAEIJIROU_DIR = @WAEIJIROU_DIR@
 WAEI_DICT = @WAEI_DICT@
 WAEI_DICT_LIST = @WAEI_DICT_LIST@
 emacsdir = @emacsdir@
@@ -94,7 +96,7 @@ configure.in install-sh install.el.in missing mkinstalldirs
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:

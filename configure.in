@@ -125,8 +125,7 @@ else
 	AC_MSG_RESULT($EIWA_DICT)
 fi
 
-EIWA_DICT_LIST=`echo "$EIWA_DICT_LIST" | \
-		sed 's/^	/"/;s/$/"/;s/	/" "/g'`
+EIWA_DICT_LIST='"'`echo "$EIWA_DICT_LIST" | sed 's/^	//;s/	/" "/g'`'"'
 AC_SUBST(EIWA_DICT)
 AC_SUBST(EIWA_DICT_LIST)
 
@@ -175,8 +174,7 @@ else
 	AC_MSG_RESULT($WAEI_DICT)
 fi
 
-WAEI_DICT_LIST=`echo "$WAEI_DICT_LIST" | \
-		sed 's/^	/"/;s/$/"/;s/	/" "/g'`
+WAEI_DICT_LIST='"'`echo "$WAEI_DICT_LIST" | sed 's/^	//;s/	/" "/g'`'"'
 AC_SUBST(WAEI_DICT)
 AC_SUBST(WAEI_DICT_LIST)
 
