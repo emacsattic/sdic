@@ -13,7 +13,7 @@
 ;;	見出し語 TAB 定義文 RET
 ;;
 ;; となっている辞書を外部プログラム( look / grep )を利用して検索するラ
-;; イブラリです。
+;; イブラリです。この形式の辞書は xdic-1.x で使用されていました。
 
 
 ;;; Install:
@@ -33,20 +33,20 @@
 ;;     は xdic-waei-dictionary-list に追加して下さい。
 ;;
 ;;         (setq xdic-eiwa-dictionary-list
-;;               (cons '(xdic-unix "/usr/dict/gene.dic") xdic-eiwa-dictionary-list))
+;;               (cons '(xdic-compat "/usr/dict/gene.dic") xdic-eiwa-dictionary-list))
 ;;
 ;;     辞書定義情報は次のような構成になっています。
 ;;
-;;         (xdic-unix ファイル名 (オプションA 値A) (オプションB 値B) ...)
+;;         (xdic-compat ファイル名 (オプションA 値A) (オプションB 値B) ...)
 ;;
 ;;     特別な指定が不要な場合には、オプションは省略できます。
 ;;
-;;         (xdic-unix ファイル名)
+;;         (xdic-compat ファイル名)
 
 
 ;;; Options:
 
-;; xdic-unix.el に対して指定できるオプションは次の通りです。
+;; xdic-compat.el に対して指定できるオプションは次の通りです。
 ;;
 ;; coding-system
 ;;     辞書の漢字コードを指定します。省略した場合は、
@@ -58,66 +58,57 @@
 ;;
 ;; look
 ;;     前方一致検索/完全一致検索の時に利用する外部コマンドの名前を指定
-;;     します。省略した場合は xdic-unix-look-command の値を使います。
+;;     します。省略した場合は xdic-compat-look-command の値を使います。
 ;;
 ;; look-case-option
 ;;     look オプションによって指定された外部コマンドに対して、英大文字
 ;;     /小文字を区別しないで検索するように指示するためのコマンドライン
-;;     引数を指定します。省略した場合は xdic-unix-look-case-option の
+;;     引数を指定します。省略した場合は xdic-compat-look-case-option の
 ;;     値を使います。
 ;;
 ;; grep
 ;;     後方一致検索/任意検索の時に利用する外部コマンドの名前を指定しま
-;;     す。省略した場合は xdic-unix-grep-command の値を使います。
+;;     す。省略した場合は xdic-compat-grep-command の値を使います。
 ;;
 ;; grep-case-option
 ;;     grep オプションによって指定された外部コマンドに対して、英大文字
 ;;     /小文字を区別しないで検索するように指示するためのコマンドライン
-;;     引数を指定します。省略した場合は xdic-unix-grep-case-option の
+;;     引数を指定します。省略した場合は xdic-compat-grep-case-option の
 ;;     値を使います。
 
 
 ;;; Note:
 
-;; xdic-unix-look-command と xdic-unix-grep-command の値は自動的に設定
-;; されます。例えば、xdic-unix-grep-command の場合、egrep / egrep.exe
+;; xdic-compat-look-command と xdic-compat-grep-command の値は自動的に設定
+;; されます。例えば、xdic-compat-grep-command の場合、egrep / egrep.exe
 ;; / grep / grep.exe と4種のコマンドを検索して、見つかったコマンドを使
 ;; います。
-;;
-;; xdic-unix.el と xdic-gene.el は同じ機能を提供しているライブラリです。
-;; xdic-unix.el は外部コマンドを呼び出しているのに対して、xdic-gene.el 
-;; は Emacs の機能のみを利用しています。ただし、辞書をバッファに読み込
-;; んでから検索を行なうので、大量のメモリが必要になります。
-;;
-;; Default の設定では、必要な外部コマンドが見つかった場合は 
-;; xdic-unix.el を、見つからなかった場合には xdic-gene.el を使うように
-;; なっています。
 
 
 ;;; ライブラリ定義情報
 (require 'xdic)
-(provide 'xdic-unix)
-(put 'xdic-unix 'version "1.2")
-(put 'xdic-unix 'init-dictionary 'xdic-unix-init-dictionary)
-(put 'xdic-unix 'open-dictionary 'xdic-unix-open-dictionary)
-(put 'xdic-unix 'close-dictionary 'xdic-unix-close-dictionary)
-(put 'xdic-unix 'search-entry 'xdic-unix-search-entry)
-(put 'xdic-unix 'get-content 'xdic-unix-get-content)
+(provide 'xdic-compat)
+(put 'xdic-compat 'version "1.2")
+(put 'xdic-compat 'init-dictionary 'xdic-compat-init-dictionary)
+(put 'xdic-compat 'open-dictionary 'xdic-compat-open-dictionary)
+(put 'xdic-compat 'close-dictionary 'xdic-compat-close-dictionary)
+(put 'xdic-compat 'search-entry 'xdic-compat-search-entry)
+(put 'xdic-compat 'get-content 'xdic-compat-get-content)
 
 
 ;;;----------------------------------------------------------------------
 ;;;		定数/変数の宣言
 ;;;----------------------------------------------------------------------
 
-(defvar xdic-unix-look-command nil "*Executable file name of look")
+(defvar xdic-compat-look-command nil "*Executable file name of look")
 
-(defvar xdic-unix-look-case-option "-f" "*Command line option for look to ignore case")
+(defvar xdic-compat-look-case-option "-f" "*Command line option for look to ignore case")
 
-(defvar xdic-unix-grep-command nil "*Executable file name of grep")
+(defvar xdic-compat-grep-command nil "*Executable file name of grep")
 
-(defvar xdic-unix-grep-case-option "-i" "*Command line option for grep to ignore case")
+(defvar xdic-compat-grep-case-option "-i" "*Command line option for grep to ignore case")
 
-(defconst xdic-unix-search-buffer-name " *xdic-unix*")
+(defconst xdic-compat-search-buffer-name " *xdic-compat*")
 
 
 
@@ -125,7 +116,7 @@
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
-;; xdic-unix-*-command の初期値を設定
+;; xdic-compat-*-command の初期値を設定
 (mapcar '(lambda (list)
 	   (or (symbol-value (car list))
 	       (set (car list)
@@ -137,34 +128,34 @@
 					 exec-path))
 			      (cdr list))
 		      nil))))
-	'((xdic-unix-look-command "look" "look.exe")
-	  (xdic-unix-grep-command "egrep" "egrep.exe" "grep" "grep.exe")))
+	'((xdic-compat-look-command "look" "look.exe")
+	  (xdic-compat-grep-command "egrep" "egrep.exe" "grep" "grep.exe")))
 
 
-(defun xdic-unix-available-p () "\
+(defun xdic-compat-available-p () "\
 Function to check availability of library.
 ライブラリの利用可能性を検査する関数"
-  (and (stringp xdic-unix-look-command) (stringp xdic-unix-grep-command)))
+  (and (stringp xdic-compat-look-command) (stringp xdic-compat-grep-command)))
 
 
-(defun xdic-unix-init-dictionary (file-name &rest option-list)
+(defun xdic-compat-init-dictionary (file-name &rest option-list)
   "Function to initialize dictionary"
   (let ((dic (xdic-make-dictionary-symbol)))
     (if (file-readable-p (setq file-name (expand-file-name file-name)))
 	(progn
 	  (mapcar '(lambda (c) (put dic (car c) (nth 1 c))) option-list)
 	  (put dic 'file-name file-name)
-	  (put dic 'identifier (concat "xdic-unix+" file-name))
+	  (put dic 'identifier (concat "xdic-compat+" file-name))
 	  (or (get dic 'title)
 	      (put dic 'title (file-name-nondirectory file-name)))
 	  (or (get dic 'look)
-	      (put dic 'look xdic-unix-look-command))
+	      (put dic 'look xdic-compat-look-command))
 	  (or (get dic 'look-case-option)
-	      (put dic 'look-case-option xdic-unix-look-case-option))
+	      (put dic 'look-case-option xdic-compat-look-case-option))
 	  (or (get dic 'grep)
-	      (put dic 'grep xdic-unix-grep-command))
+	      (put dic 'grep xdic-compat-grep-command))
 	  (or (get dic 'grep-case-option)
-	      (put dic 'grep-case-option xdic-unix-grep-case-option))
+	      (put dic 'grep-case-option xdic-compat-grep-case-option))
 	  (or (get dic 'coding-system)
 	      (put dic 'coding-system xdic-default-coding-system))
 	  (and (stringp (get dic 'look))
@@ -173,20 +164,20 @@ Function to check availability of library.
       (error "Can't read dictionary: %s" (prin1-to-string file-name)))))
 
 
-(defun xdic-unix-open-dictionary (dic)
+(defun xdic-compat-open-dictionary (dic)
   "Function to open dictionary"
-  (and (or (xdic-buffer-live-p (get dic 'xdic-unix-search-buffer))
-	   (put dic 'xdic-unix-search-buffer (generate-new-buffer xdic-unix-search-buffer-name)))
+  (and (or (xdic-buffer-live-p (get dic 'xdic-compat-search-buffer))
+	   (put dic 'xdic-compat-search-buffer (generate-new-buffer xdic-compat-search-buffer-name)))
        dic))
 
 
-(defun xdic-unix-close-dictionary (dic)
+(defun xdic-compat-close-dictionary (dic)
   "Function to close dictionary"
-  (kill-buffer (get dic 'xdic-unix-search-buffer))
-  (put dic 'xdic-unix-search-buffer nil))
+  (kill-buffer (get dic 'xdic-compat-search-buffer))
+  (put dic 'xdic-compat-search-buffer nil))
 
 
-(defun xdic-unix-search-entry (dic string &optional search-type) "\
+(defun xdic-compat-search-entry (dic string &optional search-type) "\
 Function to search word with look or grep, and write results to current buffer.
 search-type の値によって次のように動作を変更する。
     nil    : 前方一致検索
@@ -197,13 +188,13 @@ search-type の値によって次のように動作を変更する。
 連想配列を返す。
 "
   (save-excursion
-    (set-buffer (get dic 'xdic-unix-search-buffer))
+    (set-buffer (get dic 'xdic-compat-search-buffer))
     (save-restriction
-      (if (get dic 'xdic-unix-erase-buffer)
+      (if (get dic 'xdic-compat-erase-buffer)
 	  (delete-region (point-min) (point-max))
 	(goto-char (point-max))
 	(narrow-to-region (point-max) (point-max)))
-      (put dic 'xdic-unix-erase-buffer nil)
+      (put dic 'xdic-compat-erase-buffer nil)
       (cond
        ;; 前方一致検索の場合 -> look を使って検索
        ((eq search-type nil)
@@ -256,10 +247,10 @@ search-type の値によって次のように動作を変更する。
 	(reverse ret)))))
 
 
-(defun xdic-unix-get-content (dic point)
+(defun xdic-compat-get-content (dic point)
   (save-excursion
-    (set-buffer (get dic 'xdic-unix-search-buffer))
-    (put dic 'xdic-unix-erase-buffer t)
+    (set-buffer (get dic 'xdic-compat-search-buffer))
+    (put dic 'xdic-compat-erase-buffer t)
     (if (<= point (point-max))
 	(buffer-substring (goto-char point) (progn (end-of-line) (point)))
       (error "Can't find content. (ID=%d)" point))))
