@@ -1,5 +1,7 @@
 Wed Jun  2 17:55:44 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
+	* lisp/Makefile.am,lp.el: Change compile method.
+
 	* lisp/sdic.el.in: (sdic-word-at-point) Bug fix (Tnx. Takashi Nishimoto)
 
 	* lisp/sdic-grep.el: (sdic-grep-open-dictionary) Disable undo in temporary buffer.

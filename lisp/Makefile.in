@@ -74,9 +74,8 @@ WAEI_DICTIONARY_PATH = @WAEI_DICTIONARY_PATH@
 emacsdir = @emacsdir@
 lispdir = @lispdir@
 
-SOURCES = sdic-sgml.el sdic-grep.el sdic-array.el sdic-compat.el 		sdic-gene.el stem.el
-
-EXTRA_DIST = sdic.el.in
+SOURCES = sdicf.el sdicf-client.el sdic-compat.el sdic-gene.el stem.el
+EXTRA_DIST = sdic.el.in lp.el
 DISTCLEANFILES = sdic.el
 lisp_LISP = $(SOURCES) sdic.el  # sdic.el must be in this
 ELCFILES = $(lisp_LISP:.el=.elc)
@@ -89,7 +88,7 @@ DIST_COMMON =  Makefile.am Makefile.in elisp-comp sdic.el.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -224,6 +223,9 @@ install uninstall-am uninstall all-redirect all-am all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+$(ELCFILES): $(lisp_LISP)
+	$(EMACS) -batch -l lp.el -f batch-byte-compile $(lisp_LISP)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
