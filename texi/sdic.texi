@@ -123,10 +123,10 @@ Internet を通して、容易に入手できるようなテキスト形式の辞書を主な対象と
 は、パッケージに同梱されている @file{COPYING} を参照してください。
 
 また、SDIC について議論するためのメーリングリスト 
-<sdic@@hazel.kuee.kyoto-u.ac.jp> が開設されています。参加を希望される方は、
+<sdic@@namazu.org> が開設されています。参加を希望される方は、
 
 @example
-sdic-ctl@@hazel.kuee.kyoto-u.ac.jp
+sdic-ctl@@namazu.org
 @end example
 
 宛に subscribe ANATANO Namae という本文のメールを送って下さい。
