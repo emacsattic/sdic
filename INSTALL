@@ -71,19 +71,11 @@
     とすれば設定が完了します。Mule/Emacs 上で C-c w とタイプすると、
     sdic-mode が起動するはずです。
 
-    Emacs20 の場合は、更に、
+    Emacs20 または XEmacs で使用する場合は、更に、
 
         (set-language-environment "Japanese")
-        (set-terminal-coding-system 'euc-japan)
 
     と設定されているか確認してください。
-
-    また、XEmacs の場合は、
-
-        (set-language-environment "Japanese")
-	(set-default-coding-systems 'euc-japan)
-
-    と .emacs に設定されているか確認してください。
 	
 
 

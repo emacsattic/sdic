@@ -78,17 +78,9 @@
 ;; ドに合わせる必要があります。その場合、日本語 EUC がおそらく一番安全
 ;; でしょう。
 ;;
-;; Emacs20 で使う場合は、
+;; Emacs20 または XEmacs で使用する場合は、
 ;;
 ;;     (set-language-environment "Japanese")
-;;     (set-terminal-coding-system 'euc-japan)
-;;
-;; と .emacs に設定されているか確認してください。
-;;
-;; XEmacs で使う場合は、
-;;
-;;     (set-language-environment "Japanese")
-;;     (set-default-coding-systems 'euc-japan)
 ;;
 ;; と .emacs に設定されているか確認してください。
 

@@ -1,3 +1,8 @@
+Mon Jul 26 10:27:07 1999  Hideyuki Shirai <shirai@rdmg.mgcs.mei.co.jp>
+
+	* INSTALL,lisp/sdic.el.in: Modify document of setting for Emacs20
+	  and XEmacs.
+
 Mon Jul 26 00:41:42 1999  Satoru Takabayashi  <satoru-t@is.aist-nara.ac.jp>
 
 	* configure.in: Bug fix: substitution for EIJIROU_DIR and
