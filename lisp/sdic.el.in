@@ -221,18 +221,18 @@ Function to search word in dictionary.
 Function to sort entry list in dictionary order.
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列 
 ENTRY-LIST を、見出し語の辞書順に並べ替える関数。"
-  (let (key)
-    (mapcar 'cdr
-	    (sort (mapcar (function
-			   (lambda (entry)
-			     (if (string-match "\\Ca" (car entry))
-				 (cons (concat (car entry) "\^@") entry)
-			       (setq key (downcase (car entry)))
-			       (while (string-match "[^a-z0-9]+" key)
-				 (setq key (replace-match "" t t key)))
-			       (cons (concat key "\^@" (car entry) "\^@") entry))))
-			  entry-list)
-		  (function (lambda (a b) (string< (car a) (car b))))))))
+  (mapcar 'cdr
+	  (sort (mapcar (function
+			 (lambda (entry)
+			   (if (string-match "\\Ca" (car entry))
+			       (cons (concat (car entry) "\^@") entry)
+			     (cons (concat (mapconcat 'downcase
+						      (xdic-split-string (car entry) "[^A-z0-9]+")
+						      " ")
+					   "\^@" (car entry) "\^@")
+				   entry))))
+			entry-list)
+		(function (lambda (a b) (string< (car a) (car b)))))))
 
 
 (defun xdic-search-multi-dictionaries (dic-list word &optional search-type) "\
@@ -333,8 +333,8 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 ;; 英和辞典を検索する関数
 (defun xdic-search-eiwa-dictionary (query)
   (xdic-decide-query-type xdic-eiwa-symbol-list query
-    (let (word-list stem-list orig pat point)
-      (setq word-list (xdic-split-string query))
+    (let (word-list stem-list orig pat point str)
+      (setq word-list (xdic-split-string (downcase query)))
       (prog1 (mapcar
 	      (function
 	       (lambda (entry)
@@ -343,11 +343,11 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 		      (setq point (point)))
 		 (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
 		 (car entry)))
-	      (or
-	       ;; (1) 不規則変化動詞を検索する
-	       (and
-		(setq stem-list (copy-sequence (assoc (car word-list) stem:irregular-verb-alist)))
-		(prog1 (xdic-sort-dictionary-order
+	      (prog1 (or
+		      ;; (1) 不規則変化動詞を検索する
+		      (and
+		       (setq stem-list (copy-sequence (assoc (car word-list) stem:irregular-verb-alist)))
+		       (xdic-sort-dictionary-order
 			(apply 'append
 			       (mapcar
 				(function
@@ -367,21 +367,9 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 						   (lambda (dic)
 						     (xdic-search-entry dic word)))
 						  xdic-eiwa-symbol-list))))))
-				stem-list)))
-		  (if orig
-		      (setq pat (if (nth 1 word-list)
-				    (format "^\\(%s\\)"
-					    (mapconcat (function
-							(lambda (w)
-							  (format "%s +%s$\\|%s +%s "
-								  (regexp-quote w)
-								  (regexp-quote (nth 1 word-list))
-								  (regexp-quote w)
-								  (regexp-quote (nth 1 word-list)))))
-						       stem-list "\\|"))
-				  (format "^%s$" (regexp-quote (car word-list))))))))
-	       ;; (2) 不規則変化動詞を無視した stemming を行なって検索する
-	       (prog1 (progn
+				stem-list))))
+		      ;; (2) 不規則変化動詞を無視した stemming を行なって検索する
+		      (progn
 			(setq stem-list (let ((stem:irregular-verb-alist nil))
 					  (stem:stripping-suffix (car word-list))))
 			;; 最長部分列を求める
@@ -400,33 +388,44 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 					   (function
 					    (lambda (entry)
 					      ;; 検索結果から原形と推定される見出し語を検索
-					      (and (member (downcase (car entry)) stem-list)
-						   (< (length orig) (length (car entry)))
-						   (setq orig (car entry)))
+					      (setq str (downcase (car entry)))
+					      (and (member str stem-list)
+						   (not (member str orig))
+						   (setq orig (cons str orig)))
 					      entry))
 					   (xdic-search-multi-dictionaries xdic-eiwa-symbol-list pat))
 				     (if orig
-					 (setq pat (if (string= orig (car word-list))
-						       (format "^\\(%s$\\|%s \\)"
-							       (regexp-quote orig)
-							       (regexp-quote orig))
-						     (format "^\\(%s$\\|%s \\|%s$\\|%s \\)"
-							     (regexp-quote orig)
-							     (regexp-quote orig)
-							     (regexp-quote (car word-list))
-							     (regexp-quote (car word-list)))))
+					 (setq stem-list (copy-sequence orig)
+					       orig (if (member (car word-list) orig)
+							(car word-list)
+						      (car (sort orig (function
+								       (lambda (a b) (> (length a) (length b)))))))
+					       pat (format "^\\(%s\\)"
+							   (mapconcat (function
+								       (lambda (w)
+									 (format "%s$\\|%s "
+										 (regexp-quote w)
+										 (regexp-quote w))))
+								      stem-list "\\|")))
 				       (setq orig pat
 					     pat (concat "^" (regexp-quote pat)))
 				       (message "Can't find original form of \"%s\""
 						(car word-list))
-				       )))))
-		 (setq pat (if (nth 1 word-list)
-			       (format "^\\(%s +%s$\\|%s +%s \\)"
-				       (regexp-quote orig)
-				       (regexp-quote (nth 1 word-list))
-				       (regexp-quote orig)
-				       (regexp-quote (nth 1 word-list)))
-			     (format "^%s$" (regexp-quote orig)))))))
+				       ))))))
+		(setq pat (if (nth 1 word-list)
+			      (concat "^\\("
+				      (mapconcat (function
+						  (lambda (w)
+						    (format "%s +%s$\\|%s +%s "
+							    (regexp-quote w)
+							    (regexp-quote (nth 1 word-list))
+							    (regexp-quote w)
+							    (regexp-quote (nth 1 word-list)))))
+						 stem-list "\\|")
+				      (if (string= orig (car word-list))
+					  (format "\\|%s\\)" (regexp-quote orig))
+					"\\)"))
+			    (format "^%s$" (regexp-quote orig))))))
 	(if point (setq xdic-buffer-start-point point))))))
 
 
