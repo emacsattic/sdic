@@ -21,6 +21,16 @@
 (put 'xdic-gene 'search-entry 'xdic-gene-search-entry)
 (put 'xdic-gene 'get-content 'xdic-gene-get-content)
 
+
+
+;;;----------------------------------------------------------------------
+;;;		定数/変数の宣言
+;;;----------------------------------------------------------------------
+
+(defvar xdic-gene-extract-option "-dc" "\
+*Option for archiver.
+圧縮辞書を展開するために使うオプション")
+
 (defconst xdic-gene-search-buffer-name "*xdic-gene*")
 
 
@@ -29,27 +39,41 @@
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
-(defun xdic-gene-init-dictionary (alist)
+(defun xdic-gene-init-dictionary (file-name &rest option-list)
   "Function to initialize dictionary"
   (let ((dic (xdic-make-dictionary-symbol)))
-    (if (file-readable-p (put dic 'file-name (or (nth 1 (assoc 'file-name alist))
-						 (error "%s" "File name is not specified."))))
+    (if (file-readable-p (setq file-name (expand-file-name file-name)))
 	(progn
-	  (put dic 'coding-system (or (nth 1 (assoc 'coding-system alist))
-				      (error "%s" "Coding-system is not specified.")))
+	  (mapcar '(lambda (c) (put dic (car c) (nth 1 c))) option-list)
+	  (put dic 'file-name file-name)
+	  (put dic 'identifier (concat "xdic-gene+" file-name))
+	  (or (get dic 'title)
+	      (put dic 'title (file-name-nondirectory file-name)))
+	  (if (get dic 'extract)
+	      (or (get dic 'extract-option)
+		  (put dic 'extract-option xdic-gene-extract-option)))
+	  (or (get dic 'coding-system)
+	      (put dic 'coding-system xdic-default-coding-system))
 	  dic)
-      (error "Can't read dictionary: %s" (prin1-to-string (get dic 'file-name))))))
+      (error "Can't read dictionary: %s" (prin1-to-string file-name)))))
 
 
 (defun xdic-gene-open-dictionary (dic)
   "Function to open dictionary"
-  (save-excursion
-    (set-buffer (or (xdic-buffer-live-p (get dic 'xdic-gene-search-buffer))
-		    (put dic 'xdic-gene-search-buffer (generate-new-buffer xdic-gene-search-buffer-name))))
-    (xdic-insert-file-contents (get dic 'file-name) nil nil nil nil (get dic 'coding-system))
-    (setq buffer-read-only t)
-    (set-buffer-modified-p nil)
-    t))
+  (if (or (xdic-buffer-live-p (get dic 'xdic-gene-search-buffer))
+	  (save-excursion
+	    (set-buffer (put dic 'xdic-gene-search-buffer (generate-new-buffer xdic-gene-search-buffer-name)))
+	    (prog1 (if (get dic 'extract)
+		       (= 0 (xdic-call-process (get dic 'extract) nil t nil
+					       (get dic 'coding-system)
+					       (get dic 'extract-option)
+					       (get dic 'file-name)))
+		     (condition-case err
+			 (xdic-insert-file-contents (get dic 'file-name) nil nil nil nil (get dic 'coding-system))
+		       (error nil)))
+	      (setq buffer-read-only t)
+	      (set-buffer-modified-p nil))))
+      dic))
 
 
 (defun xdic-gene-close-dictionary (dic)
