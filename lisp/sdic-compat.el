@@ -13,7 +13,7 @@
 ;;	見出し語 TAB 定義文 RET
 ;;
 ;; となっている辞書を外部プログラム( look / grep )を利用して検索するラ
-;; イブラリです。この形式の辞書は xdic-1.x で使用されていました。
+;; イブラリです。
 
 
 ;;; Install:
@@ -27,9 +27,9 @@
 ;;
 ;;         gene.perl    - GENE95 辞書
 ;;         jgene.perl   - GENE95 辞書から和英辞書を生成する
+;;         eijirou.perl - 英辞郎
 ;;
-;;     それぞれ、xdic-1.x 用の辞書を生成するようにオプションを指定する
-;;     必要があります。
+;;     --compat オプションを指定する必要があります。
 ;;
 ;; (3) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
 ;;     は xdic-waei-dictionary-list に追加して下さい。
@@ -85,6 +85,15 @@
 ;; されます。例えば、xdic-compat-grep-command の場合、egrep / egrep.exe
 ;; / grep / grep.exe と4種のコマンドを検索して、見つかったコマンドを使
 ;; います。
+;;
+;; xdic-compat.el と xdic-gene.el は同じ機能を提供しているライブラリで
+;; す。xdic-compat.el は外部コマンドを呼び出しているのに対して、
+;; xdic-gene.el は Emacs の機能のみを利用しています。ただし、辞書をバッ
+;; ファに読み込んでから検索を行なうので、大量のメモリが必要になります。
+;;
+;; Default の設定では、必要な外部コマンドが見つかった場合は 
+;; xdic-compat.el を、見つからなかった場合には xdic-gene.el を使うよう
+;; になっています。
 
 
 ;;; ライブラリ定義情報
@@ -185,7 +194,8 @@ search-type の値によって次のように動作を変更する。
     nil    : 前方一致検索
     t      : 後方一致検索
     lambda : 完全一致検索
-    0      : 任意検索
+    0      : 全文検索
+    regexp : 正規表現検索
 検索結果として見つかった見出し語をキーとし、その定義文の先頭の point を値とする
 連想配列を返す。
 "
@@ -232,7 +242,8 @@ search-type の値によって次のように動作を変更する。
 		   (= 0 (forward-line 1))
 		 (delete-region (point) (point-max)))))
        ;; ユーザー指定のキーによる検索の場合 -> grep を使って検索
-       ((eq search-type 0)
+       ((or (eq search-type 0)
+	    (eq search-type 'regexp))
 	(xdic-call-process (get dic 'grep) nil t nil
 			   (get dic 'coding-system)
 			   string (get dic 'file-name)))
