@@ -1,8 +1,8 @@
-1999-05-05  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
+1999-05-16  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 
 	* Be configurized:
 		Makefile.{am,in}, configure.in, configure, 
 		lisp/Makefile.{am,in} : New files
 		acinclude.m4, aclocal.m4, elisp-comp : Import from Lookup
-	* TODO, AUTHORS, ChangeLog, THANKS: New file.
-	
+	* TODO, NEWS, AUTHORS, ChangeLog, THANKS: New file.
+
