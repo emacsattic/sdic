@@ -18,10 +18,10 @@ config:
 	test "$$YN" = yes
 	@if [ -f "$$HOME/.emacs" ] ;\
 	then \
-	     echo "元の $$HOME/.emacs を $$HOME/.emacs.orig として保存します"
+	     echo "元の $$HOME/.emacs を $$HOME/.emacs.orig として保存します";\
 	     cp -p $$HOME/.emacs $$HOME/.emacs.orig ;\
 	fi
-	( echo ; cat sample.emacs )>>$$HOME/.emacs
+	( echo ; cat lisp/sample.emacs )>>$$HOME/.emacs
 
 
 ## 辞書を生成するためのルール
