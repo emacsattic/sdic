@@ -495,13 +495,12 @@ ADD-HEADWORD $B$,(B Non-nil $B$N>l9g$O8!:w%-!<$K8+=P$78l$r2C$($?%j%9%H$rJV$9
   (or (sdicf-entry-p entry)
       (signal 'wrong-type-argument (list 'sdicf-entry-p entry)))
   (let ((start (match-end 0))
-	(keywords (list (sdicf-decode-string (substring entry (match-beginning 1) (match-end 1))))))
+	(keywords (if (or add-headword (string-match "^<K>" entry))
+		      (list (sdicf-decode-string (substring entry (match-beginning 1) (match-end 1)))))))
     (while (eq start (string-match "<.>\\([^<]+\\)</.>" entry start))
       (setq start (match-end 0)
 	    keywords (cons (sdicf-decode-string (substring entry (match-beginning 1) (match-end 1))) keywords)))
-    (if (and (not add-headword) (string-match "^<H>" entry))
-	(cdr (nreverse keywords))
-      (nreverse keywords))))
+    (nreverse keywords)))
 
 (defun sdicf-entry-text (entry)
   "$B%(%s%H%j(B ENTRY $B$NK\J8$rJV$9!#(B"
