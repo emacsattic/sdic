@@ -159,7 +159,7 @@ search-type の値によって次のように動作を変更する。
     nil    : 前方一致検索
     t      : 後方一致検索
     lambda : 完全一致検索
-    0      : 任意検索
+    0      : 全文検索
 検索結果として見つかった見出し語をキーとし、その定義文の先頭の point を値とする
 連想配列を返す。
 "
@@ -182,7 +182,7 @@ search-type の値によって次のように動作を変更する。
    ((eq search-type t) (concat (xdic-sgml-escape-string (downcase string)) "</K>"))
    ;; 完全一致検索の場合
    ((eq search-type 'lambda) (concat "<K>" (xdic-sgml-escape-string (downcase string)) "</K>"))
-   ;; ユーザー指定のキーによる検索の場合
+   ;; 全文検索の場合
    ((eq search-type 0) (xdic-sgml-escape-string string))
    ;; それ以外の検索形式を指定された場合
    (t (error "Not supported search type is specified. \(%s\)"
