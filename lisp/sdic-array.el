@@ -232,7 +232,7 @@ search-type の値によって次のように動作を変更する。
 			     (setq ret (cons (list (car cons) (cdr cons) pos end) ret))))
 		     (if (eobp) nil (goto-char (1+ (point)))))
 	      (setq pos (point)))
-	    (mapcar (function (lambda (l) (cons (car l) (nth 1 l)))) (reverse ret)))))))
+	    (mapcar (function (lambda (l) (cons (car l) (nth 1 l)))) (nreverse ret)))))))
 
 
 (defun sdic-array-get-content (dic point)
