@@ -514,13 +514,17 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 
 (defvar sdic-read-minibuffer-history '() "\
 sdic-read-from-minibuffer 関数のヒストリ")
-(defun sdic-read-from-minibuffer (&optional prompt init) "\
-ミニバッファから単語を読みとる関数"
-  (or init (setq init (or (sdic-word-at-point) "")))
-  (setq sdic-read-minibuffer-history
-	(cons init sdic-read-minibuffer-history))
-  (downcase (read-from-minibuffer (or prompt "Input word : ") init
-				  nil nil '(sdic-read-minibuffer-history . 1))))
+(defun sdic-read-from-minibuffer (&optional init pre-prompt)
+  "ミニバッファから単語を読みとる"
+  (let ((w (or init (sdic-word-at-point) "")))
+    (setq sdic-read-minibuffer-history (cons w sdic-read-minibuffer-history)
+	  w (downcase (read-from-minibuffer (if pre-prompt
+						(format "%s Input word : " pre-prompt)
+					      "Input word : ")
+					    w nil nil '(sdic-read-minibuffer-history . 1))))
+    (if (>= (length w) 2) w
+      (downcase (read-from-minibuffer (format "\"%s\" is too short. Input word again : " w)
+				      w nil nil '(sdic-read-minibuffer-history . 1))))))
 
 
 (defun sdic-select-search-function ()
@@ -542,11 +546,6 @@ sdic-read-from-minibuffer 関数のヒストリ")
    (let ((f (if current-prefix-arg (sdic-select-search-function)))
 	 (w (sdic-read-from-minibuffer)))
      (list w f)))
-  (and (interactive-p)
-       (< (length word) 2)
-       (setq word (sdic-read-from-minibuffer
-		   (format "\"%s\" is too short word. Input word again : " word)
-		   word)))
   (set-buffer (get-buffer-create sdic-buffer-name))
   (or (string= mode-name sdic-mode-name) (sdic-mode))
   (setq buffer-read-only nil)
@@ -578,9 +577,9 @@ sdic-read-from-minibuffer 関数のヒストリ")
   (sdic-describe-word (buffer-substring start end) search-function))
 
 
-(defun sdic-describe-word-at-point ()
+(defun sdic-describe-word-at-point (&optional search-function)
   "Display the meaning of word at point in Japanese."
-  (interactive)
+  (interactive (list (if current-prefix-arg (sdic-select-search-function))))
   (let ((orig-table (copy-syntax-table))
 	word)
     (unwind-protect
@@ -590,9 +589,9 @@ sdic-read-from-minibuffer 関数のヒストリ")
 	  (modify-syntax-entry ?/ "w")
 	  (setq word (or (sdic-word-at-point) (sdic-read-from-minibuffer))))
       (set-syntax-table orig-table))
-    (or (sdic-describe-word word)
-	(sdic-describe-word (sdic-read-from-minibuffer
-			     (format "Can't find word \"%s\". Input word again : " word) word)))))
+    (or (sdic-describe-word word search-function)
+	(sdic-describe-word (sdic-read-from-minibuffer word (format "Can't find word \"%s\"." word))
+			    search-function))))
 
 
 ;;; 次の項目に移動する関数
@@ -750,19 +749,28 @@ Q               SDIC を終了する
   (define-key sdic-mode-map "W" (function
 				 (lambda ()
 				   (interactive)
-				   (let ((f (sdic-select-search-function)))
-				     (call-interactively
-				      (sdic-describe-word
-				       (sdic-read-from-minibuffer "Input word : "
-								  (sdic-word-at-point))
-				       f))))))
+				   (let ((current-prefix-arg t))
+				     (sdic-describe-word)))))
   (define-key sdic-mode-map "/" (function
 				 (lambda ()
 				   (interactive)
-				   (call-interactively
-				    (sdic-describe-word
-				     (sdic-read-from-minibuffer "Input word : "
-								(concat "/" (sdic-word-at-point))))))))
+				   (sdic-describe-word (sdic-read-from-minibuffer
+							(concat "/" (sdic-word-at-point)))))))
+  (define-key sdic-mode-map "^" (function
+				 (lambda ()
+				   (interactive)
+				   (sdic-describe-word (sdic-read-from-minibuffer
+							(concat (sdic-word-at-point) "*"))))))
+  (define-key sdic-mode-map "$" (function
+				 (lambda ()
+				   (interactive)
+				   (sdic-describe-word (sdic-read-from-minibuffer
+							(concat "*" (sdic-word-at-point)))))))
+  (define-key sdic-mode-map "'" (function
+				 (lambda ()
+				   (interactive)
+				   (sdic-describe-word (sdic-read-from-minibuffer
+							(concat "'" (sdic-word-at-point) "'"))))))
   (define-key sdic-mode-map "<" 'sdic-goto-point-min)
   (define-key sdic-mode-map ">" 'sdic-goto-point-max)
   (define-key sdic-mode-map "?" 'describe-mode)
