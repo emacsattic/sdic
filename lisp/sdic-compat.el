@@ -117,7 +117,7 @@ search-type の値によって次のように動作を変更する。
   (save-excursion
     (set-buffer (get dic 'search-buffer))
     (if (<= point (point-max))
-	(buffer-substring (goto-char id) (progn (end-of-line) (point)))
+	(buffer-substring (goto-char point) (progn (end-of-line) (point)))
       (error "Can't find content. (ID=%d)" point))))
 
 
