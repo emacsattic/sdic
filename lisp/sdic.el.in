@@ -52,12 +52,10 @@
 
 ;;; カスタマイズ用変数
 
+;;; 辞書に関する変数
 (defvar xdic:dictionary (expand-file-name "~/usr/lib/elisp/gene.dic") "\
 検索に用いる辞書のファイル名")
-
-(if (string-match "^20\\." emacs-version)
-    (defvar xdic:dictionary-kanji-code 'euc-japan "辞書の漢字コード"))
-
+(defvar xdic:dictionary-kanji-code 'euc-japan "辞書の漢字コード")
 
 ;;; 検索結果の表示を調整する変数
 (defvar xdic:left-margin 2 "説明文の left margin")
@@ -72,7 +70,7 @@
 
 
 
-(defconst xdic:version "1.2")
+(defconst xdic:version "1.3")
 
 (defconst xdic:buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic:mode-name "Xdic" "検索結果を表示するバッファの major mode")
@@ -90,7 +88,7 @@
 (load "stem")
 
 ;;; Emacs20 では、look が使う漢字コードの設定が必要
-(if (string-match "^20\\." emacs-version)
+(if (= emacs-major-version 20)
     (setq process-coding-system-alist (cons (cons ".*look" xdic:dictionary-kanji-code)
 					    (if (boundp 'process-coding-system-alist)
 						process-coding-system-alist))))
@@ -176,7 +174,7 @@ xdic:read-from-minibuffer 関数のヒストリ")
       (setq word (xdic:read-from-minibuffer
 		  (format "\"%s\" is too short word. Input word again : " word)
 		  word)))
-  (let ((case-fold-search t))		; 大文字/子文字を区別しない
+  (let ((l)(case-fold-search t))	; 大文字/子文字を区別しない
     (cond
      ((or
        ;; 動詞/形容詞の規則変化、名詞の複数形を処理
@@ -272,7 +270,9 @@ xdic:read-from-minibuffer 関数のヒストリ")
 	(cond
 	 ((= (window-height w) xdic:window-height)
 	  (delete-window w))
-	 (t (set-window-buffer w (other-buffer)))
+	 (t
+	  (set-window-buffer w (other-buffer))
+	  (select-window (next-window)))
 	 )))
   (if current-prefix-arg (kill-buffer xdic:buffer-name)))
 
