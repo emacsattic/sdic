@@ -25,11 +25,9 @@
 
 ;;; Install:
 
-;; (1) xdic.el, xdic-sgml.el, xdic-grep.el, xdic-array.el と stem.el 
-;;     を適当な場所に保存して、必要ならバイトコンパイルして下さい。
-;;
-;;     xdic-1.x で使っていた辞書を使用する場合は、xdic-compat.el も必
-;;     要です。
+;; (1) xdic.el, xdic-sgml.el, xdic-grep.el, xdic-array.el,
+;;     xdic-compat.el と stem.el を適当な場所に保存して、必要ならバイ
+;;     トコンパイルして下さい。
 ;;
 ;;
 ;; (2) xdic-sgml.el, xdic-grep.el, xdic-array.el, xdic-compat.el は辞
@@ -463,33 +461,54 @@ xdic-read-from-minibuffer 関数のヒストリ")
   (downcase (read-from-minibuffer (or prompt "Input word : ") init
 				  nil nil '(xdic-read-minibuffer-history . 1))))
 
+
+(defun xdic-select-search-function ()
+  "検索関数を選ぶ"
+  (message "辞書を選んで下さい: E)英和 J)和英")
+  (let ((sw (selected-window))
+	(c (read-char)))
+    (select-window sw)
+    (cond
+     ((= c ?e) 'xdic-search-eiwa-dictionary)
+     ((= c ?j) 'xdic-search-waei-dictionary)
+     (t (xdic-select-search-function)))))
+
+
 ;; 単語を辞書で調べる関数
-(defun xdic-describe-word (word)
+(defun xdic-describe-word (word &optional search-function)
   "Display the meaning of word."
-  (interactive (list (xdic-read-from-minibuffer)))
-  (if (< (length word) 2)
-      (setq word (xdic-read-from-minibuffer
-		  (format "\"%s\" is too short word. Input word again : " word)
-		  word)))
+  (interactive
+   (list (xdic-read-from-minibuffer)
+	 (if current-prefix-arg (xdic-select-search-function))))
+  (and (interactive-p)
+       (< (length word) 2)
+       (setq word (xdic-read-from-minibuffer
+		   (format "\"%s\" is too short word. Input word again : " word)
+		   word)))
   (set-buffer (get-buffer-create xdic-buffer-name))
   (or (string= mode-name xdic-mode-name) (xdic-mode))
   (setq buffer-read-only nil)
   (erase-buffer)
   (let ((case-fold-search t)
 	(xdic-buffer-start-point (point-min)))
-    (if (prog1 (if (string-match "\\cj" word)
-		   (xdic-search-waei-dictionary word)
-		 (xdic-search-eiwa-dictionary word))
+    (if (prog1 (funcall (or search-function
+			    (if (string-match "\\cj" word)
+				'xdic-search-waei-dictionary
+			      'xdic-search-eiwa-dictionary))
+			word)
 	  (setq buffer-read-only t)
 	  (set-buffer-modified-p nil))
 	(xdic-display-buffer xdic-buffer-start-point)
       (message "Can't find word, \"%s\"." word))))
 
 
-(defun xdic-describe-region (start end)
+(defun xdic-describe-region (start end &optional search-function)
   "Display the meaning of pattern."
-  (interactive (list (region-beginning) (region-end)))
-  (xdic-describe-word (buffer-substring start end)))
+  (interactive
+   (list (region-beginning)
+	 (region-end)
+	 (if current-prefix-arg (xdic-select-search-function))))
+  (xdic-describe-word (buffer-substring start end) search-function))
 
 
 (defun xdic-describe-word-at-point ()
