@@ -87,34 +87,15 @@
 
 (provide 'xdic)
 (require 'xdic-sgml)
-(require 'xdic-grep)
 (require 'stem)
-  
+(eval-when-compile
+  (require 'xdic-grep)
+  (require 'xdic-compat))
+
 
 ;;;----------------------------------------------------------------------
 ;;;		カスタマイズ用変数
 ;;;----------------------------------------------------------------------
-
-(defvar xdic-eiwa-dictionary-list
-  (list (list (if xdic-grep-command 'xdic-grep 'xdic-gene) "~/usr/dict/gene.dic")) "\
-*Options of an English-Japanese dictionary.
-英和辞典の検索メソッドを指定する変数")
-
-(defvar xdic-waei-dictionary-list
-  (list (list (if xdic-grep-command 'xdic-grep 'xdic-gene) "~/usr/dict/edict.dic")) "\
-*Options of an English-Japanese dictionary.
-和英辞典の検索メソッドを指定する変数")
-
-(defvar xdic-default-coding-system
-  (if (>= emacs-major-version 20)
-      (if (string-match "XEmacs" emacs-version)
-	  (cond
-	   ((member 'euc-japan-unix (coding-system-list)) 'euc-japan-unix)
-	   ((member 'euc-jp-unix (coding-system-list)) 'euc-jp-unix)
-	   (t 'euc-japan))
-	'euc-japan-unix)
-    *euc-japan*unix)
-  "*Default coding-system for xdic and libraries.")
 
 (defvar xdic-left-margin 2 "*Left margin of contents.
 説明文の左側の余白幅")
@@ -124,6 +105,9 @@
 
 (defvar xdic-window-height 10 "*Height of window to show entrys and contents.
 検索結果表示ウインドウの高さ")
+
+(defvar xdic-warning-hidden-entry t "*If non-nil, warning of hidden entries is enable.
+nil 以外が設定されている場合、検索結果表示ウインドウに表示しきれなかった情報があれば警告する")
 
 (defvar xdic-disable-select-window nil "*Option to disable to select other window.
 検索結果表示ウインドウにカーソルを移動しないようにする場合は nil 以外を設定する")
@@ -136,6 +120,49 @@
 
 (defvar xdic-disable-vi-key nil "*Option to disable some key.
 辞書閲覧に vi ライクのキーを使わない場合は nil 以外を設定する")
+
+(defvar xdic-eiwa-dictionary-list
+  (let ((file "~/usr/dict/gene.xdic"))
+    (and (file-readable-p (expand-file-name file))
+	 (list (list (if (string-match "\\.xdic$" file)
+			 (if (and (require 'xdic-grep)
+				  (xdic-grep-available-p))
+			     'xdic-grep
+			   'xdic-gene)
+		       (if (and (require 'xdic-compat)
+				(xdic-compat-available-p))
+			   'xdic-compat
+			 'xdic-gene))
+		     file)))) "\
+*Options of an English-Japanese dictionary.
+英和辞典の検索メソッドのリストを指定する変数")
+
+(defvar xdic-waei-dictionary-list
+  (let ((file "~/usr/dict/edict.xdic"))
+    (and (file-readable-p (expand-file-name file))
+	 (list (list (if (string-match "\\.xdic$" file)
+			 (if (and (require 'xdic-grep)
+				  (xdic-grep-available-p))
+			     'xdic-grep
+			   'xdic-gene)
+		       (if (and (require 'xdic-compat)
+				(xdic-compat-available-p))
+			   'xdic-compat
+			 'xdic-gene))
+		     file)))) "\
+*Options of an English-Japanese dictionary.
+和英辞典の検索メソッドのリストを指定する変数")
+
+(defvar xdic-default-coding-system
+  (if (>= emacs-major-version 20)
+      (if (string-match "XEmacs" emacs-version)
+	  (cond
+	   ((member 'euc-japan-unix (coding-system-list)) 'euc-japan-unix)
+	   ((member 'euc-jp-unix (coding-system-list)) 'euc-jp-unix)
+	   (t 'euc-japan))
+	'euc-japan-unix)
+    *euc-japan*unix)
+  "*Default coding-system for xdic and libraries.")
 
 
 
@@ -157,7 +184,7 @@ Regexp of Englist prepositions
 (defvar xdic-waei-symbol-list nil "和英辞典のシンボル")
 (defvar xdic-buffer-start-point nil "検索結果表示バッファの表示開始ポイント")
 (defvar xdic-mode-map nil "Keymap of xdic-mode")
-(defconst xdic-version "2.0beta4")
+(defconst xdic-version "2.0beta5")
 (defconst xdic-buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic-mode-name "Xdic" "検索結果を表示するバッファの major mode")
 
@@ -214,9 +241,7 @@ ENTRY-LIST を、見出し語の辞書順に並べ替える関数。"
 			 (lambda (entry)
 			   (if (string-match "\\Ca" (car entry))
 			       (cons (concat (car entry) "\^@") entry)
-			     (cons (concat (mapconcat 'downcase
-						      (xdic-split-string (car entry) "[^A-z0-9]+")
-						      " ")
+			     (cons (concat (xdic-sgml-replace-string (downcase (car entry)) "[^A-z0-9]+" " ")
 					   "\^@" (car entry) "\^@")
 				   entry))))
 			entry-list)
@@ -276,7 +301,7 @@ Function to get content.
       (insert " ")
       (goto-char (1+ (point)))
       (insert " ")
-      (goto-char (match-end 0)))
+      (goto-char (1+ (point))))
     (xdic-fill-region (point-min) (goto-char (point-max))))
   (insert "\n"))
 
@@ -298,14 +323,13 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
 		  (car entry)))
 	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1 -1) 'lambda)))
-      ;; 検索語が // で囲まれている場合 -> 任意検索
-      ((and (equal ?/ (string-to-char (, query)))
-	    (equal "/" (substring (, query) -1)))
+      ;; 検索語の先頭に / がある場合 -> 全文検索
+      ((equal ?/ (string-to-char (, query)))
        (mapcar (function
 		(lambda (entry)
 		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
 		  (car entry)))
-	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1 -1) 0)))
+	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) 0)))
       ;; 検索語の先頭に * がある場合 -> 後方一致検索
       ((equal ?* (string-to-char (, query)))
        (mapcar (function
@@ -555,15 +579,26 @@ xdic-read-from-minibuffer 関数のヒストリ")
 
 (defun xdic-display-buffer (&optional start-point) "\
 検索結果表示バッファを表示する関数"
-  (let ((w1 (selected-window))
-	(w2 (get-buffer-window xdic-buffer-name)))
-    (if w2 (select-window w2)
-      (setq w2 (select-window (if (one-window-p)
-				  (split-window w1 (- (window-height) xdic-window-height))
-				(next-window))))
-      (set-window-buffer w2 xdic-buffer-name))
-    (set-window-start w2 (or start-point (point)))
-    (if xdic-disable-select-window (select-window w1))))
+  (let ((old-buffer (current-buffer)))
+    (unwind-protect
+	(let* ((buf (set-buffer xdic-buffer-name))
+	       (w1 (selected-window))
+	       (w2 (get-buffer-window buf))
+	       (p (or start-point (point)))
+	       (h xdic-window-height))
+	  (if w2 (progn (select-window w2) (setq h (window-height w2)))
+	    (setq w2 (select-window (if (one-window-p)
+					(split-window w1 (- (window-height) h))
+				      (next-window))))
+	    (set-window-buffer w2 buf))
+	  (set-window-start w2 p)
+	  (and xdic-warning-hidden-entry
+	       (or (> (goto-char p) (point-min))
+		   (< (progn (forward-line h) (end-of-line) (point)) (point-max)))
+	       (message "ウインドウの範囲内に表示しきれなかったエントリがあります。"))
+	  (goto-char p)
+	  (if xdic-disable-select-window (select-window w1)))
+      (set-buffer old-buffer))))
 
 
 (defun xdic-other-window () "\
@@ -607,6 +642,16 @@ xdic-read-from-minibuffer 関数のヒストリ")
 ;;; 辞書を閲覧する major-mode
 (defun xdic-mode () "\
 辞書を閲覧するメジャーモード
+
+次のような形式の文字列を入力することによって検索方式を指定できます。
+
+'word'          完全一致検索
+word*           前方一致検索
+*word           後方一致検索
+/word           全文検索
+
+これら以外の場合は、通常のキーワード検索を行います。
+
 
 key             binding
 ---             -------
@@ -812,11 +857,8 @@ fill-region の Emacs のバージョンによって異なる動作を標準化する関数"
 	  (fill-region start end)
 	  (indent-region start (point) xdic-left-margin))
       (fill-region start end))
-    (save-excursion			; 余分な空行を削除する
-      (beginning-of-line)
-      (if (looking-at "^[ \t]*$")
-	  (delete-region (1- (point)) (match-end 0)))
-      )))
+    ;; 余分な空行を削除する
+    (delete-region (point) (progn (skip-chars-backward " \t\n") (point)))))
 
 
 (defun xdic-insert-file-contents (filename coding-system &optional visit beg end replace)
