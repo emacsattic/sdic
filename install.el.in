@@ -42,9 +42,10 @@
 ;;     して、インストールを実行します。インストール先を変更したい場合
 ;;     は、オプションで指定してください。
 ;;
-;;         --infodir=DIR           Info をインストールするディレクトリを指定
-;;         --with-lispdir=DIR      Lisp プログラムをインストールするディレクトリを指定
-;;         --with-dictdir=DIR      辞書をインストールするディレクトリを指定
+;;         --infodir=DIR              Info をインストールするディレクトリを指定
+;;         --with-lispdir=DIR         Lisp プログラムをインストールするディレクトリを指定
+;;         --with-dictdir=DIR         辞書をインストールするディレクトリを指定
+;;         --with-multidict=(yes|no)  複数辞書の検出を行う場合は yes (デフォルトは no)
 ;;
 ;; (4) 以下の設定を .emacs に付け加えて下さい。
 ;;
@@ -100,11 +101,22 @@
 (defvar make-sdic-texi-directory (expand-file-name "texi" make-sdic-root-directory)
   "Info のソースが格納されているディレクトリ")
 
-(defvar make-sdic-eiwa-candidates '("gene.sdic" "eedict.sdic" "ejdict.sdic" "gene.dic" "eedict.sdic" "ejdict.dic")
+(defvar make-sdic-eiwa-candidates
+  '("gene.sdic" "ejdict.sdic" "eedict.sdic" "eijirou.sdic"
+    "gene.dic" "ejdict.dic" "eedict.dic" "eijirou.dic"
+    "e4jwords.sdic" "ecompdic.sdic" "eenamdict.sdic"
+    "e4jwords.dic" "ecompdic.dic" "eenamdict.dic")
   "インストール済の英和辞書を検索する場合に対象となるファイル名のリスト")
 
-(defvar make-sdic-waei-candidates '("edict.sdic" "jedict.sdic" "jgene.sdic" "jedict.dic" "jgene.dic")
+(defvar make-sdic-waei-candidates
+  '("edict.sdic" "jedict.sdic" "jgene.sdic" "waeijirou.sdic"
+    "jedict.dic" "jgene.dic" "waeijirou.dic"
+    "j4jwords.sdic" "jcompdic.sdic" "jenamdict.sdic"
+    "j4jwords.dic" "jcompdic.dic" "jenamdict.dic")
   "インストール済の和英辞書を検索する場合に対象となるファイル名のリスト")
+
+(defvar make-sdic-detect-multi-dictionary nil
+  "複数辞書を検出する場合は t にする")
 
 (defvar make-sdic-debug nil)
 
@@ -142,6 +154,8 @@
       (setq make-sdic-info-directory (substring (car command-line-args-left) (match-end 0))))
      ((string-match "^--with-dictdir=" (car command-line-args-left))
       (setq make-sdic-dict-directory (substring (car command-line-args-left) (match-end 0))))
+     ((string-match "^--with-multidict=\\(yes\\|no\\)" (car command-line-args-left))
+      (setq make-sdic-detect-multi-dictionary (string= "yes" (substring (car command-line-args-left) -3))))
      (t (make-sdic-help "Illegal option")))
     (setq command-line-args-left (cdr command-line-args-left)))
   ;; インストール先のディレクトリを作る
@@ -155,19 +169,32 @@
 		    make-sdic-info-directory
 		    make-sdic-dict-directory)))
   ;; インストール済の辞書があるか調べる
-  (let ((eiwa (catch 'found-eiwa
-		(mapcar (lambda (basename)
-			  (and (file-exists-p (expand-file-name basename make-sdic-dict-directory))
-			       (throw 'found-eiwa basename)))
-			make-sdic-eiwa-candidates)
-		(file-exists-p "gene.txt")))
-	(waei (catch 'found-waei
-		(mapcar (lambda (basename)
-			  (and (file-exists-p (expand-file-name basename make-sdic-dict-directory))
-			       (throw 'found-waei basename)))
-			make-sdic-waei-candidates)
-		(file-exists-p "edict"))))
-    (make-sdic-sdic_el (if (eq eiwa t) "gene.sdic" eiwa) (if (eq waei t) "jedict.sdic" waei))
+  (let ((eiwa (or (delq nil (mapcar (lambda (basename)
+				      (and (file-exists-p (expand-file-name basename make-sdic-dict-directory))
+					   basename))
+				    make-sdic-eiwa-candidates))
+		  (file-exists-p "gene.txt")))
+	(waei (or (delq nil (mapcar (lambda (basename)
+				      (and (file-exists-p (expand-file-name basename make-sdic-dict-directory))
+					   basename))
+				    make-sdic-waei-candidates))
+		  (file-exists-p "edict"))))
+    ;; インストール済の辞書から重複しているものを取り除く
+    (setq eiwa (delq t (mapcar (lambda (basename)
+				 (if (string-match "\\.dic" basename)
+				     (if (member (concat (substring basename 0 -3) "sdic") eiwa) t basename)
+				   basename))
+			       eiwa))
+	  waei (delq t (mapcar (lambda (basename)
+				 (if (string-match "\\.dic" basename)
+				     (if (member (concat (substring basename 0 -3) "sdic") waei) t basename)
+				   basename))
+			       waei)))
+    (or make-sdic-detect-multi-dictionary
+	(progn
+	  (if (listp eiwa) (setq eiwa (list (car eiwa))))
+	  (if (listp waei) (setq waei (list (car waei))))))
+    (make-sdic-sdic_el (if (eq eiwa t) (list "gene.sdic") eiwa) (if (eq waei t) (list "jedict.sdic") waei))
     (make-sdic-install-lisp)
     (make-sdic-install-info)
     (if (eq eiwa t) (make-sdic-install-gene))
@@ -231,18 +258,28 @@ Direcotry:
 	      (search-forward (concat "@" "VERSION" "@"))
 	      (delete-region (goto-char (match-beginning 0)) (match-end 0))
 	      (insert make-sdic-version)
-	      (if (stringp eiwa)
+	      (if (listp eiwa)
 		  (progn
 		    (goto-char (point-min))
 		    (search-forward (concat "@" "EIWA_DICT_LIST" "@"))
 		    (delete-region (goto-char (match-beginning 0)) (match-end 0))
-		    (insert (format "\"%s\"" (expand-file-name eiwa make-sdic-dict-directory)))))
-	      (if (stringp waei)
+		    (insert
+		     (mapconcat (lambda (s) s)
+				(mapcar (lambda (basename)
+					  (format "\"%s\"" (expand-file-name basename make-sdic-dict-directory)))
+					eiwa)
+				" "))))
+	      (if (listp waei)
 		  (progn
 		    (goto-char (point-min))
 		    (search-forward (concat "@" "WAEI_DICT_LIST" "@"))
 		    (delete-region (goto-char (match-beginning 0)) (match-end 0))
-		    (insert (format "\"%s\"" (expand-file-name waei make-sdic-dict-directory)))))
+		    (insert
+		     (mapconcat (lambda (s) s)
+				(mapcar (lambda (basename)
+					  (format "\"%s\"" (expand-file-name basename make-sdic-dict-directory)))
+					waei)
+				" "))))
 	      (make-sdic-write-file out-file))
 	  (kill-buffer buf))))))
 
