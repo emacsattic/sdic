@@ -68,21 +68,34 @@
 ;; ドに合わせる必要があります。その場合、default の日本語 EUC がおそら
 ;; く一番安全でしょう。
 
-(defvar xdic-eiwa-dictionary
+(defvar xdic-eiwa-dictionary-list
   (let ((file (expand-file-name "~/usr/lib/elisp/gene.dic")))
     (if (file-readable-p file)
-	(list (if (and (require 'xdic-unix) (xdic-unix-available-p)) 'xdic-unix (require 'xdic-gene))
-	      (list 'file-name file)
-	      (list 'coding-system (if (>= emacs-major-version 20) 'euc-japan-unix *euc-japan*unix)))))
+	(list (list (if (and (require 'xdic-unix) (xdic-unix-available-p))
+			'xdic-unix
+		      (require 'xdic-gene))
+		    file))))
   "*Options of an English-Japanese dictionary.\n英和辞典の検索メソッドを指定する変数")
 
-(defvar xdic-waei-dictionary
+(defvar xdic-waei-dictionary-list
   (let ((file (expand-file-name "~/usr/lib/elisp/jgene.dic")))
     (if (file-readable-p file)
-	(list (if (and (require 'xdic-unix) (xdic-unix-available-p)) 'xdic-unix (require 'xdic-gene))
-	      (list 'file-name file)
-	      (list 'coding-system (if (>= emacs-major-version 20) 'euc-japan-unix *euc-japan*unix)))))
+	(list (list (if (and (require 'xdic-unix) (xdic-unix-available-p))
+			'xdic-unix
+		      (require 'xdic-gene))
+		    file))))
   "*Options of an English-Japanese dictionary.\n和英辞典の検索メソッドを指定する変数")
+
+(defvar xdic-default-coding-system
+  (if (>= emacs-major-version 20)
+      (if (string-match "XEmacs" emacs-version)
+	  (cond
+	   ((member 'euc-japan-unix (coding-system-list)) 'euc-japan-unix)
+	   ((member 'euc-jp-unix (coding-system-list)) 'euc-jp-unix)
+	   (t 'euc-japan))
+	'euc-japan-unix)
+    *euc-japan*unix)
+  "*Default coding-system for xdic and libraries.")
 
 
 ;;; 表示 / 動作制御変数
@@ -123,8 +136,8 @@ List of English prepositions
 Regexp of Englist prepositions
 英語の前置詞とマッチする正規表現")
 
-(defvar xdic-eiwa-symbol nil "英和辞典のシンボル")
-(defvar xdic-waei-symbol nil "和英辞典のシンボル")
+(defvar xdic-eiwa-symbol-list nil "英和辞典のシンボル")
+(defvar xdic-waei-symbol-list nil "和英辞典のシンボル")
 (defvar xdic-mode-map nil "*Keymap of xdic-mode")
 (defconst xdic-version "1.7alpha4")
 (defconst xdic-buffer-name "*xdic*" "検索結果表示バッファの名前")
@@ -140,36 +153,55 @@ Regexp of Englist prepositions
 (defun xdic-init-dictionary (option-list) "\
 Function to initialize dictionary.
 指定された辞書と関連付けられている検索ライブラリを初期化する関数"
-  (if (and option-list
-	   (listp option-list)
-	   (require (car option-list)))
-      (let ((dic (funcall (get (car option-list) 'init-dictionary) (cdr option-list))))
-	(put dic 'search-method (car option-list))
-	dic)))
+  (let (dic)
+    (and option-list
+	 (listp option-list)
+	 (require (car option-list))
+	 (setq dic (apply (get (car option-list) 'init-dictionary) (cdr option-list)))
+	 (xdic-dictionary-symbol-p dic)
+	 (put dic 'search-method (car option-list))
+	 dic)))
 
 
 (defun xdic-open-dictionary (dic) "\
 Function to open dictionary.
 指定された辞書を検索できるようにする関数"
-  (and dic (funcall (get (get dic 'search-method) 'open-dictionary) dic)))
+  (and (xdic-dictionary-symbol-p dic)
+       (funcall (get (get dic 'search-method) 'open-dictionary) dic)))
 
 
 (defun xdic-close-dictionary (dic) "\
 Function to close dictionary.
 指定された辞書と関連付けられている検索ライブラリを終了する関数"
-  (and dic (funcall (get (get dic 'search-method) 'close-dictionary))))
+  (and (xdic-dictionary-symbol-p dic)
+       (funcall (get (get dic 'search-method) 'close-dictionary) dic)))
 
 
 (defun xdic-search-entry (dic word &optional search-type) "\
 Function to search word in dictionary.
-指定されている辞書を検索する関数"
-  (funcall (get (get dic 'search-method) 'search-entry) dic word search-type))
+指定された辞書を検索する関数
+見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列を返す。"
+  (mapcar (function
+	   (lambda (c)
+	     (list (car c) dic (cdr c))))
+	  (funcall (get (get dic 'search-method) 'search-entry) dic word search-type)))
 
 
 (defun xdic-get-content (dic id) "\
 Function to get content.
 指定されている辞書から定義文を読み出す関数"
   (funcall (get (get dic 'search-method) 'get-content) dic id))
+
+
+(defun xdic-search-multi-dictionaries (dic-list word &optional search-type) "\
+Function to search word in multi dictionaries.
+指定されている複数の辞書を串刺検索する関数
+見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列を返す。"
+  (sort (apply 'append (mapcar (function
+				(lambda (dic)
+				  (xdic-search-entry dic word search-type)))
+			       dic-list))
+	(function (lambda (a b) (string< (car a) (car b))))))
 
 
 (defun xdic-buffer-live-p (buffer)
@@ -190,8 +222,8 @@ Function to get content.
 ;;;		内部関数
 ;;;----------------------------------------------------------------------
 
-;; 見出し語と定義文を整形しながら挿入する
 (defun xdic-insert-content (word content)
+  "見出し語と定義文を整形しながら挿入する関数"
   (xdic-overlay-put (xdic-make-overlay (point) (progn (insert word) (point))) 'face 'xdic-face)
   (insert "\n")
   (save-restriction
@@ -207,94 +239,152 @@ Function to get content.
 
 ;; 検索形式を判別するマクロ
 (put 'xdic-decide-query-type 'lisp-indent-function 2)
-(defmacro xdic-decide-query-type (dict query &rest sexp)
-  (` (if (, dict)
-	 (cond
-	  ;; 検索語が '' で囲まれている場合 -> 完全一致検索
-	  ((and (equal ?' (string-to-char (, query)))
-		(equal "'" (substring (, query) -1)))
-	   (if (mapcar (function
-			(lambda (entry)
-			  (xdic-insert-content (car entry) (xdic-get-content (, dict) (cdr entry)))))
-		       (xdic-search-entry (, dict) (substring (, query) 1 -1) 'lambda))
-	       (goto-char (point-min))))
-	  ;; 検索語が // で囲まれている場合 -> 任意検索
-	  ((and (equal ?/ (string-to-char (, query)))
-		(equal "/" (substring (, query) -1)))
-	   (if (mapcar (function
-			(lambda (entry)
-			  (xdic-insert-content (car entry) (xdic-get-content (, dict) (cdr entry)))))
-		       (xdic-search-entry (, dict) (substring (, query) 1 -1) 0))
-	       (goto-char (point-min))))
-	  ;; 検索語の先頭に * がある場合 -> 後方一致検索
-	  ((equal ?* (string-to-char (, query)))
-	   (if (mapcar (function
-			(lambda (entry)
-			  (xdic-insert-content (car entry) (xdic-get-content (, dict) (cdr entry)))))
-		       (xdic-search-entry (, dict) (substring (, query) 1) t))
-	       (goto-char (point-min))))
-	  ;; 検索語の末尾に * がある場合 -> 前方一致検索
-	  ((equal "*" (substring (, query) -1))
-	   (if (mapcar (function
-			(lambda (entry)
-			  (xdic-insert-content (car entry) (xdic-get-content (, dict) (cdr entry)))))
-		       (xdic-search-entry (, dict) (substring (, query) 0 -1)))
-	       (goto-char (point-min))))
-	  (t
-	   (,@ sexp))))))
+(defmacro xdic-decide-query-type (dic-list query &rest sexp) "\
+QUERY から検索形式を判定して複数の辞書 DIC-LIST を検索するマクロ
+
+QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
+して SEXP を評価する。通常の検索の場合は、検索された見出し語のリストを
+返す。"
+  (` (cond
+      ;; 検索語が '' で囲まれている場合 -> 完全一致検索
+      ((and (equal ?' (string-to-char (, query)))
+	    (equal "'" (substring (, query) -1)))
+       (prog1 (mapcar
+	       (function
+		(lambda (entry)
+		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		  (car entry)))
+	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1 -1) 'lambda))
+	 (goto-char (point-min))))
+      ;; 検索語が // で囲まれている場合 -> 任意検索
+      ((and (equal ?/ (string-to-char (, query)))
+	    (equal "/" (substring (, query) -1)))
+       (prog1 (mapcar
+	       (function
+		(lambda (entry)
+		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		  (car entry)))
+	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1 -1) 0))
+	 (goto-char (point-min))))
+      ;; 検索語の先頭に * がある場合 -> 後方一致検索
+      ((equal ?* (string-to-char (, query)))
+       (prog1 (mapcar
+	       (function
+		(lambda (entry)
+		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		  (car entry)))
+	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 1) t))
+	 (goto-char (point-min))))
+      ;; 検索語の末尾に * がある場合 -> 前方一致検索
+      ((equal "*" (substring (, query) -1))
+       (prog1 (mapcar
+	       (function
+		(lambda (entry)
+		  (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		  (car entry)))
+	       (xdic-search-multi-dictionaries (, dic-list) (substring (, query) 0 -1)))
+	 (goto-char (point-min))))
+      ;; 特に指定がない場合 -> 指定された S 式を評価
+      (t
+       (,@ sexp)))))
 
 
 ;; 英和辞典を検索する関数
 (defun xdic-search-english-dictionary (query)
-  (or (xdic-decide-query-type xdic-eiwa-symbol query
-	;; 特に指定がない場合 -> stemming して検索
-	(let (prep word stem-list entry-alist original point)
-	  ;; 検索 query が前置詞を含んでいるか調べる
-	  (setq word (if (string-match xdic-english-prep-regexp query)
-			 (progn
-			   (setq prep (format "\\b%s\\b" (regexp-quote (xdic-match-string 1 query))))
-			   (substring query 0 (match-beginning 0)))
-		       query))
-	  (setq stem-list (stem:stripping-suffix word))
-	  (if (setq entry-alist (xdic-search-entry xdic-eiwa-symbol (car stem-list)))
-	      (progn
-		(setq original
-		      (concat "^" (regexp-quote
-				   (catch 'stem
-				     ;; 原形を探す
-				     (mapcar '(lambda (s)
-						(if (assoc s entry-alist) (throw 'stem s)))
-					     stem-list)
-				     (message "Can't find original form of \"%s\"." word)
-				     (car stem-list)))))
-		(mapcar '(lambda (entry)
-			   ;; 原形と語頭が一致する見出し語を表示する
-			   (if (string-match original (car entry))
-			       (progn
-				 ;; 前置詞が一致する見出し語を記録する
-				 (and prep
-				      (string-match prep (car entry))
-				      (not point)
-				      (setq point (point)))
-				 (xdic-insert-content
-				  (car entry)
-				  (xdic-get-content xdic-eiwa-symbol (cdr entry))))))
-			entry-alist)
-		(goto-char (or point (point-min))))
-	    (setq query (format "%s\" or \"%s" query (car stem-list)))
-	    nil)))
+  (or (xdic-decide-query-type xdic-eiwa-symbol-list query
+	(let (word-list stem-list pattern original point)
+	  (setq word-list (xdic-split-string query))
+	  (prog1 (mapcar
+		  (function
+		   (lambda (entry)
+		     (and (not point)
+			  (string-match pattern (car entry))
+			  (setq point (point)))
+		     (xdic-insert-content (car entry)
+					  (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		     (car entry)))
+		  (prog1 (or
+			  ;; (1) 不規則変化動詞を検索する
+			  (and
+			   (setq stem-list (assoc (car word-list) stem:irregular-verb-alist))
+			   (apply
+			    'append
+			    (mapcar
+			     (function
+			      (lambda (word)
+				(setq pattern (format "^%s\\( +\\w+\\)*$" (regexp-quote word)))
+				(delq nil
+				      (mapcar
+				       (function
+					(lambda (entry)
+					  (and (string-match pattern (car entry))
+					       (or original (setq original word))
+					       entry)))
+				       (xdic-search-multi-dictionaries xdic-eiwa-symbol-list
+								       word)))))
+			     (append (sort (cdr stem-list) 'string<)
+				     (if (member (car word-list) (cdr stem-list))
+					 nil
+				       (list (car word-list)))))))
+			  ;; (2) 不規則変化動詞を無視した stemming を行なって検索する
+			  (progn
+			    (setq stem-list (let ((stem:irregular-verb-alist nil))
+					      (stem:stripping-suffix (car word-list))))
+			    ;; 最長部分列を求める
+			    (setq pattern (let* ((w1 (car stem-list))
+						(w2 (car (reverse stem-list)))
+						(i (min (length w1) (length w2))))
+					   (while (not (string= (substring w1 0 i)
+								(substring w2 0 i)))
+					     (setq i (1- i)))
+					   (substring w1 0 i)))
+			    (delq nil
+				  (mapcar
+				   (function
+				    (lambda (entry)
+				      (if (string-match pattern (car entry)) entry)))
+				   (prog1 (mapcar
+					   (function
+					    (lambda (entry)
+					      ;; 検索結果から原形と推定される見出し語を検索
+					      (and (member (car entry) stem-list)
+						   (< (length original) (length (car entry)))
+						   (setq original (car entry)))
+					      entry))
+					   (xdic-search-multi-dictionaries xdic-eiwa-symbol-list
+									   pattern))
+				     (if original
+					 (setq pattern (if (string= original (car word-list))
+							   (format "^%s\\( +\\w+\\)*$"
+								   (regexp-quote original))
+							 (format "^\\(%s\\|%s\\)\\( +\\w+\\)*$"
+								   (regexp-quote original)
+								   (regexp-quote (car word-list)))))
+				       (setq original pattern
+					     pattern (concat "^" (regexp-quote pattern)))
+				       (message "Can't find original form of \"%s\""
+						(car word-list))
+				       ))))))
+		    (setq pattern (if (nth 1 word-list)
+				     (format "^%s +%s\\( +\\w+\\)*$"
+					     (regexp-quote original)
+					     (regexp-quote (nth 1 word-list)))
+				   (format "^%s$" (regexp-quote original))))))
+	    (goto-char (or point (point-min))))))
       (progn (message "Can't find word, \"%s\"." query) nil)))
 
 
 ;; 和英辞典を検索する関数
 (defun xdic-search-japanese-dictionary (query)
-  (or (xdic-decide-query-type xdic-waei-symbol query
+  (or (xdic-decide-query-type xdic-waei-symbol-list query
 	;; 特に指定がない場合 -> 前方一致検索
-	(if (mapcar '(lambda (entry)
-		       (xdic-insert-content (car entry)
-					    (xdic-get-content xdic-waei-symbol (cdr entry))))
-		    (xdic-search-entry xdic-waei-symbol query))
-	    (goto-char (point-min))))
+	(prog1 (mapcar
+		(function
+		 (lambda (entry)
+		   (xdic-insert-content (car entry) (xdic-get-content (nth 1 entry) (nth 2 entry)))
+		   (car entry)))
+		(xdic-search-multi-dictionaries xdic-waei-symbol-list query))
+	  (goto-char (point-min))))
       (progn (message "Can't find word, \"%s\"." query) nil)))
 
 
@@ -435,8 +525,10 @@ xdic-read-from-minibuffer 関数のヒストリ")
   (interactive)
   (xdic-close-window)
   (kill-buffer xdic-buffer-name)
-  (xdic-close-dictionary xdic-eiwa-symbol)
-  (xdic-close-dictionary xdic-waei-symbol))
+  (mapcar 'xdic-close-dictionary xdic-eiwa-symbol-list)
+  (mapcar 'xdic-close-dictionary xdic-waei-symbol-list)
+  (setq xdic-eiwa-symbol-list nil
+	xdic-waei-symbol-list nil))
 
 
 ;;; 辞書を閲覧する major-mode
@@ -484,12 +576,13 @@ xdic-read-from-minibuffer 関数のヒストリ")
   (and window-system
        xdic-face-color
        (set-face-foreground 'xdic-face xdic-face-color))
-  (xdic-open-dictionary (if (xdic-dictionary-symbol-p xdic-eiwa-symbol)
-			    xdic-eiwa-symbol
-			  (setq xdic-eiwa-symbol (xdic-init-dictionary xdic-eiwa-dictionary))))
-  (xdic-open-dictionary (if (xdic-dictionary-symbol-p xdic-waei-symbol)
-			    xdic-waei-symbol
-			  (setq xdic-waei-symbol (xdic-init-dictionary xdic-waei-dictionary))))
+  ;; それぞれの辞書を初期化する
+  (or xdic-eiwa-symbol-list
+      (setq xdic-eiwa-symbol-list (delq nil (mapcar 'xdic-init-dictionary xdic-eiwa-dictionary-list))))
+  (setq xdic-eiwa-symbol-list (delq nil (mapcar 'xdic-open-dictionary xdic-eiwa-symbol-list)))
+  (or xdic-waei-symbol-list
+      (setq xdic-waei-symbol-list (delq nil (mapcar 'xdic-init-dictionary xdic-waei-dictionary-list))))
+  (setq xdic-waei-symbol-list (delq nil (mapcar 'xdic-open-dictionary xdic-waei-symbol-list)))
   (run-hooks 'xdic-mode-hook))
 
 
@@ -598,9 +691,7 @@ STRING should be given if the last search was by `string-match' on STRING."
 	  (buffer-substring (match-beginning num) (match-end num))))))
 
 
-(if (fboundp 'split-string)
-    (defalias 'xdic-split-string 'split-string)
-  (defun xdic-split-string (string &optional separators) "\
+(defun xdic-split-string (string &optional separators) "\
 Splits STRING into substrings where there are matches for SEPARATORS.
 Each match for SEPARATORS is a splitting point.
 The substrings between the splitting points are made into a list
@@ -610,29 +701,13 @@ If SEPARATORS is absent, it defaults to \"[ \\f\\t\\n\\r\\v]+\".
 If there is match for SEPARATORS at the beginning of STRING, we do not
 include a null substring for that.  Likewise, if there is a match
 at the end of STRING, we don't include a null substring for that."
-      (let ((rexp (or separators "[ \f\t\n\r\v]+"))
-	    (start 0)
-	    notfirst
-	    (list nil))
-	(while (and (string-match rexp string
-				  (if (and notfirst
-					   (= start (match-beginning 0))
-					   (< start (length string)))
-				      (1+ start) start))
-		    (< (match-beginning 0) (length string)))
-	  (setq notfirst t)
-	  (or (eq (match-beginning 0) 0)
-	      (and (eq (match-beginning 0) (match-end 0))
-		   (eq (match-beginning 0) start))
-	      (setq list
-		    (cons (substring string start (match-beginning 0))
-			  list)))
-	  (setq start (match-end 0)))
-	(or (eq start (length string))
-	    (setq list
-		  (cons (substring string start)
-			list)))
-	(nreverse list))))
+  (or separators (setq separators "[ \f\t\n\r\v]+"))
+  (let (list (start 0))
+    (while (string-match separators string start)
+      (or (= start (match-beginning 0))
+	  (setq list (cons (substring string start (match-beginning 0)) list)))
+      (setq start (match-end 0)))
+    (reverse (if (= start (length string)) list (cons (substring string start) list)))))
 
 
 (defvar xdic-left-margin-ignored-by-fill-region (string-match "^19\\.28" emacs-version) "\
