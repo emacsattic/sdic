@@ -207,30 +207,21 @@ FROM には正規表現を含む文字列を指定できるが、TO は固定文字列しか指定で
 	     (prin1-to-string search-type)))))
 
 
-(defsubst sdic-sgml-get-entry (&optional add-keys-to-headword)
-  "現在行から見出し語を取り出し、説明文の先頭の位置を求める。"
+(defsubst sdic-sgml-get-entry (&optional add-keys-to-headword) "\
+現在行から見出し語を取り出し、説明文の先頭の位置を求める。
+point が行頭にある状態で呼び出さなければならない。"
   (save-excursion
     (save-match-data
-      (let ((start (progn (beginning-of-line) (point)))
-	    (point))
-	(end-of-line)
-	(if (search-backward "</H>" start t)
-	    (progn
-	      (setq point (match-beginning 0))
-	      (search-backward "<H>" start))
-	  (search-backward "</K>" start)
-	  (setq point (match-beginning 0))
-	  (search-backward "<K>" start))
-	(cons (sdic-sgml-recover-string
-	       (if (and add-keys-to-headword (> (match-beginning 0) start))
-		   (format "%s [%s]"
-			   (buffer-substring (match-end 0) point)
-			   (sdic-sgml-replace-string (buffer-substring (+ start 3)
-								       (- (match-beginning 0) 4))
-						     "</K><K>" "]["))
-		 (buffer-substring (match-end 0) point)))
-	      (+ 4 point))
-	))))
+      (let ((top (goto-char (+ 3 (point))))
+	    (end (progn (search-forward "<") (match-beginning 0)))
+	    (pos (progn (end-of-line) (search-backward ">") (match-end 0))))
+	(cons (if (and add-keys-to-headword (> (- pos end) 11))
+		  (format "%s [%s]"
+			  (buffer-substring top end)
+			  (sdic-sgml-replace-string (buffer-substring (+ end 7) (- pos 4))
+						    "</K><K>" "]["))
+		(buffer-substring top end))
+	      pos)))))
 
 
 
@@ -299,6 +290,7 @@ search-type の値によって次のように動作を変更する。
 	  (add-keys (get dic 'add-keys-to-headword))
 	  ret)
       (while (search-forward string nil t)
+	(beginning-of-line)
 	(setq ret (cons (sdic-sgml-get-entry add-keys) ret)))
       (reverse ret))))
 
