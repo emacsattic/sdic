@@ -26,14 +26,14 @@
 ;;; Install:
 
 ;; (1) xdic.el, xdic-sgml.el, xdic-grep.el, xdic-array.el,
-;;     xdic-compat.el と stem.el を適当な場所に保存して、必要ならバイ
-;;     トコンパイルして下さい。
+;;     xdic-compat.el, xdic-gene.el と stem.el を適当な場所に保存して、
+;;     必要ならバイトコンパイルして下さい。
 ;;
 ;;
-;; (2) xdic-sgml.el, xdic-grep.el, xdic-array.el, xdic-compat.el は辞
-;;     書を検索するためのライブラリです。これらのライブラリのどれかを
-;;     使って辞書を検索できるようにして下さい。詳細については、README 
-;;     とそれぞれのソースファイルを参照。
+;; (2) xdic-sgml.el, xdic-grep.el, xdic-array.el, xdic-compat.el,
+;;     xdic-gene.el は辞書を検索するためのライブラリです。これらのライ
+;;     ブラリのどれかを使って辞書を検索できるようにして下さい。詳細に
+;;     ついては、README とそれぞれのソースファイルを参照。
 ;;
 ;;
 ;; (3) 使えるようにした辞書のリストを、xdic-eiwa-dictionary-list およ
