@@ -16,7 +16,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --with-lispdir=DIR      emacs lisp files go to DIR [guessed]"
 ac_help="$ac_help
-  --with-dictdir=DIR      dictionary files go to DIR [/usr/dict]"
+  --with-dictdir=DIR      dictionary files go to DIR [/usr/local/share/dict]"
 ac_help="$ac_help
   --with-dicttype=TYPE    use TYPE of dictionaries (sdic|dic) [sdic]"
 ac_help="$ac_help
@@ -1156,7 +1156,7 @@ if test "$SORT" = "no"; then
 fi
 
 
-DICTDIR=${datadir}/dict
+DICTDIR=/usr/local/share/dict
 # Check whether --with-dictdir or --without-dictdir was given.
 if test "${with_dictdir+set}" = set; then
   withval="$with_dictdir"

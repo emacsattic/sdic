@@ -34,10 +34,10 @@ if test "$SORT" = "no"; then
 fi
 
 
-DICTDIR=${datadir}/dict
+DICTDIR=/usr/local/share/dict
 AC_ARG_WITH(
         dictdir,
-        [  --with-dictdir=DIR      dictionary files go to DIR [/usr/dict]],
+        [  --with-dictdir=DIR      dictionary files go to DIR [/usr/local/share/dict]],
         DICTDIR=$with_dictdir,
 )
 AC_SUBST(DICTDIR)
