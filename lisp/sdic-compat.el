@@ -28,54 +28,73 @@
 ;;;		定数/変数の宣言
 ;;;----------------------------------------------------------------------
 
-(defvar xdic-unix-look-command "look" "*Executable file name of look")
+(defvar xdic-unix-look-command nil "*Executable file name of look")
 
 (defvar xdic-unix-look-case-option "-f" "*Command line option for look to ignore case")
 
-(defvar xdic-unix-grep-command "egrep" "*Executable file name of grep")
+(defvar xdic-unix-grep-command nil "*Executable file name of grep")
 
 (defvar xdic-unix-grep-case-option "-i" "*Command line option for grep to ignore case")
 
 (defconst xdic-unix-search-buffer-name "*xdic-unix*")
 
-  
+
 
 ;;;----------------------------------------------------------------------
 ;;;		本体
 ;;;----------------------------------------------------------------------
 
+;; xdic-unix-*-command の初期値を設定
+(mapcar '(lambda (list)
+	   (or (symbol-value (car list))
+	       (set (car list)
+		    (catch 'which
+		      (mapcar '(lambda (file)
+				 (mapcar '(lambda (path)
+					    (if (file-executable-p (expand-file-name file path))
+						(throw 'which (expand-file-name file path))))
+					 exec-path))
+			      (cdr list))
+		      nil))))
+	'((xdic-unix-look-command "look" "look.exe")
+	  (xdic-unix-grep-command "egrep" "egrep.exe" "grep" "grep.exe")))
+
+
 (defun xdic-unix-available-p () "\
 Function to check availability of library.
 ライブラリの利用可能性を検査する関数"
-  (eval (cons 'and
-	      (mapcar (function
-		       (lambda (file)
-			 (catch 'which
-			   (mapcar (function
-				    (lambda (path)
-				      (if (file-executable-p (expand-file-name file path))
-					  (throw 'which file))))
-				   exec-path)
-			   nil)))
-		      (list xdic-unix-look-command xdic-unix-grep-command)))))
+  (and xdic-unix-look-command xdic-unix-grep-command t))
 
 
-(defun xdic-unix-init-dictionary (alist)
+(defun xdic-unix-init-dictionary (file-name &rest option-list)
   "Function to initialize dictionary"
   (let ((dic (xdic-make-dictionary-symbol)))
-    (if (file-readable-p (put dic 'file-name (or (nth 1 (assoc 'file-name alist))
-						 (error "%s" "File name is not specified."))))
+    (if (file-readable-p (setq file-name (expand-file-name file-name)))
 	(progn
-	  (put dic 'coding-system (or (nth 1 (assoc 'coding-system alist))
-				      (error "%s" "Coding-system is not specified.")))
+	  (mapcar '(lambda (c) (put dic (car c) (nth 1 c))) option-list)
+	  (put dic 'file-name file-name)
+	  (put dic 'identifier (concat "xdic-unix+" file-name))
+	  (or (get dic 'title)
+	      (put dic 'title (file-name-nondirectory file-name)))
+	  (or (get dic 'look)
+	      (put dic 'look xdic-unix-look-command))
+	  (or (get dic 'look-case-option)
+	      (put dic 'look-case-option xdic-unix-look-case-option))
+	  (or (get dic 'grep)
+	      (put dic 'grep xdic-unix-grep-command))
+	  (or (get dic 'grep-case-option)
+	      (put dic 'grep-case-option xdic-unix-grep-case-option))
+	  (or (get dic 'coding-system)
+	      (put dic 'coding-system xdic-default-coding-system))
 	  dic)
-      (error "Can't read dictionary: %s" (prin1-to-string (get dic 'file-name))))))
+      (error "Can't read dictionary: %s" (prin1-to-string file-name)))))
 
 
 (defun xdic-unix-open-dictionary (dic)
   "Function to open dictionary"
-  (or (xdic-buffer-live-p (get dic 'xdic-unix-search-buffer))
-      (put dic 'xdic-unix-search-buffer (generate-new-buffer xdic-unix-search-buffer-name))))
+  (and (or (xdic-buffer-live-p (get dic 'xdic-unix-search-buffer))
+	   (put dic 'xdic-unix-search-buffer (generate-new-buffer xdic-unix-search-buffer-name)))
+       dic))
 
 
 (defun xdic-unix-close-dictionary (dic)
@@ -96,62 +115,68 @@ search-type の値によって次のように動作を変更する。
 "
   (save-excursion
     (set-buffer (get dic 'xdic-unix-search-buffer))
-    (erase-buffer)
-    (cond
-     ;; 前方一致検索の場合 -> look を使って検索
-     ((eq search-type nil)
-      (if (string-match "\\Ca" string)
-	  (xdic-call-process xdic-unix-look-command nil t nil
+    (save-restriction
+      (if (get dic 'xdic-unix-erase-buffer)
+	  (delete-region (point-min) (point-max))
+	(goto-char (point-max))
+	(narrow-to-region (point-max) (point-max)))
+      (put dic 'xdic-unix-erase-buffer nil)
+      (cond
+       ;; 前方一致検索の場合 -> look を使って検索
+       ((eq search-type nil)
+	(if (string-match "\\Ca" string)
+	    (xdic-call-process (get dic 'look) nil t nil
+			       (get dic 'coding-system)
+			       string (get dic 'file-name))
+	  (xdic-call-process (get dic 'look) nil t nil
 			     (get dic 'coding-system)
-			     string (get dic 'file-name))
-	(xdic-call-process xdic-unix-look-command nil t nil
-			   (get dic 'coding-system)
-			   xdic-unix-look-case-option string (get dic 'file-name))))
-     ;; 後方一致検索の場合 -> grep を使って検索
-     ((eq search-type t)
-      (if (string-match "\\Ca" string)
-	  (xdic-call-process xdic-unix-grep-command nil t nil
+			     (get dic 'look-case-option) string (get dic 'file-name))))
+       ;; 後方一致検索の場合 -> grep を使って検索
+       ((eq search-type t)
+	(if (string-match "\\Ca" string)
+	    (xdic-call-process (get dic 'grep) nil t nil
+			       (get dic 'coding-system)
+			       (format "^[^\t]*%s\t" string) (get dic 'file-name))
+	  (xdic-call-process (get dic 'grep) nil t nil
 			     (get dic 'coding-system)
-			     (format "^[^\t]*%s\t" string) (get dic 'file-name))
-	(xdic-call-process xdic-unix-grep-command nil t nil
-			   (get dic 'coding-system)
-			   xdic-unix-grep-case-option
-			   (format "^[^\t]*%s\t" string) (get dic 'file-name))))
-     ;; 完全一致検索の場合 -> look を使って検索 / 余分なデータを消去
-     ((eq search-type 'lambda)
-      (if (string-match "\\Ca" string)
-	  (xdic-call-process xdic-unix-look-command nil t nil
+			     (get dic 'grep-case-option)
+			     (format "^[^\t]*%s\t" string) (get dic 'file-name))))
+       ;; 完全一致検索の場合 -> look を使って検索 / 余分なデータを消去
+       ((eq search-type 'lambda)
+	(if (string-match "\\Ca" string)
+	    (xdic-call-process (get dic 'look) nil t nil
+			       (get dic 'coding-system)
+			       string (get dic 'file-name))
+	  (xdic-call-process (get dic 'look) nil t nil
 			     (get dic 'coding-system)
-			     string (get dic 'file-name))
-	(xdic-call-process xdic-unix-look-command nil t nil
+			     (get dic 'look-case-option)
+			     string (get dic 'file-name)))
+	(goto-char (point-min))
+	(while (if (looking-at (format "%s\t" (regexp-quote string)))
+		   (= 0 (forward-line 1))
+		 (delete-region (point) (point-max)))))
+       ;; ユーザー指定のキーによる検索の場合 -> grep を使って検索
+       ((eq search-type 0)
+	(xdic-call-process (get dic 'grep) nil t nil
 			   (get dic 'coding-system)
-			   xdic-unix-look-case-option
 			   string (get dic 'file-name)))
+       ;; それ以外の検索形式を指定された場合
+       (t (error "Not supported search type is specified. \(%s\)"
+		 (prin1-to-string search-type))))
+      ;; 各検索結果に ID を付与する
       (goto-char (point-min))
-      (while (if (looking-at (format "%s\t" (regexp-quote string)))
-		 (= 0 (forward-line 1))
-	       (delete-region (point) (point-max)))))
-     ;; ユーザー指定のキーによる検索の場合 -> grep を使って検索
-     ((eq search-type 0)
-      (xdic-call-process xdic-unix-grep-command nil t nil
-			 (get dic 'coding-system)
-			 string (get dic 'file-name)))
-     ;; それ以外の検索形式を指定された場合
-     (t (error "Not supported search type is specified. \(%s\)"
-	       (prin1-to-string search-type))))
-    ;; 各検索結果に ID を付与する
-    (goto-char (point-min))
-    (let (ret)
-      (while (if (looking-at "\\([^\t]+\\)\t")
-		 (progn
-		   (setq ret (cons (cons (xdic-match-string 1) (match-end 0)) ret))
-		   (= 0 (forward-line 1)))))
-      (reverse ret))))
+      (let (ret)
+	(while (if (looking-at "\\([^\t]+\\)\t")
+		   (progn
+		     (setq ret (cons (cons (xdic-match-string 1) (match-end 0)) ret))
+		     (= 0 (forward-line 1)))))
+	(reverse ret)))))
 
 
 (defun xdic-unix-get-content (dic point)
   (save-excursion
     (set-buffer (get dic 'xdic-unix-search-buffer))
+    (put dic 'xdic-unix-erase-buffer t)
     (if (<= point (point-max))
 	(buffer-substring (goto-char point) (progn (end-of-line) (point)))
       (error "Can't find content. (ID=%d)" point))))
