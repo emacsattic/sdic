@@ -1,6 +1,6 @@
 # -*- Makefile -*-
-EXTRA_DIST = texi/sdic.texi contrib/edict.perl contrib/eijirou.perl contrib/gene.perl contrib/jgene.perl
-DISTCLEANFILES = texi/sdic.info
+EXTRA_DIST = install.el texi/sdic.texi contrib/edict.perl contrib/eijirou.perl contrib/gene.perl contrib/jgene.perl
+DISTCLEANFILES = install.el texi/sdic.info
 SUBDIRS = lisp
 
 dict: @EIWA_DICTIONARY@ @WAEI_DICTIONARY@
@@ -75,4 +75,3 @@ edict:
 		@BZIP2@ -dc edict.bz2 >edict ;\
 	fi
 	test -s edict
-

@@ -1,5 +1,5 @@
 AC_INIT(lisp/stem.el)
-AM_INIT_AUTOMAKE(sdic, 2.1-beta2)
+AM_INIT_AUTOMAKE(sdic, 2.1-beta3)
 
 AM_PATH_LISPDIR
 
@@ -102,5 +102,5 @@ if test -z "$WAEI_DICTIONARY"; then
 	fi
 fi
 
-AC_OUTPUT(Makefile lisp/Makefile lisp/sdic.el lisp/sample.emacs)
+AC_OUTPUT(Makefile lisp/Makefile lisp/sdic.el lisp/sample.emacs install.el)
 

@@ -433,8 +433,9 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 		      (progn
 			(setq stem-list (let ((stem:irregular-verb-alist nil))
 					  (stem:stripping-suffix (car word-list))))
-			(while (and (cdr stem-list) (= (length (car stem-list)) 1))
-			  (setq stem-list (cdr stem-list)))
+			(if (> (length (car word-list)) 1)
+			    (setq stem-list
+				  (delq t (mapcar (lambda (w) (or (= (length w) 1) w)) stem-list))))
 			;; 最長部分列を求める
 			(setq pat (let* ((w1 (car stem-list))
 					 (w2 (nth (1- (length stem-list)) stem-list))
@@ -491,7 +492,16 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 					  "\\)"
 					(format "\\|%s\\)" (regexp-quote orig))))
 			    (format "^%s$" (regexp-quote orig))))))
-	(if point (setq sdic-buffer-start-point point))))))
+	(setq sdic-buffer-start-point
+	      (if point
+		  (if (and (not (string= (car word-list) (car (sdic-split-string query))))
+			   (let ((case-fold-search nil))
+			     (goto-char point)
+			     (setq pat (regexp-quote (car (sdic-split-string query))))
+			     (search-forward-regexp (format "^\\(%s \\|%s$\\)" pat pat) nil t)))
+		      (match-beginning 0)
+		    point)
+		(point-min)))))))
 
 
 ;; 和英辞典を検索する関数
@@ -518,10 +528,9 @@ SDIC のバージョンを返す関数"
 カーソル位置の単語を返す関数"
   (save-excursion
     (if (not (looking-at "\\<")) (forward-word -1))
-    (downcase
-     (if (looking-at sdic-english-prep-regexp)
-	 (sdic-buffer-substring-no-properties (progn (forward-word -1) (point)) (progn (forward-word 2) (point)))
-       (sdic-buffer-substring-no-properties (point) (progn (forward-word 1) (point)))))))
+    (if (looking-at sdic-english-prep-regexp)
+	(sdic-buffer-substring-no-properties (progn (forward-word -1) (point)) (progn (forward-word 2) (point)))
+      (sdic-buffer-substring-no-properties (point) (progn (forward-word 1) (point))))))
 
 
 (defvar sdic-read-minibuffer-history '() "\
@@ -530,13 +539,13 @@ sdic-read-from-minibuffer 関数のヒストリ")
   "ミニバッファから単語を読みとる"
   (let ((w (or init (sdic-word-at-point) "")))
     (setq sdic-read-minibuffer-history (cons w sdic-read-minibuffer-history)
-	  w (downcase (read-from-minibuffer (if pre-prompt
-						(format "%s Input word : " pre-prompt)
-					      "Input word : ")
-					    w nil nil '(sdic-read-minibuffer-history . 1))))
+	  w (read-from-minibuffer (if pre-prompt
+				      (format "%s Input word : " pre-prompt)
+				    "Input word : ")
+				  w nil nil '(sdic-read-minibuffer-history . 1)))
     (if (>= (length w) 2) w
-      (downcase (read-from-minibuffer (format "\"%s\" is too short. Input word again : " w)
-				      w nil nil '(sdic-read-minibuffer-history . 1))))))
+      (read-from-minibuffer (format "\"%s\" is too short. Input word again : " w)
+			    w nil nil '(sdic-read-minibuffer-history . 1)))))
 
 
 (defun sdic-select-search-function ()

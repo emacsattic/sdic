@@ -1,23 +1,39 @@
+Wed Jul 21 12:49:19 1999  Masaru Tawa  <tawa@ac.mbn.or.jp>
+
+	* eijirou.perl: Fix for `WAEIJIROU'.
+
 Wed Jul 21 12:49:19 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
-	* lisp/sdic.el.in: Bug fix of output duplication and fix the too
-	  short stem problem.
+	* install.el.in: Update code to make `lisp/sdic.el'.
+
+	* configure.in, Makefile.am: Add `install.el' to package.
+
+Wed Jul 21 12:49:19 1999  Hideyuki Shirai  <shirai@rdmg.mgcs.mei.co.jp>
+
+	* lisp/sdic.el.in: Fix the too short stem problem and contribute
+	  codes for queries in upper case.
 
 Tue Jul 20 22:23:57 1999  Tsuchiya Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* install.el: Add code to make `lisp/sample.emacs'.
+
 	* INSTALL: Update documents of install procedure for Windows.
 
 Mon Jul 19 18:04:31 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* INSTALL: Add documents of install procuedure using `install.el',
 	  and update documents of `EIJIROU'.
+
 	* NEWS: Add NEWS for SDIC-2.1.
+
 	* install.el: New file.
+
 	* lisp/sdic.el.in:
 	  Add function `sdic-version' and edit comments.
+
 	* lisp/sdicf-client.el lisp/sdic-compat.el lisp/sdic-gene.el:
 	  Edited comments.
+
 	* texi/sdic.texi: Update documents for SDIC-2.1.
 
 1999-07-18  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
@@ -27,14 +43,19 @@ Mon Jul 19 18:04:31 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 Fri Jul 16 19:00:39 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* lisp/sdicf.el: Bug fix of sdicf-entry-keywords.
+
 	* lisp/lp.el: Update install procedure for Windows.
+
 	* INSTALL: Update document about the install procedure using lp.el.
 
 1999-07-16  Satoru Takabayashi <satoru-t@is.aist-nara.ac.jp>
 
 	* configure.in: Substitute lisp/sample.emacs at configure time.
+
 	* lisp/sample.emacs.in: Be substituted at configure time.
+
 	* INSTALL: Rewrited to correspond to configured sdic.
+
 	* Makefile.am: Restore `config' entry.
 	
 Wed Jun  2 17:55:44 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
