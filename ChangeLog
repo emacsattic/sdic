@@ -1,4 +1,4 @@
-1999-08-16  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+Mon Aug 16 14:15:36 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* install.el.in: Bug fix of install.el.in (Cf. [sdic:00342]).
 

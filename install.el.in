@@ -197,8 +197,12 @@
     ;; --with-multidict=no の場合は、最初に見つかった辞書のみを利用する
     (or make-sdic-detect-multi-dictionary
 	(progn
-	  (if (listp eiwa) (setq eiwa (list (car eiwa))))
-	  (if (listp waei) (setq waei (list (car waei))))))
+	  (or (eq eiwa t)
+	      (eq eiwa nil)
+	      (setq eiwa (list (car eiwa))))
+	  (or (eq waei t)
+	      (eq waei nil)
+	      (setq waei (list (car waei))))))
     (make-sdic-sdic_el (if (eq eiwa t) (list "gene.sdic") eiwa) (if (eq waei t) (list "jedict.sdic") waei))
     (make-sdic-install-lisp)
     (make-sdic-install-info)
