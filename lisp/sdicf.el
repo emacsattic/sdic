@@ -57,25 +57,25 @@
 ;;;		Customizable variables
 ;;;------------------------------------------------------------
 
-(defvar sdicf-grep-command
-  (catch 'which
-    (mapcar (lambda (file)
-	      (mapcar (lambda (path)
-			(if (file-executable-p (expand-file-name file path))
-			    (throw 'which (expand-file-name file path))))
-		      exec-path))
-	    '("fgrep" "fgrep.exe" "grep" "grep.exe")))
-  "*Executable file name of grep")
+(defvar sdicf-egrep-command nil "*Executable file name of egrep")
+(defvar sdicf-fgrep-command nil "*Executable file name of fgrep")
+(defvar sdicf-array-command nil "*Executable file name of array")
 
-(defvar sdicf-array-command
-  (catch 'which
-    (mapcar (lambda (file)
-	      (mapcar (lambda (path)
-			(if (file-executable-p (expand-file-name file path))
-			    (throw 'which (expand-file-name file path))))
-		      exec-path))
-	    '("array" "array.exe")))
-  "*Executable file name of array")
+;; sdicf-*-command の初期値を設定
+(mapcar '(lambda (list)
+	   (or (symbol-value (car list))
+	       (set (car list)
+		    (catch 'which
+		      (mapcar '(lambda (file)
+				 (mapcar '(lambda (path)
+					    (if (file-executable-p (expand-file-name file path))
+						(throw 'which (expand-file-name file path))))
+					 exec-path))
+			      (cdr list))
+		      nil))))
+	'((sdicf-fgrep-command "fgrep" "fgrep.exe" "grep" "grep.exe")
+	  (sdicf-egrep-command "egrep" "egrep.exe" "grep" "grep.exe")
+	  (sdicf-array-command "array" "array.exe")))
 
 (defvar sdicf-default-coding-system
   (if (>= emacs-major-version 20)
@@ -156,8 +156,8 @@
 ポイントを行の先頭に移動しておかなければならない。関数の実行後、ポイン
 トは次の行頭に移動する。"
   (if (eq (following-char) ?<)
-      (setq entries (cons (buffer-substring (point) (progn (end-of-line) (point))) entries))
-    (forward-char)))
+      (setq entries (cons (buffer-substring (point) (progn (end-of-line) (point))) entries)))
+  (forward-char))
 
 (defun sdicf-encode-string (string) "\
 STRING をエンコードする
@@ -233,15 +233,24 @@ CODING-SYSTEM 以外の引数の意味は start-process と同じ"
 
 (defalias 'sdicf-direct-quit 'sdicf-common-quit)
 
-(defun sdicf-direct-search (sdic pattern)
+(defun sdicf-direct-search (sdic pattern &optional case regexp) "\
+検索対象のファイルをバッファに読み込んで検索を行う
+
+見つかったエントリのリストを返す。CASE が nil ならば、大文字小文字の違
+いを区別して検索する。REGEXP が Non-nil ならば、PATTERN を正規表現と見
+なして検索する。"
   (sdicf-direct-init sdic)
   (save-excursion
-    (setq case-fold-search (prog1 case-fold-search (set-buffer (sdicf-get-buffer sdic))))
-    (goto-char (point-min))
-    (let (entries (prev ""))
-      (while (search-forward pattern nil t)
-	(beginning-of-line)
-	(sdicf-search-internal))
+    (set-buffer (sdicf-get-buffer sdic))
+    (let ((case-fold-search case) entries)
+      (goto-char (point-min))
+      (if regexp
+	  (while (re-search-forward pattern nil t)
+	    (beginning-of-line)
+	    (sdicf-search-internal))
+	(while (search-forward pattern nil t)
+	  (beginning-of-line)
+	  (sdicf-search-internal)))
       (nreverse entries))))
 
 
@@ -250,29 +259,38 @@ CODING-SYSTEM 以外の引数の意味は start-process と同じ"
 
 (defun sdicf-grep-available-p (sdic)
   (and (file-readable-p (sdicf-get-filename sdic))
-       (stringp sdicf-grep-command)
-       (file-executable-p sdicf-grep-command)))
+       (stringp sdicf-fgrep-command)
+       (file-executable-p sdicf-fgrep-command)
+       (stringp sdicf-egrep-command)
+       (file-executable-p sdicf-egrep-command)))
 
 (defalias 'sdicf-grep-init 'sdicf-common-init)
 
 (defalias 'sdicf-grep-quit 'sdicf-common-quit)
 
-(defun sdicf-grep-search (sdic pattern)
+(defun sdicf-grep-search (sdic pattern &optional case regexp) "\
+fgrep / egrep または grep を使って検索を行う
+
+見つかったエントリのリストを返す。CASE が nil ならば、大文字小文字の違
+いを区別して検索する。REGEXP が nil ならば sdicf-fgrep-command で指定
+されたコマンドを使って検索する。REGEXP が Non-nil ならば 
+sdicf-egrep-command で指定されたコマンドを使う。"
   (sdicf-grep-init sdic)
-  (let ((case case-fold-search))
-    (save-excursion
-      (set-buffer (sdicf-get-buffer sdic))
-      (delete-region (point-min) (point-max))
-      (sdicf-call-process sdicf-grep-command
-			  (sdicf-get-coding-system sdic)
-			  nil t nil
-			  (if case "-i" "-e")
-			  pattern
-			  (sdicf-get-filename sdic))
-      (goto-char (point-min))
-      (let (entries)
-	(while (not (eobp)) (sdicf-search-internal))
-	(nreverse entries)))))
+  (save-excursion
+    (set-buffer (sdicf-get-buffer sdic))
+    (delete-region (point-min) (point-max))
+    (apply 'sdicf-call-process
+	   (if regexp sdicf-egrep-command sdicf-fgrep-command)
+	   (sdicf-get-coding-system sdic)
+	   nil t nil
+	   (if regexp (if case (list "-i" "-e" pattern (sdicf-get-filename sdic))
+			(list "-e" pattern (sdicf-get-filename sdic)))
+	     (if case (list "-i" pattern (sdicf-get-filename sdic))
+	       (list "-e" pattern (sdicf-get-filename sdic)))))
+    (goto-char (point-min))
+    (let (entries)
+      (while (not (eobp)) (sdicf-search-internal))
+      (nreverse entries))))
 
 
 
@@ -337,24 +355,32 @@ Process filter function of Array.
 	  (setq sdicf-array-wait-prompt-flag nil))
       )))
 
-(defun sdicf-array-search (sdic pattern)
+(defun sdicf-array-search (sdic pattern &optional case regexp) "\
+array を使って検索を行う
+
+見つかったエントリのリストを返す。array は正規表現検索および大文字小文
+字の違いを区別しない検索は出来ない。従って、CASE が Non-nil の場合は、
+大文字小文字を区別して検索した場合の結果を返す。REGEXP が Non-nil の場
+合は空りストを返す。"
   (sdicf-array-init sdic)
-  (save-excursion
-    (let ((proc (get-buffer-process (set-buffer (sdicf-get-buffer sdic))))
-	  (case-fold-search nil)) ; array cannot search case sensitively
-      (sdicf-array-send-string proc "init")
-      (delete-region (point-min) (point-max))
-      (sdicf-array-send-string proc (concat "search " pattern))
-      (if (looking-at "FOUND:")
-	  (progn
-	    (delete-region (point-min) (point-max))
-	    (sdicf-array-send-string proc "show")
-	    (let (entries (prev ""))
-	      (while (not (eobp)) (sdicf-search-internal))
-	      (delq nil (mapcar (function
-				 (lambda (s)
-				   (if (string= prev s) nil (setq prev s))))
-				(sort entries 'string<)))))))))
+  (if regexp
+      nil
+    (save-excursion
+      (let ((proc (get-buffer-process (set-buffer (sdicf-get-buffer sdic))))
+	    (case-fold-search nil))
+	(sdicf-array-send-string proc "init")
+	(delete-region (point-min) (point-max))
+	(sdicf-array-send-string proc (concat "search " pattern))
+	(if (looking-at "FOUND:")
+	    (progn
+	      (delete-region (point-min) (point-max))
+	      (sdicf-array-send-string proc "show")
+	      (let (entries (prev ""))
+		(while (not (eobp)) (sdicf-search-internal))
+		(delq nil (mapcar (function
+				   (lambda (s)
+				     (if (string= prev s) nil (setq prev s))))
+				  (sort entries 'string<))))))))))
 
 
 
@@ -414,20 +440,20 @@ SDIC 辞書オブジェクトは CAR が `SDIC' のベクタである。以下の4
 (defun sdicf-search (sdic method word) "\
 SDIC形式の辞書から WORD をキーとして検索を行う
 
-METHOD は検索法で、次のいずれかの値を取る。
+見付かったエントリのリストを返す。METHOD は検索法で、次のいずれかの値
+を取る。
 
     `prefix' - 前方一致検索
     `suffix' - 後方一致検索
     `exact'  - 完全一致検索
     `text'   - 全文検索
+    `regexp' - 正規表現検索
 
 前方一致検索、後方一致検索、完全一致検索の場合は大文字/小文字を区別し
-て検索を行う。全文検索時には、case-fold-search の値によって変化する。
-ただし、strategy によっては大文字/小文字の違いを区別せずに検索すること
-が出来ない場合があるので、注意すること。
-
-見付かったエントリのリストを返す。
-"
+て検索を行う。全文検索および正規表現検索の場合は、case-fold-search の
+値によって変化する。ただし、strategy によっては、指定された検索方式に
+対応していない場合があるので、注意すること。対応していない場合の返り値
+は、strategy による。"
   (or (sdicf-object-p sdic)
       (signal 'wrong-type-argument (list 'sdicf-object-p sdic)))
   (or (stringp word)
@@ -440,7 +466,12 @@ METHOD は検索法で、次のいずれかの値を取る。
 	      ((eq method 'suffix) (concat (sdicf-encode-string (downcase word)) "</K>"))
 	      ((eq method 'exact) (concat "<K>" (sdicf-encode-string (downcase word)) "</K>"))
 	      ((eq method 'text) word)
-	      (t (error "Invalid search method: %S" method))))))
+	      (t (error "Invalid search method: %S" method)))
+	     (if (or (eq method 'text)
+		     (eq method 'regexp))
+		 case-fold-search
+	       nil)
+	     (eq method 'regexp))))
 
 (defun sdicf-entry-headword (entry)
   "エントリ ENTRY の見出し語を返す。"
