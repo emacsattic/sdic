@@ -209,16 +209,13 @@ search-type の値によって次のように動作を変更する。
 	  (setq point (match-beginning 0))
 	  (search-backward "<K>" start))
 	(cons (xdic-sgml-recover-string
-	       (apply 'concat
-		      (buffer-substring (match-end 0) point)
-		      (and add-keys-to-headword
-			   (/= start (match-beginning 0))
-			   (cons " "
-				 (mapcar
-				  (function (lambda (s) (format "[%s]" s)))
-				  (xdic-split-string (buffer-substring (+ start 3)
+	       (if (and add-keys-to-headword (> (match-beginning 0) start))
+		   (format "%s [%s]"
+			   (buffer-substring (match-end 0) point)
+			   (xdic-sgml-replace-string (buffer-substring (+ start 3)
 								       (- (match-beginning 0) 4))
-						     "</K><K>"))))))
+						     "</K><K>" "]["))
+		 (buffer-substring (match-end 0) point)))
 	      (+ 4 point))
 	))))
 
