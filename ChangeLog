@@ -1,5 +1,7 @@
 Mon Jul 19 18:04:31 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
+	* INSTALL: Add documents of install procuedure using `install.el',
+	  and update documents of `EIJIROU'.
 	* NEWS: Add NEWS for SDIC-2.1.
 	* install.el: New file.
 	* lisp/sdic.el.in lisp/sdicf-client.el lisp/sdic-compat.el lisp/sdic-gene.el:
