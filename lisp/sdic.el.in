@@ -135,16 +135,17 @@ search-method の値によって次のように動作を変更する。
 "
   (if (eq t search-method) (error "%s" "後方一致検索は使えません"))
   (or (get 'xdic:look 'setup)
-      (if (>= emacs-major-version 20)
-	  (setq process-coding-system-alist (cons (cons (format ".*%s" xdic:look-command-name)
-							xdic:look-coding-system)
-						  (if (boundp 'process-coding-system-alist)
-						      process-coding-system-alist)))
-	(define-program-coding-system nil (format ".*%s" xdic:look-command-name) xdic:look-coding-system))
-      (put 'xdic:look 'setup t))
+      (progn
+	(if (>= emacs-major-version 20)
+	    (setq process-coding-system-alist (cons (cons (format ".*%s" xdic:look-command-name)
+							  xdic:look-coding-system)
+						    (if (boundp 'process-coding-system-alist)
+							process-coding-system-alist)))
+	  (define-program-coding-system nil (format ".*%s" xdic:look-command-name) xdic:look-coding-system))
+	(put 'xdic:look 'setup t)))
   (let ((buf (get dictionary 'search-buffer)))
     (save-excursion
-      (set-buffer (if (bufferp buf) buf
+      (set-buffer (if (and (bufferp buf) (buffer-name buf)) buf
 		    (setq buf (put dictionary 'search-buffer (generate-new-buffer "*xdic-look*")))))
       (erase-buffer)
       (call-process xdic:look-command-name nil t nil xdic:look-option string (get dictionary 'filename))
@@ -179,16 +180,17 @@ search-method の値によって次のように動作を変更する。
     lambda : 完全一致検索
 "
   (or (get 'xdic:grep 'setup)
-      (if (>= emacs-major-version 20)
-	  (setq process-coding-system-alist (cons (cons (format ".*%s" xdic:grep-command-name)
-							xdic:grep-coding-system)
-						  (if (boundp 'process-coding-system-alist)
-						      process-coding-system-alist)))
-	(define-program-coding-system nil (format ".*%s" xdic:grep-command-name) xdic:grep-coding-system))
-      (put 'xdic:grep 'setup t))
+      (progn
+	(if (>= emacs-major-version 20)
+	    (setq process-coding-system-alist (cons (cons (format ".*%s" xdic:grep-command-name)
+							  xdic:grep-coding-system)
+						    (if (boundp 'process-coding-system-alist)
+							process-coding-system-alist)))
+	  (define-program-coding-system nil (format ".*%s" xdic:grep-command-name) xdic:grep-coding-system))
+	(put 'xdic:grep 'setup t)))
   (let ((buf (get dictionary 'search-buffer)))
     (save-excursion
-      (set-buffer (if (bufferp buf) buf
+      (set-buffer (if (and (bufferp buf) (buffer-name buf)) buf
 		    (setq buf (put dictionary 'search-buffer (generate-new-buffer "*xdic-grep*")))))
       (erase-buffer)
       (call-process xdic:grep-command-name nil t nil xdic:grep-option
@@ -196,9 +198,9 @@ search-method の値によって次のように動作を変更する。
 		     ((eq search-method nil)
 		      (format "^%s" string))
 		     ((eq search-method t)
-		      (format "^[^\\t]*%s\\t" string))
+		      (format "^[^\t]*%s\t" string))
 		     (t ;; (eq search-method 'lambda)
-		      (format "^%s\\t" string)))
+		      (format "^%s\t" string)))
 		    (get dictionary 'filename)))
     (insert-buffer-substring buf)))
 
