@@ -123,6 +123,7 @@
   (if (or (sdic-buffer-live-p (get dic 'sdic-gene-search-buffer))
 	  (save-excursion
 	    (set-buffer (put dic 'sdic-gene-search-buffer (generate-new-buffer sdic-gene-search-buffer-name)))
+	    (buffer-disable-undo)
 	    (insert "\n")
 	    (prog1 (if (get dic 'extract)
 		       (= 0 (sdicf-call-process (get dic 'extract) (get dic 'coding-system) nil t nil

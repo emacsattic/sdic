@@ -493,8 +493,8 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
     (if (not (looking-at "\\<")) (forward-word -1))
     (downcase
      (if (looking-at sdic-english-prep-regexp)
-	 (buffer-substring (progn (forward-word -1) (point)) (progn (forward-word 2) (point)))
-       (buffer-substring (point) (progn (forward-word 1) (point)))))))
+	 (sdic-buffer-substring-no-properties (progn (forward-word -1) (point)) (progn (forward-word 2) (point)))
+       (sdic-buffer-substring-no-properties (point) (progn (forward-word 1) (point)))))))
 
 
 (defvar sdic-read-minibuffer-history '() "\
@@ -899,3 +899,14 @@ at the end of STRING, we don't include a null substring for that."
 	  (setq list (cons (substring string start (match-beginning 0)) list)))
       (setq start (match-end 0)))
     (nreverse (if (= start (length string)) list (cons (substring string start) list)))))
+
+
+(if (fboundp 'buffer-substring-no-properties)
+    (defalias 'sdic-buffer-substring-no-properties 'buffer-substring-no-properties)
+  (defun sdic-buffer-substring-no-properties (start end) "\
+Return the characters of part of the buffer, without the text properties.
+The two arguments START and END are character positions;
+they can be in either order. [Emacs 19.29 emulating function]"
+    (let ((string (buffer-substring start end)))
+      (set-text-properties 0 (length string) nil string)
+      string)))

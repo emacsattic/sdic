@@ -144,7 +144,9 @@
 (defun sdic-grep-open-dictionary (dic)
   "Function to open dictionary"
   (and (or (sdic-buffer-live-p (get dic 'sdic-sgml-buffer))
-	   (put dic 'sdic-sgml-buffer (generate-new-buffer sdic-grep-buffer-name)))
+	   (let ((buf (generate-new-buffer sdic-grep-buffer-name)))
+	     (buffer-disable-undo buf)
+	     (put dic 'sdic-sgml-buffer buf)))
        dic))
 
 
