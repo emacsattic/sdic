@@ -1,0 +1,55 @@
+SDIC ----- 辞書閲覧用 major mode
+
+Emacs 上で英和/和英辞書を検索するためのプログラムです。インターネット
+を通して容易に入手可能なテキスト形式の辞書を主な対象としています。
+
+
+
+◎ 特長
+
+(1) 派生語を自動的に検索します。英語には relation や lexicographic な
+    ど -tion/-ic などの語尾のついた派生語が頻繁に現れますが、これら単
+    語が辞書中に見つからなかった場合、自動的に元々の語を検索します。
+
+(2) 動詞や形容詞の規則変化や名詞の複数形を自動的に取り扱います。例えば、
+     studies と入力すると、study を出力します。
+
+(3) 単純なユーザーインターフェース
+
+
+
+◎ 著作権と責任の放棄
+
+   このプログラムは、GNU 一般公用許諾書の「バージョン2」或いはそれ以降
+   の適当なバージョンに従って、利用または再配布することを許可されたフ
+   リーソフトウェアです。正確な再配布条件は COPYING に記載されています。
+
+
+
+◎ その他の情報
+
+   インストール手順については、INSTALL を参照して下さい。
+
+   使い方と設定については、sdic.texi を参考にして下さい。
+
+   バグ・感想などについては筆者まで連絡をお願いします。また、SDIC につ
+   いての情報交換用のメーリングリストを開設しています。入会を希望され
+   る方は、
+
+       sdic-ctl@hazel.kuee.kyoto-u.ac.jp
+
+   宛に subscribe ANATANO Namae という内容のメールを送って下さい。
+
+
+
+◎ 連絡先
+   土屋 雅稔 ( Tsuchiya Masatoshi )
+        <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+   SDIC Users メーリングリスト
+        <sdic@hazel.kuee.kyoto-u.ac.jp>
+
+
+
+◎ 一次配布元
+    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/sdic/index.html

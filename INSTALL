@@ -1,0 +1,143 @@
+■ SDIC インストールガイド
+
+この文書では、SDIC を手軽にインストールする手順について説明しています。
+最も入手しやすい辞書データとして、「窓の杜」などで配布されている「GENE 
+辞書」があり、この辞書を使う場合のインストール方法について主に説明しま
+す。
+
+  * GENE95辞書  http://www.forest.impress.co.jp/dict.html#gene95
+  * EDICT辞書   ftp://ftp.u-aizu.ac.jp/pub/SciEng/nihongo/ftp.cc.monash.edu.au/
+
+
+
+◎ インストール手順 ( UNIX 環境の場合 )
+
+(1) このファイルと同じディレクトリに「GENE辞書」のデータ gene95.lzh ま
+    たは gene95.tar.gz と、「EDICT辞書」のデータ edict.gz を置いて下さ
+    い。( make install する時に自動的に展開されますので、手動で展開す
+    る必要はありません。)
+
+(2) Makefile を編集して、インストール先のディレクトリと、デフォルトで
+    利用する辞書を決定します。
+
+    「GENE辞書」は英和辞書なのですが、これを和英辞書に変換するためのス
+    クリプト jgene.perl が同梱されています。これを利用して「GENE辞書」
+    を和英辞書としても利用する場合は、「EDICT辞書」のデータは要りませ
+    ん。この変換には数分かかります。
+
+    逆に、「EDICT辞書」は和英辞書なのですが、これを英和辞書に変換して
+    利用することもできます。この場合は「GENE辞書」のデータが不要となり
+    ます。この変換には数分かかります。
+
+(3) make install
+    インストール先のディレクトリによっては root 特権が必要になります。
+
+(4) ~/.emacs を編集して個人設定を行います。sample.emacs に設定例が入っ
+    ていますので、参考にしてください。この設定をそのまま使う場合は、
+
+        make config
+
+    とすれば設定が完了します。Mule/Emacs 上で C-c w とタイプすると、
+    sdic-mode が起動するはずです。
+
+    Emacs20 の場合は、更に、
+
+        (set-language-environment "Japanese")
+        (set-terminal-coding-system 'euc-japan)
+
+    と設定されているか確認してください。
+
+    また、XEmacs の場合は、
+
+        (set-language-environment "Japanese")
+	(set-default-coding-systems 'euc-japan)
+
+    と .emacs に設定されているか確認してください。
+	
+
+
+◎ インストール手順 ( Windows 環境の場合 )
+
+Cygnus-win や Perl for windows, nkf などをインストールしている場合は、
+UNIX 環境の場合のインストール手順がそのまま使えます。が、それらがない
+場合は多少面倒な手順が必要になります。特に Perl がないと辞書を変換する
+ためのスクリプトが使えませんので、現時点では和英辞書をつくる方法があり
+ません。
+
+ここでは、以下のディレクトリにファイルを置く場合のインストール手順につ
+いて説明します。この手順では、Meadow または Mule for windows 以外のコ
+マンドを必要としません。
+
+   ・辞書をインストールするディレクトリ -> C:\Dict
+   ・Emacs-Lisp プログラムをインストールするディレクトリ -> C:\Meadow\site-lisp
+
+(1) sdic.el.in を sdic.el と名前を変えてコピーします。
+
+(2) 「GENE 辞書」のデータ gene95.lzh または gene95.tar.gz を展開して、
+    gene.txt をこのファイルと同じディレクトリに置きます。それから、以
+    下のコマンドを実行して下さい。
+
+        mule -batch -q -l ./lp.el -l ./gene.el -f gene-batch-conv gene.txt gene.dic
+        copy gene.dic C:\Dict
+
+(3) sdic.el, sdic-sgml.el, sdic-grep.el, sdic-array.el,
+    sdic-compat.el, stem.el を C:\Meadow\site-lisp にコピーします。
+
+(4) 以下の設定を .emacs に付け加えて下さい。
+
+        (setq load-path (cons "C:/Meadow/site-lisp" load-path))
+        (setq sdic-eiwa-dictionary-list '((sdic-sgml "C:/Dict/gene.dic")))
+        (setq sdic-waei-dictionary-list nil)
+        (autoload 'sdic-describe-word "sdic" "英単語の意味を調べる" t nil)
+        (global-set-key "\C-cw" 'sdic-describe-word)
+
+    この手順によって英和辞書を利用できるようになります。
+
+
+
+
+◎ 「英辞郎」を使う場合のインストール手順
+
+「英辞郎」とは、Nifty-Serve 英会話フォーラムまたは書籍から入手可能な辞
+書です。詳しくはそれらに附属のドキュメントを参照して下さい。単純なテキ
+スト形式で配布されている英和辞書としては、おそらく最大のものだと思われ
+ますが、残念ながらインターネット上では配布されていません。
+
+「英辞郎」を利用する場合、上記の GENE 辞書の UNIX 環境のインストール手
+順の内、(2),(3) をそれぞれ次のように変更してください。
+
+(2') このファイルと同じディレクトリに、「英辞郎」の辞書データを全て置
+     いて下さい。また、それらの辞書データのファイル名が、
+
+         .txt
+
+     で終るようにしておいて下さい。
+
+(3') Makefile を編集して、インストール先のディレクトリを決定し、デフォ
+     ルトで利用する辞書を eijirou.dic と変更して下さい。
+
+従って、(1)->(2')->(3')->(4)->(5) という手順によって、「英辞郎」が利用
+できるようになります。ただし、「英辞郎」は極めて巨大なので、grep によ
+る検索には非常に時間がかかります。可能ならば SUFARY を同時にインストー
+ルして、sdic-array.el を利用して検索するように設定することをお勧めしま
+す。詳細については Info を参照して下さい。
+
+また、作者は「英辞郎」を持っていませんので、上記の手順を実際に確認した
+わけではありません。間違いや修正情報などがありましたら、連絡をお願いし
+ます。
+
+
+
+
+◎ 既に sdic を利用中の方がプログラムのみを置き換える場合の手順
+
+Makefile を編集して、インストール先のディレクトリと利用する辞書につい
+ての設定を、利用中の設定とあわせます。その後、
+
+    make install-lisp
+
+として下さい。Emacs-Lisp プログラムのみがインストールされます。
+
+ただし、xdic-1.x 系列を置き換える場合は、辞書の形式が微妙に変更されて
+いるため不具合が発生する可能性がありますので、通常の手順にしたがってイ
+ンストールし直して下さい。
