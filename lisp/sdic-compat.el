@@ -117,7 +117,7 @@
 
 (defvar xdic-unix-grep-case-option "-i" "*Command line option for grep to ignore case")
 
-(defconst xdic-unix-search-buffer-name "*xdic-unix*")
+(defconst xdic-unix-search-buffer-name " *xdic-unix*")
 
 
 
