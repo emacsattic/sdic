@@ -804,8 +804,8 @@ UNIX $B4D6-$G;HMQ$5$l$k>l9g$O!"(BSDIC$B7A<0$KJQ49$7$F!"(BSUFARY $B$rMxMQ$7$
 SDIC $B$O!"(B2$B$D$N<-=q$N7A<0$r%5%]!<%H$7$F$$$k!#(B
 
 @menu
-* COMPAT Format::       COMPAT$B7A<0(B
-* SDIC Format::         SDIC$B7A<0(B
+* COMPAT Format::       COMPAT $B7A<0(B
+* SDIC Format::         SDIC $B7A<0(B
 @end menu
 
 
@@ -831,7 +831,7 @@ char     := [^\t\n]
 
 
 
-@node SDIC Format, History, COMPAT Format, Dictionary Format
+@node SDIC Format, , COMPAT Format, Dictionary Format
 @comment  node-name,  next,  previous,  up
 @section SDIC $B7A<0(B
 
@@ -888,7 +888,7 @@ char_lf  := char | '&lf;'
 $B$P!"<!$N$h$&$J%(%s%H%j$,9M$($i$l$k!#(B
 
 @example
-<H>go {$BF0(B-1}</H><K>go</K>$B9T$/(B
+<H>go @{$BF0(B-1@}</H><K>go</K>$B9T$/(B
 @end example
 
 $B$3$NNc$G$O!"8+=P$78l$K$=$N8l$NIJ;l>pJs$,4^$^$l$F$$$k!#$3$N$h$&$JIJ;l>pJs(B

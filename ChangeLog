@@ -1,4 +1,9 @@
+Mon May 24 12:12:56 2004  TSUCHIYA Masatoshi  <tsuchiya@namazu.org>
+
+	* texi/sdic.texi: Update.  Thanks to OGAWA Daisuke for his report.
+
 Tue Jun 17 11:12:08 2003  Hideyuki SHIRAI  <shirai@meadowy.org>
+
 	* texi/sdic.texi (SUFARY): Change the URL of the SUFARY.
 	TNX, Fujishima-san <pooh@nature.tsukuba.ac.jp> in [sdic:00469].
 
