@@ -73,7 +73,7 @@
 
 
 
-(defconst xdic:version "1.5")
+(defconst xdic:version "1.5p1")
 
 (defconst xdic:buffer-name "*xdic*" "検索結果表示バッファの名前")
 (defconst xdic:mode-name "Xdic" "検索結果を表示するバッファの major mode")
@@ -181,6 +181,7 @@ Emacs のバージョンによって異なっている fill-region の動作の違い
   (set-buffer-modified-p nil)
 を行なう"
   (let ((l))
+    (while (re-search-backward (concat "^" (regexp-quote s) "\t") nil t))
     (delete-region (point-min) (point))	; ポイントよりも前の部分を削除する
     (message "Formatting dictionary...")
     (save-match-data		; 指定された文字列で始まる項目のみを対象とする
