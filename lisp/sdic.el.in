@@ -1,9 +1,9 @@
 ;; sdic.el ---- -*- Emacs-Lisp -*- Program to view dictionary.
 ;; $Id$
 
-;; Copyright (C) 1998,99 Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+;; Copyright (C) 1998,99 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
-;; Author: Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+;; Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 ;; Keywords: dictionary
 
 ;; SDIC is free software; you can redistribute it and/or modify it
@@ -28,7 +28,7 @@
 ;; て下さい。
 
 ;; 一次配布元
-;;    http://www-nagao.kuee.kyoto-u.ac.jp/member/tsuchiya/sdic/index.html
+;;    http://namazu.org/~tsuchiya/sdic/
 
 
 ;;; Install:

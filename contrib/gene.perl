@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-# Author: Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+# Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 # Keywords: dictionary
 
 # GENE95辞書を変換する Perl スクリプト
@@ -52,8 +52,10 @@ if(( $ARGV[0] eq '--compat' )){
 # SDIC形式の辞書をつくる関数
 sub sdic {
     $_ = <>;				# 2行読み飛ばす
+    s/\s*$/\n/;				# 改行コードを変換 [sdic:00428]
     print "# ",$_;
     $_ = <>;
+    s/\s*$/\n/;
     print "# ",$_;
     for( $i=0; <>; $i++ ){
 	s/\s+$//;			# 行末の空白文字を削除

@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-# Author: Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+# Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 # Keywords: dictionary
 
 # 『英辞郎』を変換する Perl スクリプト

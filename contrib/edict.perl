@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-# Author: Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+# Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 # Keywords: dictionary
 
 # EDICT形式の辞書をSDIC形式に変換する Perl スクリプト
@@ -38,6 +38,7 @@ sub normal {
     $_ = <>;				# 最初の1行は著作権表示である
     s!^[^/]+/!!;
     s!/$!!;
+    s!\s*$!\n!;				# 改行コードを変換 [sdic:00428]
     print "# ",$_;
     while( <> ){
 	s/\s+$//;			# 行末の空白文字を削除
@@ -76,6 +77,7 @@ sub reverse {
     $_ = <>;				# 最初の1行は著作権表示である
     s!^[^/]+/!!;
     s!/$!!;
+    s!\s*$!\n!;				# 改行コードを変換 [sdic:00428]
     print "# ",$_;
     while( <> ){
 	s/\s+$//;			# 行末の空白文字を削除

@@ -1,9 +1,9 @@
 ;;; sdicf.el --- Search library for SDIC format dictionary
 ;;; $Id$
 
-;; Copyright (C) 1999 TSUCHIYA Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+;; Copyright (C) 1999 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
-;; Author: TSUCHIYA Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+;; Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 ;;	   NISHIDA Keisuke <knishida@ring.aist.go.jp>
 ;; Created: 1 Feb 1999
 ;; Version: 0.9

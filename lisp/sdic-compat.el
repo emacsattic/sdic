@@ -1,9 +1,9 @@
 ;; sdic-compat.el ---- -*- Emacs-Lisp -*- Library to search COMPAT format dictionary.
 ;; $Id$
 
-;; Copyright (C) 1998,99 Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+;; Copyright (C) 1998,99 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
-;; Author: Tsuchiya Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+;; Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 ;; Keywords: dictionary
 
 ;; This file is part of SDIC.
