@@ -35,6 +35,8 @@ for( @ARGV ){
 }
 @ARGV = @tmp;
 
+eval { binmode(STDOUT); };
+
 if( $COMPAT ){
     &compat();
 } else {

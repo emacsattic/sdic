@@ -34,6 +34,8 @@
 # 的には情報が欠落しますので、注意して使って下さい。
 
 
+eval { binmode(STDOUT); };
+
 if(( $ARGV[0] eq '--compat' )){
     shift;
     &compat();

@@ -46,6 +46,7 @@ $Compatible = 1, shift @ARGV if defined($ARGV[0]) && $ARGV[0] eq "--compat";
 
 $| = 1;
 print STDERR "reading input...\n";
+eval { binmode(STDOUT); };
 while(<>) {
     /(.*)\t(.*)/;
     my $term = $1;

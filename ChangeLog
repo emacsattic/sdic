@@ -1,4 +1,7 @@
-Fri Jul 23 13:32:07 1999  Hideyuki Shirai <shirai@rdmg.mgcs.mei.co.jp>
+Fri Jul 23 17:04:18 1999  Hideyuki Shirai <shirai@rdmg.mgcs.mei.co.jp>
+
+	* contrib/{edict.perl,eijirou.perl,gene.perl,jgene.perl}:
+	  Add code for Windows.
 
 	* install.el.in: Some bug fixes and update code to decide
 	  `make-sdic-lisp-directory' for Mule-for-Windows.
@@ -34,7 +37,7 @@ Wed Jul 21 21:23:31 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 Wed Jul 21 12:49:19 1999  Masaru Tawa  <tawa@ac.mbn.or.jp>
 
-	* eijirou.perl: Fix for `WAEIJIROU'.
+	* contrib/eijirou.perl: Fix for `WAEIJIROU'.
 
 Wed Jul 21 12:49:19 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 

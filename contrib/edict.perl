@@ -24,6 +24,8 @@
 # 英和辞書は得られません。これを改良して下さる方を募集中です。
 
 
+eval { binmode(STDOUT); };
+
 if( $ARGV[0] eq '--reverse' ){
     shift;
     &reverse();
