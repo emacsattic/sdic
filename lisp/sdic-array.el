@@ -29,7 +29,7 @@
 ;;     利用できます。
 ;;
 ;;         gene.perl    - GENE95 辞書
-;;         jgene.perl   - GENE95 辞書から和英辞書を生成する
+;;         edict.perl   - EDICT 辞書
 ;;         eijirou.perl - 英辞郎
 ;;
 ;; (3) 辞書の索引を生成します。/usr/dict/gene.dic の索引を生成する場合
@@ -70,6 +70,34 @@
 ;; command
 ;;     外部コマンドの名前を指定します。省略した場合は 
 ;;     xdic-array-command の値を使います。
+;;
+;; array-file-name
+;;     辞書の array file の名前を指定します。省略した場合は、外部コマ
+;;     ンドのデフォルト値が使われます。
+
+
+;;; Note;
+
+;; xdic-sgml.el , xdic-grep.el , xdic-array.el は XDIC 形式の辞書を検
+;; 索するためのライブラリです。それぞれの違いは次の通りです。
+;;
+;; ・xdic-sgml.el
+;;     辞書データを全てメモリに読み込んでから検索を行います。外部コマ
+;;     ンドを必要としませんが、大量のメモリが必要になります。
+;;
+;; ・xdic-grep.el
+;;     grep を利用して検索を行います。比較的低速です。
+;;
+;; ・xdic-array.el
+;;     array を利用して検索を行います。辞書の index file を事前に生成
+;;     しておいてから検索を行いますので、高速に検索が可能です。しかし、
+;;     index file は辞書の3倍程度の大きさになります。
+;;
+;; 比較的小規模の辞書を検索する場合は xdic-grep.el が最適でしょう。し
+;; かし、5MByte より大きい辞書の場合は xdic-array.el の利用を考慮すべ
+;; きだと思います。
+;;
+;; XDIC 形式の辞書の構造については、xdic-sgml.el を参照してください。
 
 
 ;;; ライブラリ定義情報
@@ -134,16 +162,14 @@
     (unwind-protect
 	(and (or (xdic-array-process-live-p dic)
 		 (let ((limit (progn (set-buffer buf) (goto-char (point-max))))
-		       (proc (start-process "array" buf
-					    (get dic 'command)
-					    (get dic 'file-name)
-					    (or (get dic 'array-file-name) ""))))
+		       (proc (xdic-start-process "array" buf
+						 (get dic 'coding-system)
+						 (get dic 'command)
+						 (get dic 'file-name)
+						 (or (get dic 'array-file-name) ""))))
 		   (accept-process-output proc 5)
 		   (if (search-backward "ok\n" limit t)
 		       (progn
-			 (set-process-coding-system proc
-						    (get dic 'coding-system)
-						    (get dic 'coding-system))
 			 (set-process-filter proc 'xdic-array-wait-prompt)
 			 (xdic-array-send-string proc "style line")
 			 t))))
@@ -182,20 +208,7 @@ search-type の値によって次のように動作を変更する。
       (put dic 'xdic-array-erase-buffer nil)
       (xdic-array-send-string proc "init") ; 検索条件を初期化
       (setq limit (point))
-      (xdic-array-send-string proc
-			       (format "search %s"
-				       (cond
-					;; 前方一致検索
-					((eq search-type nil) (concat "<K>" (downcase string)))
-					;; 後方一致検索
-					((eq search-type t) (concat (downcase string) "</K>"))
-					;; 完全一致検索
-					((eq search-type 'lambda) (concat "<K>" (downcase string) "</K>"))
-					;; ユーザー指定のキーによる検索
-					((eq search-type 0) string)
-					;; それ以外の検索形式を指定された場合
-					(t (error "Not supported search type is specified. \(%s\)"
-						  (prin1-to-string search-type))))))
+      (xdic-array-send-string proc (format "search %s" (xdic-sgml-make-query-string string search-type)))
       (if (re-search-backward "^FOUND: [0-9]+$" limit t)
 	  (progn
 	    (setq limit (+ 3 (match-end 0)))
@@ -254,4 +267,5 @@ Process filter function of Array.
 		(progn
 		  (goto-char (match-end 0))
 		  (setq xdic-array-wait-prompt-flag nil))
-	      (goto-char start)))))))
+	      (goto-char start))))
+      (set-buffer old-buffer))))
