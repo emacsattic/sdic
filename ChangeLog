@@ -97,5 +97,6 @@ Wed Jun  2 17:55:44 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 		Makefile.{am,in}, configure.in, configure, 
 		lisp/Makefile.{am,in} : New files
 		acinclude.m4, aclocal.m4, elisp-comp : Import from Lookup
+
 	* TODO, NEWS, AUTHORS, ChangeLog, THANKS: New file.
 
