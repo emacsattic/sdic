@@ -86,7 +86,7 @@
 ;;; ライブラリ定義情報
 (require 'xdic)
 (provide 'xdic-sgml)
-(put 'xdic-sgml 'version "1.0")
+(put 'xdic-sgml 'version "1.1")
 (put 'xdic-sgml 'init-dictionary 'xdic-sgml-init-dictionary)
 (put 'xdic-sgml 'open-dictionary 'xdic-sgml-open-dictionary)
 (put 'xdic-sgml 'close-dictionary 'xdic-sgml-close-dictionary)
@@ -102,7 +102,7 @@
 *Option for archiver.
 圧縮辞書を展開するために使うオプション")
 
-(defconst xdic-sgml-buffer-name "*xdic-sgml*")
+(defconst xdic-sgml-buffer-name " *xdic-sgml*")
 
 
 
