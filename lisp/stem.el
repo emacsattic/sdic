@@ -844,6 +844,7 @@
 動詞/形容詞の活用形と名詞の複数形の活用語尾を取り除く非公開関数
 与えられた語の原形として可能性のある語のリストを返す"
   (or (assoc str stem:irregular-verb-alist)
+      (if (string= str "as") (list "as"))
       (let (c l stem)
 	(setq l (cond
 		 ;; 比較級/最上級
