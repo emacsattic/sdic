@@ -1,0 +1,493 @@
+1999-05-12  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: sdic-replace-string 関数を新設し、sdic-sgml.el への依
+	存を解消。sdic-start-process / sdic-call-process /
+ 	sdic-insert-file-contents 関数を廃止。
+
+	* lisp/sdicf-client.el: '(lambda 〜) や (function (lambda 〜)) などの冗
+	長な定義を追放した。
+
+	* lisp/sdicf.el: 辞書の漢字コードが設定されていなかったバグを修正
+
+	* lisp/sdic-gene.el: sdicf.el に依存するように変更した。
+
+	* lisp/sdic-compat.el:
+	(require 'sdicf) を加えて、sdic-call-process 関数を sdicf-call-process 
+	関数に置換した。
+	sdic-compat-*-command の初期値の設定の仕方を変更した。
+	sdic-compat-available-p を厳格にした。
+
+	* lisp/sdicf.el: sdicf-find-program 関数の新設
+	(beginning-of-line) を (forward-line 0) に置換した。
+
+1999-05-07  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: sdic-close-window 関数が呼び出された場合に、
+	bury-buffer するように変更した。(Tnx. 白井さん)
+
+1999-02-18  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in:
+	sdid-face-color の初期値を Black から nil に変更。
+	(function (lambda 〜)) を追放して、(lambda 〜) に書き換えた。
+
+1999-02-13  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdicf.el: sdicf-entry-keywords 関数の構成変更
+
+1999-02-11  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdicf.el: sdicf-entry-keywords 関数の引数仕様を修正
+
+	* lisp/sdicf.el: sdicf-entry-keywords 関数のバグ修正
+
+	* lisp/sdicf.el: sdicf-entry-keywords 関数のバグ修正及び引数の追加
+
+1999-02-10  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdicf.el: sdicf-entry-keywords 関数のバグ修正
+	sdicf-open 関数のバグ修正
+
+1999-02-04  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdicf.el: エラー処理をきちんとするようにした。
+
+1999-02-03  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* バージョン 2.0 公開
+
+1999-02-02  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdicf.el: sdicf-array-search 関数の重複エントリ削除部分の改良
+
+	* lisp/sdicf.el: sdicf-array-search で重複要素を除去する部分を while ルー
+	プに書き直した。'(lambda 〜) や (function 〜) などの余分な定義を取り除い
+	た。
+
+	* lisp/sdicf-client.el: New file.
+
+	* lisp/sdicf.el:
+	sdicf-search-internal 関数のバグフィックス
+	sdicf-open 関数の strategy 検査部分を修正
+	sdicf-search 関数のバグフィックス
+
+	* lisp/sdicf.el: 正規表現検索に対応した。
+
+	* lisp/sdicf.el: 大幅変更。特に漢字コードについての処理と、strategy の利
+	用可能性検査を強化。さらに、direct / grep によって全文検索した場合の振る
+	舞いを case-fold-search によって変更することにした。
+
+	* lisp/sdicf.el: New file.
+
+1999-01-31  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: 検索手順の微修正。
+
+	* lisp/sdic.el.in: 英和辞書で先頭の語が極端に短い成句を検索しようとした
+	場合に、単純な前方一致検索では非常にたくさんのエントリが一致するため検索
+	時間がかかるため、完全一致検索と空白を付け加えたキーを使う前方一致検索を
+	組み合わせて検索するようにした。
+
+	* lisp/stem.el: stem:extra 関数で as を特別扱いするようにした。
+
+	* lisp/sdic.el.in: sdic-mode-map の W (辞書を指定して検索)のバグフィックス。
+
+1999-01-29  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: sdic-mode-map に / (全文検索), ^ (前方一致検索), $
+ 	(後方一致検索), ' (完全一致検索) のキーを追加。
+
+1999-01-27  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: sdic-mode のキーバインドに W と / を追加。
+	sdic-split-string 関数の修正。
+
+	* lisp/sdic-gene.el:
+	sdic-gene-search-internal / sdic-gene-search-re-internal 関数の修正。
+
+	* lisp/sdic-compat.el: sdic-compat-search-entry 関数を修正。
+
+	* lisp/sdic-grep.el: sdic-grep-search-entry 関数を修正。
+
+	* lisp/sdic-array.el: sdic-array-search-entry 関数を修正。
+
+	* lisp/sdic-sgml.el: sdic-sgml-get-entry 関数のバグフィックス。
+	sdic-sgml-replace-string 関数を高速化。
+
+	* lisp/sdic.el.in: sdic-fill-region 関数の代わりに独自の整形処理を行なう
+	ように変更し、sdic-insert-content 関数を高速化した。
+
+1999-01-26  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic-array.el: [sdic:00123]で白井さんから指摘されたエントリが重複
+	して出力されているバグを修正。
+
+	* lisp/sdic-array.el, lisp/sdic-sgml.el, lisp/sdic-grep.el: SDIC形式にコ
+	メント文を挿入できるようにする拡張に対応。
+
+1999-01-25  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in:
+	sdic-display-window 関数が buffer-size の値を返すように変更した。
+	sdic-describe-word-at-point 関数を [sdic:00106] の川村さんの提案を採り入
+	れて改良した。
+	sdic-describe-word 関数を数値引数つきで起動した場合、単語を入力する前に
+	辞書を確認するようにした。
+
+	* lisp/sdic-array.el, lisp/sdic-grep.el, lisp/sdic-sgml.el:
+	SDIC 形式の BNF 定義の変更を反映した。
+
+1999-01-24  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic-array.el, lisp/sdic-grep.el: 見出し語を修正するオプションの
+	読み出し回数を減らした。
+
+	* lisp/sdic-sgml.el: defsubst を使うために定義順序を変更した。
+
+1999-01-23  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/stem.el: 一次配布元を変更。
+
+	* lisp/sdic.el.in:
+	sdic-fill-region / sdic-insert-content をインライン関数に変更した。
+
+	* lisp/sdic.el.in:
+	[xdic:00102] の白井さんの提案を採り入れて sdic-insert-content 関数を高速
+	化した。
+	sdic-describe-word の別名として sdic を用意した。
+	sdic:* の定義を除去した。
+
+	* lisp/sdic-array.el, lisp/sdic-compat.el, lisp/sdic-gene.el, lisp/sdic-grep.el, lisp/sdic-sgml.el, lisp/sdic.el.in:
+	Rename from `xdic' to `sdic'
+
+1999-01-21  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: 全ての検索キーを含めて見出し語を構成するオプションを
+	追加。
+
+	* lisp/sdic-sgml.el: 全ての検索キーを含めて見出し語を構成するルーチンを
+	修正。
+
+	* lisp/sdic-grep.el, lisp/sdic-array.el, lisp/sdic-sgml.el:
+	全ての検索キーを含めて見出し語を構成するためのオプションを追加。
+
+	* lisp/sdic-sgml.el: 微修正。
+
+	* lisp/sdic-gene.el: ドキュメントの微修正。
+
+	* lisp/sdic-compat.el: 後方一致検索でも単なる grep を使うように変更。正
+	規表現検索の場合に限って egrep を使うように変更し、そのためのオプション
+	を追加。
+
+1999-01-20  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: ドキュメント微修正。
+
+	* lisp/sdic-array.el, lisp/sdic-grep.el: 公開用修正。
+
+	* lisp/sdic-sgml.el: 公開用修正
+
+	* lisp/sdic.el.in: 依存関係の見直し。
+	デフォルトで使用する検索メソッドを変更。
+	xdic-sort-dictionary-order 関数を修正。
+	xdic-insert-content 関数を修正。
+	検索語の先頭に / がある場合、全文検索を行うように修正。
+	検索結果表示ウインドウに表示しきれない情報がある場合、注意を喚起するメッ
+	セージを表示するようにした。
+	xdic-mode のドキュメント修正。
+	xdic-fill-region 関数を修正。
+
+	* lisp/sdic-gene.el: xdic-gene-*-internal の定義順序変更。
+
+	* lisp/sdic-array.el: xdic-array-search-entry 関数の引数指定仕様修正。
+
+	* lisp/sdic-grep.el: xdic-grep-available-p 関数新設。
+	xdic-grep-search-entry 関数の検索形式指定の仕様修正。
+
+	* lisp/sdic-sgml.el: xdic-sgml-search-entry 関数の検索形式指定の仕様修正。
+
+	* lisp/sdic-compat.el: ドキュメント修正。
+	xdic-compat-search-entry 関数の検索形式指定の仕様修正。
+
+	* lisp/sdic-gene.el:
+	xdic-unix.el -> xdic-compat.el のファイル名変更の反映
+	xdic-insert-file-contents 関数の引数順序変更の反映
+	xdic-gene-search-entry 関数を修正 / 高速化。それにともない、説明文中に 
+	TAB が含まれていると誤動作するようになった。
+
+1999-01-19  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic-grep.el, lisp/sdic-sgml.el: ドキュメント修正。
+
+	* lisp/sdic-array.el: ドキュメント微修正。
+	辞書検索プログラムを予告無く終了できるようにした。
+
+	* lisp/sdic.el.in:
+	xdic-describe-word と xdic-describe-region を明示的に検索する辞書を選べ
+	るように拡張した。
+	辞書を選ぶための関数 xdic-select-search-function を新設。
+	ドキュメントの微修正。
+
+	* lisp/sdic.el.in: 説明文の / の周囲に空白を挿入するように 
+	xdic-insert-content を修正。
+
+	* lisp/sdic-sgml.el: ドキュメント微修正。
+
+	* lisp/sdic-compat.el: ドキュメント修正。
+
+	* lisp/sdic.el.in: (require 'xdic-sgml) を追加。
+	xdic-insert-file-contents 関数の引数順序を変更。
+	xdic-start-process 関数を新設。良く見ると、xdic-call-process と 
+	xdic-start-process の引数順序の直交性が良くない。どうしようか。
+
+	* lisp/sdic-sgml.el: ドキュメントの追加。
+	xdic-insert-file-contents の引数順序の変更を反映。
+	特殊文字をエスケープしたり回復したりするための関数群 
+	xdic-sgml-make-query-string / xdic-sgml-recover-{string,region} /
+ 	xdic-sgml-escape-{string,region} を新設。
+	指定された文字列中に現れた特定の文字列を全て別の文字列に置換する関数 
+	xdic-sgml-replace-string を新設。Emacs-19.28 と Emacs-19.34 では、
+	replace-match の引数の数が異なることに注意。
+
+	* lisp/sdic-grep.el: ドキュメントの追加。
+	xdic-grep-search-entry 関数を xdic-sgml-make-query-string を使うように変更。
+
+	* lisp/sdic-array.el: ドキュメントの追加。
+	xdic-array-open-dictionary 関数で start-process の代りに 
+	xdic-start-process を使うように変更。
+	xdic-array-search-entry 関数を xdic-sgml-make-query-string を使うように変更。
+	xdic-array-wait-prompt 関数のバグフィックス。
+
+1999-01-18  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: 辞書のフォーマット変更とライブラリの構成変更を反映
+
+	* lisp/sdic-compat.el: xdic-unix.el -> xdic-compat.el とファイル名を変更した。
+
+	* lisp/sdic-array.el, lisp/sdic-grep.el, lisp/sdic-sgml.el: New file.
+
+	* lisp/sdic.el.in: イディオムを検索する場合の振る舞いを修正。
+
+	* lisp/sdic.el.in: xdic-sort-dictionary-order のバグフィックス
+	xdic-search-eiwa-dictionary で stemming して検索した結果を表示するルーチ
+	ンを変更。不規則変化動詞と規則変化動詞の検索結果の違いを小さくした。また、
+	表示する検索結果を増やした。
+
+	* lisp/stem.el: stem:irregular-verb-alist の微修正
+
+1999-01-17  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in:
+	xdic-search-eiwa-dictionary 関数で不要なローカル変数を束縛していたバグを
+	修正。
+
+	* lisp/sdic.el.in: XEmacs で利用する場合の注意書きを追加。
+
+	* lisp/sdic.el.in:
+	xdic-sort-dictionary-order 関数を修正。英語の見出し語を並べ替える場合、
+	アルファベットと数字以外の文字を無視して並べ替えるようにした。
+
+1999-01-16  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: (eval-when-compile (require 'xdic-unix)) を追加。
+
+	* lisp/sdic.el.in:
+	見出し語と ID のリストからなるリストを辞書順に並べ替える 
+	xdic-sort-dictionary-order 関数を新設。
+	xdic-search-eiwa-dictionary 関数によって不規則変化動詞を検索した場合、ユー
+	ザーが入力した検索語を優先して表示するように変更。例えば、stood を検索し
+	た場合、stand ではなく stood が最初に表示される。ただし、stood by を検索
+	した場合は stand by が最初になる。少し分かり難いかも知れない。
+	xdic-display-buffer 関数の引数を変更して、検索結果表示バッファの表示開始
+	位置を指定できるようにした。
+
+	* lisp/stem.el: stem:irregular-verb-alist のバグ取り
+
+1999-01-14  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic-compat.el:
+	xdic-unix-init-dictionary を微修正。look / grep オプションの値を簡単に検
+	査するようにした。
+
+	* lisp/sdic-compat.el:
+	xdic-unix-available-p を修正。xdic-unix-*-command が文字列の場合に限って 
+	t を返すようにした。
+
+	* lisp/sdic.el.in:
+	ドキュメント整備
+	xdic-search-multi-dictionary からの返り値を、きちんと辞書順に並べ替える
+	ようにした。
+	xdic-search-english-dictionary -> xdic-search-eiwa-dictionary の関数名変
+	更
+	xdic-search-japanese-dictionary -> xdic-search-waei-dictionary の関数名
+	変更
+	xdic-search-eiwa-dictionary の検索結果を filtering する正規表現のバグフィッ
+	クス
+
+	xdic-word-at-point が、英語の前置詞を意識して振舞うようにした。
+
+	xdic-mode の説明文字列を独自に再定義した。
+
+	* lisp/sdic-compat.el, lisp/sdic-gene.el: 微修正
+
+	* lisp/sdic-gene.el: ドキュメント追加
+
+	* lisp/sdic-compat.el: ドキュメントの追加
+
+1999-01-13  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in:
+	xdic-word-at-point を日本語の単語も受け付けるように修正した。ただし、こ
+	の修正は Mule 以外では正常に動作しない可能性が高い。
+	検索語をリージョンによって指定する xdic-describe-region を新設。
+
+	* lisp/sdic-gene.el: 全ての設定を、辞書ライブラリのオプションとして指定
+	できるようにした。圧縮辞書に対応した。
+
+	* lisp/sdic-compat.el:
+	xdic-unix-*-command の default 値の求め方を変更して、Windows 環境で使い
+	易いようにした。
+	xdic-unix-search-entry で検索した後、xdic-unix-get-content によって結果
+	を読み出すまでは、検索作業バッファをクリアしないようにした。これによって、
+	同時に別の query で検索できるようになった(制限つき)。
+	全ての設定を、辞書ライブラリのオプションとして指定できるようにした。
+
+	* lisp/sdic.el.in: 複数辞書の串刺検索に対応した。
+	辞書の定義形式を変更した。各辞書の default coding system として使う 
+	xdic-default-coding-sytem を新設し、XEmacs 対応を強化した。
+	xdic-split-string を自前で定義するようにした。
+
+	* lisp/stem.el: stem:irregular-verb-alist のバグ修正
+
+1999-01-12  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/stem.el: stem:extra 関数内でローカル変数の宣言洩れがあったのを修正
+
+	* lisp/stem.el: 不規則動詞に対する対応を組み込んだために、空文字列を含む
+	リストを stem:stripping-suffix が返す場合が生じたことに対処した。それに
+	ともなって、stem:stripping-suffix は辞書順のリストを、stem-english は従
+	来通りに単語の長さ順のリストを返すようにした。
+
+	* lisp/sdic.el.in: 英和辞典または和英辞典のどちらかが存在しない場合でも
+	使えるように修正
+
+	* lisp/sdic-gene.el, lisp/sdic-compat.el: 内部構造の大幅変更
+
+	* lisp/sdic.el.in: 内部構造の大幅変更および完全一致検索/任意検索などのサ
+	ポート
+
+1999-01-11  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: [xdic:00042] の高林さんの提案を取り入れて、カンマの後
+	にスペースを挿入するようにした。
+
+	* lisp/sdic-compat.el:
+	call-process を xdic-call-process に変更して、プロセス呼び出し毎にきちん
+	と漢字コードを設定するようにした。
+
+	* lisp/sdic-gene.el: XEmacs に対応
+
+	* lisp/sdic.el.in: XEmacs に対応するため、overlay 関連の関数の定義を付け加えた
+	漢字コードを指定してプロセスを呼び出す xdic-call-process と漢字コードを
+	指定してファイルを読み込む xdic-insert-file-contents を新設した
+
+1998-11-30  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/stem.el: 不規則動詞の連想配列を組み込んだ。
+
+	* lisp/sdic.el.in: 変数名の間違いによるバグ修正
+	split-string のコードを自前のものから Emacs-20.3 のものに変更
+
+	* lisp/sdic-compat.el, lisp/sdic-gene.el: 変数名間違いのバグ修正
+
+	* lisp/sdic-compat.el, lisp/sdic-gene.el: New file.
+
+1998-11-29  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in: 接頭辞を xdic: から xdic- に変更。
+	辞書を検索するためのライブラリを独立させ辞書の抽象度を高めるため、大幅な
+	構成変更。英和辞典検索時に前置詞を意識して検索するようにした。
+
+1998-11-27  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in:
+	xdic:look 関数の初期設定部分のバグを修正。動作中に temporary buffer が削
+	除されたことを検出するコードの修正。
+	xdic:grep 関数の初期設定部分のバグを修正。動作中に temporary buffer が削
+	除されたことを検出するコードの修正。後方一致検索および完全一致検索用の正
+	規表現パターンのバグ修正。
+
+	* lisp/sdic.el.in: process-coding-system の設定方法を変更
+
+	* lisp/sdic.el.in: 和英辞書を使えるようにした Alpha Version.
+
+1998-11-22  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/stem.el: stemming 関数を1つに統一した。
+	Porter のアルゴリズムを適用する最小語長を設定する変数 
+	stem:minimum-word-length を新設
+
+	* RCS で管理を開始した。
+
+1998-09-22  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lisp/sdic.el.in:
+	Mule for Win32 で文字化けが起こっていた問題を修正
+	見出し語の修飾(デフォルトは bold)を変更できるようにした
+
+1998-09-10 Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* バージョン 1.5p1 公開
+
+	* lisp/sdic.el.in: 複数の同一の見出し語が含まれている辞書を検索した場合、
+	最後の見出し語のみしか表示されていなかった不具合を修正。
+
+1998-09-09  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* バージョン 1.5 公開
+
+	* lisp/sdic.el.in: xdic:fill-region 関数を新設。Emacs のバージョンによっ
+	て動作が異なっている fill-region 関数の違いを吸収。
+
+1998-07-14  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* バージョン 1.4 公開
+
+	* lisp/sdic.el.in:
+	Emacs-19.28 ベースの Mule では、previous-overlay-change 関数が未定義のた
+	めに、xdic:previous-item が動かなかった問題に対処
+	xdic-mode のキーバインドに BackSpace キーと Delete キーによるスクロールダウンを追加
+	stem.el の構成変更にともなう変更
+
+1998-04-14  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* バージョン 1.3 公開
+
+	* lisp/sdic.el.in: 微修正
+
+	* lisp/stem.el: ドキュメント追加
+
+1998-02-06  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* バージョン 1.2 公開
+
+	* lisp/sdic.el.in: 派生語に対応
+
+	* lisp/stem.el: New file.
+
+1998-02-04  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* バージョン 1.1 公開
+
+1998-02-03  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* バージョン 1.0 公開
+
+	* lisp/sdic.el.in: New file.
+
+
+Local Variables:
+mode: change-log
+fill-column: 80
+fill-prefix: ""
+End:
