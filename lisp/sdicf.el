@@ -372,14 +372,14 @@ array を使って検索を行う
 	    (progn
 	      (delete-region (point-min) (point-max))
 	      (sdicf-array-send-string proc "show")
-	      (let (entries prev (i 1))
+	      (let (entries cons)
 		(while (not (eobp)) (sdicf-search-internal))
 		(setq entries (sort entries 'string<)
-		      prev (car entries))
-		(while (< i (length entries))
-		  (if (string= prev (setq prev (nth i entries)))
-		      (setcdr (nthcdr (1- i) entries) (nthcdr (1+ i) entries))
-		    (setq i (1+ i))))
+		      cons entries)
+		(while (cdr cons)
+		  (if (equal (car cons) (car (cdr cons)))
+		      (setcdr cons (cdr (cdr cons)))
+		    (setq cons (cdr cons))))
 		entries)))))))
 
 
