@@ -1,3 +1,7 @@
+1999-08-16  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* install.el.in: Bug fix of install.el.in (Cf. [sdic:00342]).
+
 Thu Jul 29 09:15:08 1999  Masatoshi Tsuchiya  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* Release SDIC-2.1.
