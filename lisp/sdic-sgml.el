@@ -18,7 +18,7 @@
 ;;     利用できます。
 ;;
 ;;         gene.perl    - GENE95 辞書
-;;         jgene.perl   - GENE95 辞書から和英辞書を生成する
+;;         edict.perl   - EDICT 辞書
 ;;         eijirou.perl - 英辞郎
 ;;
 ;; (2) 使えるようにした辞書の定義情報を xdic-eiwa-dictionary-list また
@@ -58,7 +58,29 @@
 ;;     ます。省略した場合は xdic-sgml-extract-option の値を使います。
 
 
-;;; Format:
+;;; Note;
+
+;; xdic-sgml.el , xdic-grep.el , xdic-array.el は XDIC 形式の辞書を検
+;; 索するためのライブラリです。それぞれの違いは次の通りです。
+;;
+;; ・xdic-sgml.el
+;;     辞書データを全てメモリに読み込んでから検索を行います。外部コマ
+;;     ンドを必要としませんが、大量のメモリが必要になります。
+;;
+;; ・xdic-grep.el
+;;     grep を利用して検索を行います。比較的低速です。
+;;
+;; ・xdic-array.el
+;;     array を利用して検索を行います。辞書の index file を事前に生成
+;;     しておいてから検索を行いますので、高速に検索が可能です。しかし、
+;;     index file は辞書の3倍程度の大きさになります。
+;;
+;; 比較的小規模の辞書を検索する場合は xdic-grep.el が最適でしょう。し
+;; かし、5MByte より大きい辞書の場合は xdic-array.el の利用を考慮すべ
+;; きだと思います。
+
+
+;;; Dictionary Format:
 
 ;; XDIC 形式の辞書は次のような構造になっています。
 ;;
@@ -157,7 +179,7 @@
 					       (get dic 'extract-option)
 					       (get dic 'file-name)))
 		     (condition-case err
-			 (xdic-insert-file-contents (get dic 'file-name) nil nil nil nil (get dic 'coding-system))
+			 (xdic-insert-file-contents (get dic 'file-name) (get dic 'coding-system))
 		       (error nil)))
 	      (setq buffer-read-only t)
 	      (set-buffer-modified-p nil))))
@@ -183,35 +205,27 @@ search-type の値によって次のように動作を変更する。
   (save-excursion
     (set-buffer (get dic 'xdic-sgml-buffer))
     (goto-char (point-min))
-    (setq string (cond
-		  ;; 前方一致検索の場合
-		  ((eq search-type nil) (concat "<K>" (regexp-quote (downcase string))))
-		  ;; 後方一致検索の場合
-		  ((eq search-type t) (concat (regexp-quote (downcase string)) "</K>"))
-		  ;; 完全一致検索の場合
-		  ((eq search-type 'lambda) (concat "<K>" (regexp-quote (downcase string)) "</K>"))
-		  ;; ユーザー指定のキーによる検索の場合
-		  ((eq search-type 0) string)
-		  ;; それ以外の検索形式を指定された場合
-		  (t (error "Not supported search type is specified. \(%s\)"
-			    (prin1-to-string search-type)))))
+    (setq string (xdic-sgml-make-query-string string search-type))
     (let ((case-fold-search nil) ret)
-      (while (re-search-forward string nil t)
+      (while (search-forward string nil t)
 	(setq ret (cons (xdic-sgml-get-entry) ret)))
       (reverse ret))))
 
 
-(defun xdic-sgml-recover-string (str)
-  "STR に含まれているエスケープ文字列を復元する"
-  (while (string-match "&lt;" str)
-    (setq str (replace-match "<" t t str)))
-  (while (string-match "&gt;" str)
-    (setq str (replace-match ">" t t str)))
-  (while (string-match "&amp;" str)
-    (setq str (replace-match "&" t t str)))
-  (while (string-match "&lf;" str)
-    (setq str (replace-match "\n" t t str)))
-  str)
+(defun xdic-sgml-make-query-string (string search-type)
+  "STR から適切な検索文字列を生成する"
+  (cond
+   ;; 前方一致検索の場合
+   ((eq search-type nil) (concat "<K>" (xdic-sgml-escape-string (downcase string))))
+   ;; 後方一致検索の場合
+   ((eq search-type t) (concat (xdic-sgml-escape-string (downcase string)) "</K>"))
+   ;; 完全一致検索の場合
+   ((eq search-type 'lambda) (concat "<K>" (xdic-sgml-escape-string (downcase string)) "</K>"))
+   ;; ユーザー指定のキーによる検索の場合
+   ((eq search-type 0) (xdic-sgml-escape-string string))
+   ;; それ以外の検索形式を指定された場合
+   (t (error "Not supported search type is specified. \(%s\)"
+	     (prin1-to-string search-type)))))
 
 
 (defun xdic-sgml-get-entry ()
@@ -240,3 +254,78 @@ search-type の値によって次のように動作を変更する。
 	(xdic-sgml-recover-string (buffer-substring (goto-char point)
 						    (progn (end-of-line) (point))))
       (error "Can't find content. (ID=%d)" point))))
+
+
+(defun xdic-sgml-recover-string (str &optional recover-lf)
+  "STR に含まれているエスケープ文字列を復元する"
+  (save-match-data
+    (setq str (xdic-sgml-replace-string str "&lt;" "<"))
+    (setq str (xdic-sgml-replace-string str "&gt;" ">"))
+    (if recover-lf
+	(setq str (xdic-sgml-replace-string str "&lf;" "\n")))
+    (xdic-sgml-replace-string str "&amp;" "&")))
+
+
+(defun xdic-sgml-recover-region (start end &optional recover-lf)
+  "リージョンに含まれているエスケープ文字列を復元する"
+  (save-excursion
+    (save-match-data
+      (save-restriction
+	(narrow-to-region start end)
+	(goto-char (point-min))
+	(while (search-forward "&lt;" nil t)
+	  (replace-match "<" t t))
+	(goto-char (point-min))
+	(while (search-forward "&gt;" nil t)
+	  (replace-match ">" t t))
+	(if recover-lf
+	    (progn
+	      (goto-char (point-min))
+	      (while (search-forward "&lf;" nil t)
+		(replace-match "\n" t t))))
+	(goto-char (point-min))
+	(while (search-forward "&amp;" nil t)
+	  (replace-match "&" t t))
+	))))
+
+
+(defun xdic-sgml-escape-string (str &optional escape-lf)
+  "STR に含まれている特殊文字をエスケープする"
+  (save-match-data
+    (setq str (xdic-sgml-replace-string str "&" "&amp;"))
+    (if escape-lf
+	(setq str (xdic-sgml-replace-string str "\n" "&lf;")))
+    (setq str (xdic-sgml-replace-string str "<" "&lt;"))
+    (xdic-sgml-replace-string str ">" "&gt;")))
+
+
+(defun xdic-sgml-escape-region (start end &optional escape-lf)
+  "リージョンに含まれている特殊文字をエスケープする"
+  (save-excursion
+    (save-match-data
+      (save-restriction
+	(narrow-to-region start end)
+	(goto-char (point-min))
+	(while (search-forward "&" nil t)
+	  (replace-match "&amp;" t t))
+	(goto-char (point-min))
+	(while (search-forward "<" nil t)
+	  (replace-match "&lt;" t t))
+	(goto-char (point-min))
+	(while (search-forward ">" nil t)
+	  (replace-match "&gt;" t t))
+	(if escape-lf
+	    (progn
+	      (goto-char (point-min))
+	      (while (search-forward "\n" nil t)
+		(replace-match "&lf;" t t))))
+	))))
+
+
+(defun xdic-sgml-replace-string (string from to)
+  "文字列 STRING に含まれている文字列 FROM を全て文字列 TO に置換した文字列を返す"
+  (let ((start 0) list)
+    (while (string-match from string start)
+      (setq list (cons to (cons (substring string start (match-beginning 0)) list)))
+      (setq start (match-end 0)))
+    (apply 'concat (reverse (cons (substring string start) list)))))
