@@ -19,13 +19,23 @@
 #
 # と指定して下さい。それぞれの形式の詳細については sdic.texi を参照。
 
+$CHAR = "(?:[\xa1-\xfe][\xa1-\xfe]|[^\xa1-\xfe])";
+$HIRAGANA = "(?:[\xa4][\xa1-\xf3])";
 
-if( $ARGV[0] eq '--unsort' ){
-    $UNSORT = 1;
-    shift;
+for( @ARGV ){
+    if( $_ eq '--unsort' ){
+	$UNSORT = 1;
+    } elsif( $_ eq '--compat' ){
+	$COMPAT = 1;
+    } elsif( $_ eq '--waei' ){
+	$WAEI = 1;
+    } else {
+	push( @tmp, $_ );
+    }
 }
-if( $ARGV[0] eq '--compat' ){
-    shift;
+@ARGV = @tmp;
+
+if( $COMPAT ){
     &compat();
 } else {
     &sdic();
@@ -69,6 +79,12 @@ sub sdic {
 	$key =~ s/ +\(\d+\)//;		# (…) を検索キーから削除する
 	$key =~ tr/A-Z/a-z/;
 	$key =~ s/\s+/ /;
+	if( $WAEI ){
+	    # 和英辞朗に特有の調整を行う
+	    while( $content =~ s/^($CHAR*?)●/$1 \/ /o ){ ; }
+	    $key =~ s/^($CHAR*?)；(?:（$CHAR*?）|〜)$HIRAGANA?$/$1/o;
+	    $key =~ s/^($CHAR*?)◆$CHAR*?$/$1/o;
+	}
 	if( $UNSORT ){
 	    if( $key eq $head ){
 		print "<K>$key</K>$content\n";

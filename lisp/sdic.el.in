@@ -402,7 +402,8 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 	      (lambda (entry)
 		(and (not point)
 		     (string-match pat (car entry))
-		     (setq point (point)))
+		     (setq point (point)
+			   str (car entry)))
 		(sdic-insert-content (car entry) (sdic-get-content (nth 1 entry) (nth 2 entry)))
 		(car entry))
 	      (prog1 (or
@@ -494,7 +495,7 @@ QUERY に検索形式を指定する構造が含まれていない場合は、default の動作と
 			    (format "^%s$" (regexp-quote orig))))))
 	(setq sdic-buffer-start-point
 	      (if point
-		  (if (and (not (string= (car word-list) (car (sdic-split-string query))))
+		  (if (and (not (string= str (car (sdic-split-string query))))
 			   (let ((case-fold-search nil))
 			     (goto-char point)
 			     (setq pat (regexp-quote (car (sdic-split-string query))))
