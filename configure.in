@@ -1,0 +1,106 @@
+AC_INIT(lisp/stem.el)
+AM_INIT_AUTOMAKE(sdic, 2.0-with-configure)
+
+AM_PATH_LISPDIR
+
+AC_PATH_PROG(NKF, nkf, no)
+if test "$NKF" = "no"; then
+    AC_MSG_WARN(nkf not found)
+fi
+
+AC_PATH_PROG(PERL, perl, no)
+if test "$PERL" = "no"; then
+    AC_MSG_WARN(perl not found)
+fi
+
+AC_PATH_PROG(GZIP, gzip, no)
+if test "$GZIP" = "no"; then
+    AC_MSG_WARN(gzip not found)
+fi
+
+AC_PATH_PROG(BZIP2, bzip2, no)
+if test "$BZIP2" = "no"; then
+    AC_MSG_WARN(bzip2 not found)
+fi
+
+AC_PATH_PROG(CP, cp, no)
+if test "$CP" = "no"; then
+    AC_MSG_WARN(cp not found)
+fi
+
+DICTDIR=/usr/dict
+AC_ARG_WITH(
+        dictdir,
+        [  --with-dictdir=DIR      dictionary files go to DIR [/usr/dict]],
+        DICTDIR=$with_dictdir,
+)
+AC_SUBST(DICTDIR)
+
+DICTTYPE=sdic
+AC_ARG_WITH(
+        dicttype,
+        [  --with-dicttype=TYPE    use TYPE of dictionaries [sdic]],
+        DICTTYPE=$with_dicttype,
+)
+
+
+EIWA_DICTIONARY=
+AC_MSG_CHECKING(for EIWA Dictionary)
+for dict in gene.sdic ejdict.sdic gene.dic ejdict.dic; do
+	if test -f "$DICTDIR/$dict"; then
+		EIWA_DICTIONARY="$dict"
+		EIWA_DICTIONARY_PATH="$DICTDIR/$dict"
+		AC_MSG_RESULT($EIWA_DICTIONARY_PATH (already installed))
+		break
+	fi
+done
+
+if test -z "$EIWA_DICTIONARY"; then
+	if test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
+		EIWA_DICTIONARY="gene.$DICTTYPE"
+		EIWA_DICTIONARY_PATH="$DICTDIR/$EIWA_DICTIONARY"
+		AC_SUBST(EIWA_DICTIONARY)
+		AC_SUBST(EIWA_DICTIONARY_PATH)
+		AC_MSG_RESULT($EIWA_DICTIONARY)
+	elif test -f edict.gz -o -f edict.bz2; then
+		EIWA_DICTIONARY="ejdict.$DICTTYPE"
+		EIWA_DICTIONARY_PATH="$DICTDIR/$EIWA_DICTIONARY"
+		AC_SUBST(EIWA_DICTIONARY)
+		AC_SUBST(EIWA_DICTIONARY_PATH)
+		AC_MSG_RESULT($EIWA_DICTIONARY)
+	else
+		AC_MSG_RESULT(no)
+	fi
+fi
+
+WAEI_DICTIONARY=
+AC_MSG_CHECKING(for WAEI Dictionary)
+for dict in jedict.sdic jgene.sdic jedict.dic jgene.dic; do
+	if test -f "$DICTDIR/$dict"; then
+		WAEI_DICTIONARY="$dict"
+		WAEI_DICTIONARY_PATH="$DICTDIR/$dict"
+		AC_MSG_RESULT($WAEI_DICTIONARY_PATH (already installed))
+		break
+	fi
+done
+
+if test -z "$WAEI_DICTIONARY"; then
+	if test -f edict.gz -o -f edict.bz2; then
+		WAEI_DICTIONARY="jedict.$DICTTYPE"
+		WAEI_DICTIONARY_PATH="$DICTDIR/$WAEI_DICTIONARY"
+		AC_SUBST(WAEI_DICTIONARY)
+		AC_SUBST(WAEI_DICTIONARY_PATH)
+		AC_MSG_RESULT($WAEI_DICTIONARY)
+	elif test -f gene95.lzh -o -f gene95.tar.gz -o -f gene95.tar.bz2; then
+		WAEI_DICTIONARY="jgene.$DICTTYPE"
+		WAEI_DICTIONARY_PATH="$DICTDIR/$WAEI_DICTIONARY"
+		AC_SUBST(WAEI_DICTIONARY)
+		AC_SUBST(WAEI_DICTIONARY_PATH)
+		AC_MSG_RESULT($WAEI_DICTIONARY)
+	else
+		AC_MSG_RESULT(no)
+	fi
+fi
+
+AC_OUTPUT(Makefile lisp/Makefile lisp/sdic.el)
+
