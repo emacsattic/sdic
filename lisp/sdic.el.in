@@ -214,12 +214,18 @@ Function to search word in dictionary.
 Function to sort entry list in dictionary order.
 見出し語、辞書シンボル、見出し語のIDからなる配列を要素とする配列 
 ENTRY-LIST を、見出し語の辞書順に並べ替える関数。"
-  (mapcar 'cdr
-	  (sort (mapcar (function
-			 (lambda (entry)
-			   (cons (concat (downcase (car entry)) "\^@" (car entry) "\^@") entry)))
-			entry-list)
-  		(function (lambda (a b) (string< (car a) (car b)))))))
+  (let (key)
+    (mapcar 'cdr
+	    (sort (mapcar (function
+			   (lambda (entry)
+			     (if (string-match "\\Ca" (car entry))
+				 (cons (concat (car entry) "\^@") entry)
+			       (setq key (downcase (car entry)))
+			       (while (string-match "[^a-z0-9]+" key)
+				 (setq key (replace-match "" t t key)))
+			       (cons (concat key "\^@" (car entry) "\^@") entry))))
+			  entry-list)
+		  (function (lambda (a b) (string< (car a) (car b))))))))
 
 
 (defun xdic-search-multi-dictionaries (dic-list word &optional search-type) "\
