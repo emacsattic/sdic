@@ -513,8 +513,8 @@ sdic-read-from-minibuffer 関数のヒストリ")
 	(c (read-char)))
     (select-window sw)
     (cond
-     ((= c ?e) 'sdic-search-eiwa-dictionary)
-     ((= c ?j) 'sdic-search-waei-dictionary)
+     ((or (= c ?e) (= c ?E)) 'sdic-search-eiwa-dictionary)
+     ((or (= c ?j) (= c ?J)) 'sdic-search-waei-dictionary)
      (t (sdic-select-search-function)))))
 
 
@@ -522,8 +522,9 @@ sdic-read-from-minibuffer 関数のヒストリ")
 (defun sdic-describe-word (word &optional search-function)
   "Display the meaning of word."
   (interactive
-   (list (sdic-read-from-minibuffer)
-	 (if current-prefix-arg (sdic-select-search-function))))
+   (let ((f (if current-prefix-arg (sdic-select-search-function)))
+	 (w (sdic-read-from-minibuffer)))
+     (list w f)))
   (and (interactive-p)
        (< (length word) 2)
        (setq word (sdic-read-from-minibuffer
@@ -543,7 +544,8 @@ sdic-read-from-minibuffer 関数のヒストリ")
 	  (setq buffer-read-only t)
 	  (set-buffer-modified-p nil))
 	(sdic-display-buffer sdic-buffer-start-point)
-      (message "Can't find word, \"%s\"." word))))
+      (message "Can't find word, \"%s\"." word)
+      nil)))
 
 
 ;; 主関数の宣言
@@ -562,8 +564,18 @@ sdic-read-from-minibuffer 関数のヒストリ")
 (defun sdic-describe-word-at-point ()
   "Display the meaning of word at point in Japanese."
   (interactive)
-  (sdic-describe-word (or (sdic-word-at-point)
-			  (sdic-read-from-minibuffer))))
+  (let ((orig-table (copy-syntax-table))
+	word)
+    (unwind-protect
+	(progn
+	  (modify-syntax-entry ?* "w")
+	  (modify-syntax-entry ?' "w")
+	  (modify-syntax-entry ?/ "w")
+	  (setq word (or (sdic-word-at-point) (sdic-read-from-minibuffer))))
+      (set-syntax-table orig-table))
+    (or (sdic-describe-word word)
+	(sdic-describe-word (sdic-read-from-minibuffer
+			     (format "Can't find word \"%s\". Input word again : " word) word)))))
 
 
 ;;; 次の項目に移動する関数
@@ -620,7 +632,8 @@ sdic-read-from-minibuffer 関数のヒストリ")
 	       (> p (point-min))
 	       (message "この前にもエントリがあります。"))
 	  (goto-char p)
-	  (if sdic-disable-select-window (select-window w1)))
+	  (if sdic-disable-select-window (select-window w1))
+	  (buffer-size))
       (set-buffer old-buffer))))
 
 
