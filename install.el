@@ -155,6 +155,7 @@
     (make-sdic-install-info)
     (if (eq eiwa t) (make-sdic-install-gene))
     (if (eq waei t) (make-sdic-install-jedict))
+    (make-sdic-sample_emacs)
     ))
 
 
@@ -173,6 +174,27 @@ Direcotry:
   --with-dictdir=DIR      dictionary files go to DIR [guessed]
 "
 	 (if msg (concat msg "\n") "")))
+
+
+(defun make-sdic-sample_emacs ()
+  "sample.emacs.in から sample.emacs を生成する関数"
+  (let ((in-file (expand-file-name "sample.emacs.in" make-sdic-src-directory))
+	(out-file (expand-file-name "sample.emacs" make-sdic-src-directory)))
+    (if make-sdic-debug
+	(message "%s" out-file)
+      (message "%s -> %s" in-file out-file)
+      (or (file-readable-p in-file) (error "Can't find file : %s" in-file))
+      (let ((buf (generate-new-buffer "*sample.emacs*")))
+	(unwind-protect
+	    (progn
+	      (set-buffer buf)
+	      (sdicf-insert-file-contents in-file sdic-default-coding-system)
+	      (goto-char (point-min))
+	      (search-forward "@lispdir@")
+	      (delete-region (goto-char (match-beginning 0)) (match-end 0))
+	      (insert make-sdic-lisp-directory)
+	      (make-sdic-write-file out-file))
+	  (kill-buffer buf))))))
 
 
 (defun make-sdic-sdic_el (eiwa waei)

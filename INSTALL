@@ -128,13 +128,8 @@ Windows 環境では、必要なコマンドが不足しているために、上記の UNIX 用の
     要ありません。ただし、デフォルト以外のディレクトリに辞書をインストー
     ルした場合は、そのディレクトリをオプションで指定する必要があります。
 
-(4) 以下の設定を .emacs に付け加えて下さい。
-
-        (setq load-path (cons (expand-file-name "../../site-lisp/sdic" data-directory) load-path))
-        (autoload 'sdic "sdic" "英単語の意味を調べる" t nil)
-        (global-set-key "\C-cw" 'sdic)
-
-    キーバインドは適当に変更して下さい。
+(4) ~/.emacs を編集して個人設定を行います。sample.emacs に設定例が入っ
+    ていますので、参考にしてください。
 
 
 
