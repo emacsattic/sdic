@@ -6,7 +6,7 @@
 ;; Author: TSUCHIYA Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 ;;	   NISHIDA Keisuke <knishida@ring.aist.go.jp>
 ;; Created: 1 Feb 1999
-;; Version: 0.8
+;; Version: 0.9
 ;; Keywords: dictionary
 
 ;; This program is free software; you can redistribute it and/or
@@ -49,9 +49,6 @@
 ;;   切していません。
 
 
-;;; Code:
-
-(provide 'sdicf)
 
 ;;;------------------------------------------------------------
 ;;;		Customizable variables
@@ -94,7 +91,7 @@
 ;;;		Internal variables
 ;;;------------------------------------------------------------
 
-(defconst sdicf-version "0.8" "Version number of sdicf.el")
+(defconst sdicf-version "0.9" "Version number of sdicf.el")
 
 (defconst sdicf-strategy-alist
   '((array sdicf-array-available-p sdicf-array-init sdicf-array-quit sdicf-array-search)
@@ -156,8 +153,10 @@
 ポイントを行の先頭に移動しておかなければならない。関数の実行後、ポイン
 トは次の行頭に移動する。"
   (if (eq (following-char) ?<)
-      (setq entries (cons (buffer-substring (point) (progn (end-of-line) (point))) entries)))
-  (forward-char))
+      (progn
+	(setq entries (cons (buffer-substring (point) (progn (end-of-line) (point))) entries))
+	(forward-char))
+    (forward-line)))
 
 (defun sdicf-encode-string (string) "\
 STRING をエンコードする
@@ -331,7 +330,7 @@ sdicf-egrep-command で指定されたコマンドを使う。"
 	(kill-buffer (sdicf-get-buffer sdic)))))
 
 (defun sdicf-array-send-string (proc string) "\
-Send STRING as command to process."
+指定された文字列 STRING をコマンドとして PROC に渡してプロンプトが現れるまで待つ関数"
   (save-excursion
     (let ((sdicf-array-wait-prompt-flag t))
       (set-buffer (process-buffer proc))
@@ -340,9 +339,7 @@ Send STRING as command to process."
       (while sdicf-array-wait-prompt-flag (accept-process-output proc)))))
 
 (defun sdicf-array-wait-prompt (proc string) "\
-Process filter function of Array.
-プロンプトが現れたことを検知して、sdicf-array-wait-prompt-flag を nil 
-にする。"
+プロンプト ok が現れたことを検知して、sdicf-array-wait-prompt-flag を nil にするフィルタ関数"
   (save-excursion
     (save-match-data ; Emacs-19.34 以降は自動的に検索結果の待避/回復が行われるので不要
       (set-buffer (process-buffer proc))
@@ -417,7 +414,7 @@ SDIC 辞書オブジェクトは CAR が `SDIC' のベクタである。以下の4
 		      (or coding-system sdicf-default-coding-system)
 		      nil nil)))
     (aset sdic 3 (if strategy
-		     (if (memq strategy (mapcar 'car sdicf-strategy-alist))
+		     (if (assq strategy sdicf-strategy-alist)
 			 (if (funcall (nth 1 (assq strategy sdicf-strategy-alist)) sdic)
 			     strategy
 			   (error "Specified strategy is not available: %S" strategy))
@@ -466,11 +463,9 @@ SDIC形式の辞書から WORD をキーとして検索を行う
 	      ((eq method 'suffix) (concat (sdicf-encode-string (downcase word)) "</K>"))
 	      ((eq method 'exact) (concat "<K>" (sdicf-encode-string (downcase word)) "</K>"))
 	      ((eq method 'text) word)
+	      ((eq method 'regexp) word)
 	      (t (error "Invalid search method: %S" method)))
-	     (if (or (eq method 'text)
-		     (eq method 'regexp))
-		 case-fold-search
-	       nil)
+	     (and (or (eq method 'text) (eq method 'regexp)) case-fold-search)
 	     (eq method 'regexp))))
 
 (defun sdicf-entry-headword (entry)
@@ -496,5 +491,7 @@ SDIC形式の辞書から WORD をキーとして検索を行う
       (signal 'wrong-type-argument (list 'stringp entry)))
   (sdicf-decode-string (substring entry (string-match "[^>]*$" entry))))
 
+
+(provide 'sdicf)
 
 ;;; sdicf.el ends here
