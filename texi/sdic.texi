@@ -685,6 +685,7 @@ SUFARY $B$NImB0J8=q$K=>$C$F!"(Barray $B$H(B mkary $B$r%$%s%9%H!<%k$7$F$*$$$
 @menu
 * Broken look::                 look $B$NIT6q9g$K$D$$$F(B
 * Broken grep::                 grep $B$NIT6q9g$K$D$$$F(B
+* Using sdic-array.el in Windows::
 @end menu
 
 
@@ -718,7 +719,7 @@ grep -i '^a lot of' gene.dic
 @end lisp
 
 
-@node Broken grep, , Broken look, Trouble Shooting
+@node Broken grep, Using sdic-array.el in Windows, Broken look, Trouble Shooting
 @comment  node-name,  next,  previous,  up
 @subsection grep $B$NIT6q9g$K$D$$$F(B
 
@@ -756,6 +757,57 @@ grep zymase /usr/dict/gene.dic
 (setq sdic-compat-grep-command "/usr/bin/grep")
 (setq sdic-grep-command "/usr/bin/grep")
 @end lisp
+
+
+@node Using sdic-array.el in Windows, , Broken grep, Trouble Shooting
+@comment  node-name,  next,  previous,  up
+@subsection sdic-array.el $B$r(B Windows $B4D6-$G;H$&$?$a$N@_Dj(B
+
+Windows $B4D6-$O%5%V%W%m%;%9$N07$$$KLdBj$,$"$k$?$a$K!"(B@file{sdic-array.el} 
+$B$K$h$k8!:w$r9T$J$&$?$a$K$O!"4v$D$+Cm0U$9$k$3$H$,$"$j$^$9!#(B
+
+$B0J2<$N<j=g$OGr0f$5$s$K65$($FD:$-$^$7$?!#(B
+
+@enumerate
+@item
+array $B$H(B mkary $B$O(B Cygnus-win32 $B>e$N4D6-$G(B make $B0lH/$GF0$-$^$9!#(Barray.exe 
+$B$H(B mkary.exe $B$r(B @code{path} $B$NDL$C$?$H$3$m$K$*$-$^$7$g$&!#(B
+
+@item
+Mule for Win32 $B$G$O(B@emph{$B$*$=$i$/(B}$B$=$N$^$^$GF0$-$^$9!#(BMeadow + Win-NT $B$G(B
+$B$b!"$-$C$HBg>fIW$G$7$g$&!#(B
+
+@item
+Meadow + Win-95/98 $B$G$O!"(Barray $B$H0lIt$N>oCs%=%U%H$NAj@-$,0-$$$h$&$G$9!#(B
+$B%&%$%k%9%A%'%C%+$J$I$,FC$KAj@-$,0-$$$N$G!">oCs%=%U%H$r$O$:$7$FF0:n$5$;$F(B
+$B$_$F2<$5$$!#F0:n$,$*$+$7$$$H$-$O!"<-=q$N8!:w;~$OF0$/$N$G$9$,!"(BMeadow $B$r(B
+$B=*N;$9$k;~$K(B@emph{$B$@$a(B}$B$K$J$k$h$&$G$9!#(B
+
+@item
+$B$=$l$G$b$@$a$J$H$-$O!"0J2<$N>r7o$r<i$l$PF0$/(B@emph{$B$+$b(B}$B$7$l$^$;$s!#(B
+@itemize @bullet
+@item
+@file{sdic-array.el} $B$r;H$C$F8!:w$9$k<-=q$r$R$H$D$@$1$K$9$k!#(B
+
+@item
+$B0J2<$NMM$J%3!<%I$r(B @file{~/.emacs} $B$K=q$/!#(B
+
+@lisp
+(add-hook 'sdic-mode-hook
+          '(lambda ()
+             (and (featurep 'meadow)
+                  (add-hook 'kill-emacs-hook 'sdic-kill-with-meadow))))
+
+(defun sdic-kill-with-meadow ()
+   "Meadow $B=*N;;~$K(B sdic $B$r0BA4$K=*N;$9$k4X?t(B"
+  (interactive)
+  (sdic-exit)
+  (and (boundp 'server-process)
+       (processp server-process)
+       (server-start t)))
+@end lisp
+@end itemize
+@end enumerate
 
 
 
