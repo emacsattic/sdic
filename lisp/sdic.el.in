@@ -81,6 +81,13 @@
 ;;     (set-terminal-coding-system 'euc-japan)
 ;;
 ;; と .emacs に設定されているか確認してください。
+;;
+;; XEmacs で使う場合は、
+;;
+;;     (set-language-environment "Japanese")
+;;     (set-default-coding-systems 'euc-japan)
+;;
+;; と .emacs に設定されているか確認してください。
 
 
 (provide 'xdic)
