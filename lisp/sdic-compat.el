@@ -167,7 +167,9 @@ Function to check availability of library.
 	      (put dic 'grep-case-option xdic-unix-grep-case-option))
 	  (or (get dic 'coding-system)
 	      (put dic 'coding-system xdic-default-coding-system))
-	  dic)
+	  (and (stringp (get dic 'look))
+	       (stringp (get dic 'grep))
+	       dic))
       (error "Can't read dictionary: %s" (prin1-to-string file-name)))))
 
 
